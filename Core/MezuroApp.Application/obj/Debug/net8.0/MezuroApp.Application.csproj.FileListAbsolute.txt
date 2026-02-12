@@ -1,0 +1,17 @@
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Application/bin/Debug/net8.0/MezuroApp.Application.deps.json
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Application/bin/Debug/net8.0/MezuroApp.Application.runtimeconfig.json
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Application/bin/Debug/net8.0/MezuroApp.Application.dll
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Application/bin/Debug/net8.0/MezuroApp.Application.pdb
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Application/bin/Debug/net8.0/MezuroApp.Domain.dll
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Application/bin/Debug/net8.0/MezuroApp.Domain.pdb
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Application/obj/Debug/net8.0/MezuroApp.Application.csproj.AssemblyReference.cache
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Application/obj/Debug/net8.0/MezuroApp.Application.GeneratedMSBuildEditorConfig.editorconfig
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Application/obj/Debug/net8.0/MezuroApp.Application.AssemblyInfoInputs.cache
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Application/obj/Debug/net8.0/MezuroApp.Application.AssemblyInfo.cs
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Application/obj/Debug/net8.0/MezuroApp.Application.csproj.CoreCompileInputs.cache
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Application/obj/Debug/net8.0/MezuroAp.944CC213.Up2Date
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Application/obj/Debug/net8.0/MezuroApp.Application.dll
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Application/obj/Debug/net8.0/refint/MezuroApp.Application.dll
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Application/obj/Debug/net8.0/MezuroApp.Application.pdb
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Application/obj/Debug/net8.0/MezuroApp.Application.genruntimeconfig.cache
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Application/obj/Debug/net8.0/ref/MezuroApp.Application.dll

@@ -1,0 +1,14 @@
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/bin/Debug/net8.0/MezuroApp.Domain.deps.json
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/bin/Debug/net8.0/MezuroApp.Domain.runtimeconfig.json
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/bin/Debug/net8.0/MezuroApp.Domain.dll
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/bin/Debug/net8.0/MezuroApp.Domain.pdb
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/obj/Debug/net8.0/MezuroApp.Domain.csproj.AssemblyReference.cache
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/obj/Debug/net8.0/MezuroApp.Domain.GeneratedMSBuildEditorConfig.editorconfig
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/obj/Debug/net8.0/MezuroApp.Domain.AssemblyInfoInputs.cache
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/obj/Debug/net8.0/MezuroApp.Domain.AssemblyInfo.cs
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/obj/Debug/net8.0/MezuroApp.Domain.csproj.CoreCompileInputs.cache
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/obj/Debug/net8.0/MezuroApp.Domain.dll
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/obj/Debug/net8.0/refint/MezuroApp.Domain.dll
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/obj/Debug/net8.0/MezuroApp.Domain.pdb
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/obj/Debug/net8.0/MezuroApp.Domain.genruntimeconfig.cache
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/obj/Debug/net8.0/ref/MezuroApp.Domain.dll

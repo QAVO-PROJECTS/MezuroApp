@@ -1,0 +1,53 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{D873D33A-51B9-4BCC-BA51-2BB6773E633E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MezuroApp.Domain", "Core\MezuroApp.Domain\MezuroApp.Domain.csproj", "{B82BFF83-E48F-4829-BF6D-43BB0189889D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MezuroApp.Application", "Core\MezuroApp.Application\MezuroApp.Application.csproj", "{1314E2D1-C755-4DD1-BF28-99221C363516}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{1FDB4722-9BC8-496C-9A4D-11E2A07D106E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MezuroApp.Infrastructure", "Infrastructure\MezuroApp.Infrastructure\MezuroApp.Infrastructure.csproj", "{6325AA52-A082-4AA0-95C0-782C6AF0F124}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MezuroApp.Persistance", "Infrastructure\MezuroApp.Persistance\MezuroApp.Persistance.csproj", "{50CFCCC1-B474-4D7B-8560-CBE023F5F1AF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{D0D10360-9D56-4AB2-934A-7296158C2D3A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MezuroApp.WebApi", "Presentation\MezuroApp.WebApi\MezuroApp.WebApi.csproj", "{9BE39925-2195-4FFE-9695-A90430E0675C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B82BFF83-E48F-4829-BF6D-43BB0189889D} = {D873D33A-51B9-4BCC-BA51-2BB6773E633E}
+		{1314E2D1-C755-4DD1-BF28-99221C363516} = {D873D33A-51B9-4BCC-BA51-2BB6773E633E}
+		{6325AA52-A082-4AA0-95C0-782C6AF0F124} = {1FDB4722-9BC8-496C-9A4D-11E2A07D106E}
+		{50CFCCC1-B474-4D7B-8560-CBE023F5F1AF} = {1FDB4722-9BC8-496C-9A4D-11E2A07D106E}
+		{9BE39925-2195-4FFE-9695-A90430E0675C} = {D0D10360-9D56-4AB2-934A-7296158C2D3A}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B82BFF83-E48F-4829-BF6D-43BB0189889D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B82BFF83-E48F-4829-BF6D-43BB0189889D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B82BFF83-E48F-4829-BF6D-43BB0189889D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B82BFF83-E48F-4829-BF6D-43BB0189889D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1314E2D1-C755-4DD1-BF28-99221C363516}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1314E2D1-C755-4DD1-BF28-99221C363516}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1314E2D1-C755-4DD1-BF28-99221C363516}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1314E2D1-C755-4DD1-BF28-99221C363516}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6325AA52-A082-4AA0-95C0-782C6AF0F124}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6325AA52-A082-4AA0-95C0-782C6AF0F124}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6325AA52-A082-4AA0-95C0-782C6AF0F124}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6325AA52-A082-4AA0-95C0-782C6AF0F124}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50CFCCC1-B474-4D7B-8560-CBE023F5F1AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50CFCCC1-B474-4D7B-8560-CBE023F5F1AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50CFCCC1-B474-4D7B-8560-CBE023F5F1AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50CFCCC1-B474-4D7B-8560-CBE023F5F1AF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BE39925-2195-4FFE-9695-A90430E0675C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BE39925-2195-4FFE-9695-A90430E0675C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BE39925-2195-4FFE-9695-A90430E0675C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BE39925-2195-4FFE-9695-A90430E0675C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
