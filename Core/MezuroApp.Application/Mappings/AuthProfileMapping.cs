@@ -1,4 +1,6 @@
+using System.Globalization;
 using AutoMapper;
+using MezuroApp.Application.Dtos.Admins;
 using MezuroApp.Application.Dtos.Auth;
 using MezuroApp.Domain.Entities;
     
@@ -18,6 +20,16 @@ namespace MezuroApp.Application.Mappings
                 .ForMember(dest => dest.IsSubscribedToNewsletter, opt => opt.MapFrom(src => src.SubscribeToNewsletter))
                 .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()); // Şifrə hash etməyi burada etməyəcəyik, o zaman şifrəni qarmaqarışıq saxlamağı təmin edəcəyik
 
+            CreateMap<User, UserDto>();
+            CreateMap<UpdateProfileDto, User>();
+            CreateMap<User,ProfileDto>()
+                .ForMember(dest => dest.BirthDate,
+                    opt => opt.MapFrom(src =>
+                        src.Birthday.HasValue
+                            ? src.Birthday.Value
+                                .AddHours(4) // +4 saat
+                                .ToString("dd.MM.yyyy", CultureInfo.InvariantCulture)
+                            : null)).ForMember(dest => dest.ProfileImageUrl,opt=>opt.MapFrom(u=>u.ProfileImage));
             // RegisterResponseDto-nu User və cavab məlumatlarına çevirmək
             CreateMap<User, RegisterResponseDto>()
                 .ForMember(dest => dest.UserId,

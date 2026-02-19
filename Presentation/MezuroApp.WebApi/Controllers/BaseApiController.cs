@@ -47,6 +47,20 @@ public abstract class BaseApiController : ControllerBase
             "Parent'e bağlı tüm kategoriler başarıyla silindi.",
             "Все категории, связанные с родителем, успешно удалены."
         ),
+        ["EDIT_PROFILE_SUCCESS"]=(
+        
+         "Profil məlumatları yeniləndi",
+        "Profile information has been updated",
+        "Profil bilgileri güncellendi",
+        "Информация профиля обновлена"
+            ),
+        ["GET_PROFILE_SUCCESS"]=(
+        
+        "İstifadəçi məlumatları uğurla qaytarıldı",
+        "User information was successfully retrieved",
+        "Kullanıcı bilgileri başarıyla alındı",
+        "Данные пользователя успешно получены"
+                ),
         ["CATEGORY_NOT_FOUND"] = (
             "Kateqoriya tapılmadı.",
             "Category not found.",
@@ -227,6 +241,44 @@ public abstract class BaseApiController : ControllerBase
             "Geçersiz Id formatı!",
             "Неверный формат Id!"
         ),
+        // ====== ADDRESS KEYS ======
+        ["ADDRESSES_RETURNED"] = (
+            "Ünvanlar uğurla qaytarıldı.",
+            "Addresses returned successfully.",
+            "Adresler başarıyla döndürüldü.",
+            "Адреса успешно возвращены."
+        ),
+        ["ADDRESS_RETURNED"] = (
+            "Ünvan uğurla qaytarıldı.",
+            "Address returned successfully.",
+            "Adres başarıyla döndürüldü.",
+            "Адрес успешно возвращён."
+        ),
+        ["ADDRESS_CREATED"] = (
+            "Ünvan uğurla yaradıldı.",
+            "Address created successfully.",
+            "Adres başarıyla oluşturuldu.",
+            "Адрес успешно создан."
+        ),
+        ["ADDRESS_UPDATED"] = (
+            "Ünvan uğurla yeniləndi.",
+            "Address updated successfully.",
+            "Adres başarıyla güncellendi.",
+            "Адрес успешно обновлён."
+        ),
+        ["ADDRESS_DELETED"] = (
+            "Ünvan uğurla silindi.",
+            "Address deleted successfully.",
+            "Adres başarıyla silindi.",
+            "Адрес успешно удалён."
+        ),
+        ["ADDRESS_NOT_FOUND"] = (
+                "Ünvan tapılmadı.",
+                "Address not found.",
+                "Adres bulunamadı.",
+                "Адрес не найден."
+            )
+,
         ["PRODUCT_NOT_FOUND"] = (
             "Məhsul tapılmadı.",
             "Product not found.",
@@ -496,6 +548,339 @@ public abstract class BaseApiController : ControllerBase
             "Bu ürün seçeneği zaten mevcut.",
             "Эта опция продукта уже существует."
         ),
+        ["PRODUCT_BESTSELLER_STATUS_UPDATED"] = (
+            "Məhsulun “Bestseller” statusu yeniləndi.",
+            "Product bestseller status has been updated.",
+            "Ürünün “çok satan” durumu güncellendi.",
+            "Статус «бестселлер» товара обновлён."
+        ),
+        // ====== CATEGORY STATUS KEYS (MISSING) ======
+        ["CATEGORY_ACTIVE_STATUS_UPDATED"] = (
+            "Kateqoriyanın aktivlik statusu yeniləndi.",
+            "Category active status has been updated.",
+            "Kategori'nin aktiflik durumu güncellendi.",
+            "Статус активности категории обновлён."
+        ),
+
+        ["CATEGORY_SHOW_MENU_STATUS_UPDATED"] = (
+            "Kateqoriyanın menyuda göstərilmə statusu yeniləndi.",
+            "Category 'show in menu' status has been updated.",
+            "Kategori'nin menüde gösterim durumu güncellendi.",
+            "Статус отображения категории в меню обновлён."
+        ),
+        ["REVIEWS_RETURNED"] = ("Rəylər uğurla qaytarıldı.","Reviews have been returned successfully.","Yorumlar başarıyla döndürüldü.","Отзывы успешно возвращены."),
+        ["REVIEWS_ACTIVE_RETURNED"] = ("Aktiv rəylər uğurla qaytarıldı.","Active reviews have been returned successfully.","Aktif yorumlar başarıyla döndürüldü.","Активные отзывы успешно возвращены."),
+        ["REVIEW_RETURNED"] = ("Rəy uğurla qaytarıldı.","Review has been returned successfully.","Yorum başarıyla döndürüldü.","Отзыв успешно возвращён."),
+        ["REVIEW_CREATED"] = ("Rəy uğurla yaradıldı.","Review has been created successfully.","Yorum başarıyla oluşturuldu.","Отзыв успешно создан."),
+        ["REVIEW_REPLIED"] = ("Rəyə cavab uğurla əlavə olundu.","Reply to review has been added successfully.","Yoruma yanıt başarıyla eklendi.","Ответ на отзыв успешно добавлен."),
+        ["REVIEW_STATUS_UPDATED"] = ("Rəyin statusu yeniləndi.","Review status has been updated.","Yorum durumu güncellendi.","Статус отзыва обновлён."),
+        ["REVIEW_LIKED"] = ("Rəy bəyənildi.","Review liked.","Yorum beğenildi.","Отзыв отмечен как понравившийся."),
+        ["REVIEW_DISLIKED"] = ("Rəy bəyənilmədi.","Review disliked.","Yorum beğenilmedi.","Отзыв отмечен как не понравившийся."),
+        ["REVIEWS_SORTED"] = ("Rəylər sıralandı.","Reviews have been sorted.","Yorumlar sıralandı.","Отзывы отсортированы."),
+        ["REVIEW_DELETED"] = ("Rəy uğurla silindi.","Review has been deleted successfully.","Yorum başarıyla silindi.","Отзыв успешно удалён."),
+        ["REVIEW_NOT_FOUND"] = ("Rəy tapılmadı.","Review not found.","Yorum bulunamadı.","Отзыв не найден."),
+        
+        ["WISHLIST_UPDATED"] = (
+            "İstək siyahısı yeniləndi.",
+            "Wishlist updated successfully.",
+            "İstek listesi güncellendi.",
+            "Список желаемого обновлён."
+        ),
+        ["WISHLIST_RETURNED"] = (
+            "İstək siyahısı uğurla qaytarıldı.",
+            "Wishlist returned successfully.",
+            "İstek listesi başarıyla döndürüldü.",
+            "Список желаемого успешно возвращён."
+        ),
+        ["PRODUCT_ID_NOT_FOUND"] = (
+            "Məhsul identifikatoru tapılmadı.",
+            "Product id not found.",
+            "Ürün kimliği bulunamadı.",
+            "Идентификатор товара не найден."
+        ),
+        ["EMPTY_PRODUCT_LIST"] = (
+            "Məhsul siyahısı boşdur!",
+            "Product list is empty!",
+            "Ürün listesi boş!",
+            "Список товаров пуст!"
+        ),
+        // ====== BASKET KEYS ======
+        ["BASKET_RETURNED"] = (
+            "Səbət uğurla qaytarıldı.",
+            "Basket returned successfully.",
+            "Sepet başarıyla döndürüldü.",
+            "Корзина успешно возвращена."
+        ),
+
+        ["BASKET_UPDATED"] = (
+            "Səbət uğurla yeniləndi.",
+            "Basket updated successfully.",
+            "Sepet başarıyla güncellendi.",
+            "Корзина успешно обновлена."
+        ),
+
+        ["BASKET_ITEM_DELETED"] = (
+            "Səbət elementi uğurla silindi.",
+            "Basket item deleted successfully.",
+            "Sepet öğesi başarıyla silindi.",
+            "Элемент корзины успешно удалён."
+        ),
+
+        ["BASKET_CLEARED"] = (
+            "Səbət uğurla təmizləndi.",
+            "Basket cleared successfully.",
+            "Sepet başarıyla temizlendi.",
+            "Корзина успешно очищена."
+        ),
+
+        ["FOOTPRINT_REQUIRED"] = (
+            "Footprint ID tələb olunur.",
+            "Footprint ID is required.",
+            "Footprint ID gereklidir.",
+            "Требуется идентификатор Footprint ID."
+        ),
+
+        ["INVALID_FOOTPRINT"] = (
+            "Yanlış Footprint ID göndərilib.",
+            "Invalid footprint ID.",
+            "Geçersiz footprint ID.",
+            "Неверный идентификатор footprint."
+        ),
+
+        ["BASKET_NOT_FOUND"] = (
+            "Səbət tapılmadı.",
+            "Basket not found.",
+            "Sepet bulunamadı.",
+            "Корзина не найдена."
+        ),
+
+        // ====== COUPON KEYS ======
+        ["COUPONS_RETURNED"] = (
+            "Kuponlar uğurla qaytarıldı.",
+            "Coupons returned successfully.",
+            "Kuponlar başarıyla döndürüldü.",
+            "Купоны успешно возвращены."
+        ),
+        ["COUPON_RETURNED"] = (
+            "Kupon uğurla qaytarıldı.",
+            "Coupon returned successfully.",
+            "Kupon başarıyla döndürüldü.",
+            "Купон успешно возвращён."
+        ),
+        ["COUPON_CREATED"] = (
+            "Kupon uğurla yaradıldı.",
+            "Coupon created successfully.",
+            "Kupon başarıyla oluşturuldu.",
+            "Купон успешно создан."
+        ),
+        ["COUPON_UPDATED"] = (
+            "Kupon uğurla yeniləndi.",
+            "Coupon updated successfully.",
+            "Kupon başarıyla güncellendi.",
+            "Купон успешно обновлён."
+        ),
+        ["COUPON_DELETED"] = (
+            "Kupon uğurla silindi.",
+            "Coupon deleted successfully.",
+            "Kupon başarıyla silindi.",
+            "Купон успешно удалён."
+        ),
+        ["COUPON_ACTIVE_STATUS_UPDATED"] = (
+            "Kuponun aktivlik statusu yeniləndi.",
+            "Coupon active status has been updated.",
+            "Kuponun aktiflik durumu güncellendi.",
+            "Статус активности купона обновлён."
+        ),
+
+
+        ["COUPON_INACTIVE"] = (
+            "Kupon aktiv deyil.",
+            "Coupon is inactive.",
+            "Kupon aktif değil.",
+            "Купон неактивен."
+        ),
+
+        ["COUPON_EXPIRED"] = (
+            "Kuponun müddəti bitib.",
+            "Coupon has expired.",
+            "Kuponun süresi doldu.",
+            "Срок действия купона истёк."
+        ),
+
+        ["COUPON_NOT_STARTED"] = (
+            "Kupon hələ aktiv deyil.",
+            "Coupon is not active yet.",
+            "Kupon henüz aktif değil.",
+            "Купон ещё не активен."
+        ),
+
+        ["COUPON_MIN_AMOUNT"] = (
+            "Minimum alış məbləği təmin olunmayıb.",
+            "Minimum purchase amount not reached.",
+            "Minimum alış tutarı sağlanmadı.",
+            "Минимальная сумма покупки не достигнута."
+        ),
+
+        ["COUPON_USAGE_LIMIT"] = (
+            "Kupon istifadə limiti dolub.",
+            "Coupon usage limit reached.",
+            "Kupon kullanım limiti doldu.",
+            "Лимит использования купона достигнут."
+        ),
+
+        ["COUPON_USER_LIMIT"] = (
+                "Bu kuponu artıq istifadə etmisiniz.",
+                "You have already used this coupon.",
+                "Bu kuponu zaten kullandınız.",
+                "Вы уже использовали этот купон."
+            )
+,
+
+// ====== COUPON – ERRORS / VALIDATION KEYS (service ilə uyğundur) ======
+        ["UNIQE_CUPON"] = ( // service-də bu açarı istifadə etmisən — eynisini saxladım
+                "Bu kupon kodu artıq mövcuddur.",
+                "This coupon code already exists.",
+                "Bu kupon kodu zaten mevcut.",
+                "Такой код купона уже существует."
+            ),
+        ["NOT_FOUND_CUPON"] = (
+            "Kupon tapılmadı.",
+            "Coupon not found.",
+            "Kupon bulunamadı.",
+            "Купон не найден."
+        ),
+        ["INVALID_CUPON_ID"] = (
+            "Kupon ID-si yanlışdır!",
+            "Invalid coupon ID!",
+            "Geçersiz kupon ID!",
+            "Неверный идентификатор купона!"
+        ),
+        ["CUPON_CODE_REQUIRED"] = (
+            "Kupon kodu tələb olunur.",
+            "Coupon code is required.",
+            "Kupon kodu gereklidir.",
+            "Требуется код купона."
+        ),
+        ["BASKET_ITEM_NOT_FOUND"] = (
+            "Səbət elementi tapılmadı.",
+            "Basket item not found.",
+            "Sepet öğesi bulunamadı.",
+            "Элемент корзины не найден."
+        ),
+
+        ["INVALID_VARIANT_ID"] = (
+            "Variant ID formatı yanlışdır!",
+            "Invalid variant ID format!",
+            "Geçersiz varyant ID formatı!",
+            "Неверный формат идентификатора варианта!"
+        ),
+
+        ["INVALID_USER_ID"] = (
+            "İstifadəçi ID-si yanlışdır!",
+            "Invalid user ID!",
+            "Geçersiz kullanıcı ID!",
+            "Неверный идентификатор пользователя!"
+        ),
+        // ====== ORDER KEYS ======
+        ["ORDER_CREATED"] = (
+            "Sifariş uğurla yaradıldı.",
+            "Order has been created successfully.",
+            "Sipariş başarıyla oluşturuldu.",
+            "Заказ успешно создан."
+        ),
+        ["ORDER_RETURNED"] = (
+            "Sifariş uğurla qaytarıldı.",
+            "Order returned successfully.",
+            "Sipariş başarıyla döndürüldü.",
+            "Заказ успешно возвращён."
+        ),
+        ["ORDERS_RETURNED"] = (
+            "Sifarişlər uğurla qaytarıldı.",
+            "Orders returned successfully.",
+            "Siparişler başarıyla döndürüldü.",
+            "Заказы успешно возвращены."
+        ),
+        ["BASKET_EMPTY"] = (
+            "Səbət boşdur.",
+            "Basket is empty.",
+            "Sepet boş.",
+            "Корзина пуста."
+        ),
+        ["OUT_OF_STOCK"] = (
+            "Məhsul stokda yoxdur.",
+            "Product is out of stock.",
+            "Ürün stokta yok.",
+            "Товара нет в наличии."
+        ),
+        ["EMAIL_REQUIRED"] = (
+            "E-poçt tələb olunur.",
+            "Email is required.",
+            "E-posta gereklidir.",
+            "Требуется электронная почта."
+        ),
+        ["USER_NOT_FOUND"] = (
+            "İstifadəçi tapılmadı.",
+            "User not found.",
+            "Kullanıcı bulunamadı.",
+            "Пользователь не найден."
+        ),
+        ["VARIANT_NOT_FOUND"] = (
+            "Variant tapılmadı.",
+            "Variant not found.",
+            "Varyant bulunamadı.",
+            "Вариант не найден."
+        )
+,// ====== ORDER (EXTRA KEYS) ======
+["ORDER_DETAIL_RETURNED"] = (
+    "Sifariş detalları uğurla qaytarıldı.",
+    "Order details returned successfully.",
+    "Sipariş detayları başarıyla döndürüldü.",
+    "Детали заказа успешно возвращены."
+),
+
+["ORDER_NOT_FOUND"] = (
+    "Sifariş tapılmadı.",
+    "Order not found.",
+    "Sipariş bulunamadı.",
+    "Заказ не найден."
+),
+
+["INVALID_ORDER_ID"] = (
+    "Sifariş ID formatı yanlışdır!",
+    "Invalid order ID format!",
+    "Geçersiz sipariş ID formatı!",
+    "Неверный формат идентификатора заказа!"
+),
+
+["INVALID_STATUS"] = (
+    "Status yanlışdır. Yalnız: pending, delivered, cancelled.",
+    "Invalid status. Allowed: pending, delivered, cancelled.",
+    "Geçersiz durum. İzin verilen: pending, delivered, cancelled.",
+    "Неверный статус. Допустимые: pending, delivered, cancelled."
+),
+
+["INVALID_DATE_FILTER"] = (
+    "Tarix filtri yanlışdır. Yalnız: week, month, year.",
+    "Invalid date filter. Allowed: week, month, year.",
+    "Geçersiz tarih filtresi. İzin verilen: week, month, year.",
+    "Неверный фильтр даты. Допустимые: week, month, year."
+),
+
+["PAYMENT_METHOD_REQUIRED"] = (
+    "Ödəniş metodu tələb olunur.",
+    "Payment method is required.",
+    "Ödeme yöntemi gereklidir.",
+    "Требуется способ оплаты."
+),
+
+["INVALID_PAYMENT_METHOD"] = (
+    "Ödəniş metodu yanlışdır. Yalnız: card, debit_card, cash.",
+    "Invalid payment method. Allowed: card, debit_card, cash.",
+    "Geçersiz ödeme yöntemi. İzin verilen: card, debit_card, cash.",
+    "Неверный способ оплаты. Допустимые: card, debit_card, cash."
+)
+
+
             
     };
 

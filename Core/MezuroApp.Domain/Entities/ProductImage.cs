@@ -10,7 +10,7 @@ public class ProductImage:BaseEntity
 
 
     public string ImageUrl { get; set; }
-    public string? ThumbnailUrl { get; set; }
+    public string? ThumbnailUrl { get; set; }//bunu backde olculerini kicilt 308 405 pxele kicilt 
     public string? AltText { get; set; }
 
     public bool IsPrimary { get; set; }

@@ -7,6 +7,7 @@
 /Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/obj/Debug/net8.0/MezuroApp.Domain.AssemblyInfoInputs.cache
 /Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/obj/Debug/net8.0/MezuroApp.Domain.AssemblyInfo.cs
 /Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/obj/Debug/net8.0/MezuroApp.Domain.csproj.CoreCompileInputs.cache
+/Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/obj/Debug/net8.0/MezuroApp.Domain.sourcelink.json
 /Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/obj/Debug/net8.0/MezuroApp.Domain.dll
 /Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/obj/Debug/net8.0/refint/MezuroApp.Domain.dll
 /Users/gulchohrasultanova/Desktop/MezuroApp/Core/MezuroApp.Domain/obj/Debug/net8.0/MezuroApp.Domain.pdb

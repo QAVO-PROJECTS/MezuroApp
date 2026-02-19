@@ -47,12 +47,9 @@ public class UpdateProductDto
     public bool? IsFeatured { get; set; }
     public bool? IsNew { get; set; }
     public bool? IsOnSale { get; set; }
+    public bool? IsBestseller { get; set; }
 
-    // Physical
-    public decimal? Weight { get; set; }
-    public decimal? Length { get; set; }
-    public decimal? Width { get; set; }
-    public decimal? Height { get; set; }
+
 
     // Ratings
 
@@ -60,7 +57,7 @@ public class UpdateProductDto
     // SEO
     public string? MetaTitleAz { get; set; }
     public string? MetaTitleRu { get; set; }
-    public string? MetaTitleEn { get; set; }
+    public string? MetaTitleEn { get; set; } 
     public string? MetaTitleTr { get; set; }
 
     public string? MetaDescriptionAz { get; set; }

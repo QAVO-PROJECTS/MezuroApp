@@ -27,9 +27,16 @@ namespace MezuroApp.Persistance.Context
         public DbSet<ProductOption> ProductOptions { get; set; }
         public DbSet<ProductOptionValue> ProductOptionValues { get; set; }
         public DbSet<ProductVariantOptionValue> ProductVariantOptionValues { get; set; }
+        public DbSet<Review> Reviews { get; set; }
+        public DbSet<Basket> Baskets { get; set; }
+        public DbSet<BasketItem> BasketItems { get; set; }
+        public DbSet<Cupon>  Cupons { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(MezuroAppDbContext).Assembly);
         }

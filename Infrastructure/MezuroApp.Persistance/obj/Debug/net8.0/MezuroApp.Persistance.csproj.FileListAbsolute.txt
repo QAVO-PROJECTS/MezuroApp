@@ -13,6 +13,7 @@
 /Users/gulchohrasultanova/Desktop/MezuroApp/Infrastructure/MezuroApp.Persistance/obj/Debug/net8.0/MezuroApp.Persistance.AssemblyInfoInputs.cache
 /Users/gulchohrasultanova/Desktop/MezuroApp/Infrastructure/MezuroApp.Persistance/obj/Debug/net8.0/MezuroApp.Persistance.AssemblyInfo.cs
 /Users/gulchohrasultanova/Desktop/MezuroApp/Infrastructure/MezuroApp.Persistance/obj/Debug/net8.0/MezuroApp.Persistance.csproj.CoreCompileInputs.cache
+/Users/gulchohrasultanova/Desktop/MezuroApp/Infrastructure/MezuroApp.Persistance/obj/Debug/net8.0/MezuroApp.Persistance.sourcelink.json
 /Users/gulchohrasultanova/Desktop/MezuroApp/Infrastructure/MezuroApp.Persistance/obj/Debug/net8.0/MezuroAp.5EAE1B69.Up2Date
 /Users/gulchohrasultanova/Desktop/MezuroApp/Infrastructure/MezuroApp.Persistance/obj/Debug/net8.0/MezuroApp.Persistance.dll
 /Users/gulchohrasultanova/Desktop/MezuroApp/Infrastructure/MezuroApp.Persistance/obj/Debug/net8.0/refint/MezuroApp.Persistance.dll

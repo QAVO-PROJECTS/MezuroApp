@@ -35,6 +35,40 @@ public class CategoryController : BaseApiController
             return ServerErrorResponse();
         }
     }
+    [HttpGet("active")]
+    public async Task<IActionResult> GetAllActive()
+    {
+        try
+        {
+            var data = await _service.GetAllActiveCategories();
+            return OkResponse(data, "CATEGORIES_RETURNED");
+        }
+        catch (GlobalAppException ex)
+        {
+            return BadRequestResponse(ex.Message); // ex.Message lüğətdə açar deyilsə olduğu kimi çıxır
+        }
+        catch (Exception)
+        {
+            return ServerErrorResponse();
+        }
+    }
+    [HttpGet("show-menu")]
+    public async Task<IActionResult> GetAllMenuCategories()
+    {
+        try
+        {
+            var data = await _service.GetAllMenuCategories();
+            return OkResponse(data, "CATEGORIES_RETURNED");
+        }
+        catch (GlobalAppException ex)
+        {
+            return BadRequestResponse(ex.Message); // ex.Message lüğətdə açar deyilsə olduğu kimi çıxır
+        }
+        catch (Exception)
+        {
+            return ServerErrorResponse();
+        }
+    }
 
     /// <summary> ParentId-ə görə kateqoriyaları qaytarır. </summary>
     [HttpGet("by-parent/{parentId}")]
@@ -54,7 +88,58 @@ public class CategoryController : BaseApiController
             return ServerErrorResponse();
         }
     }
+    [HttpGet("show-menu-by-parent/{parentId}")]
+    public async Task<IActionResult> GetMenuCategoriesByParentId([FromRoute] string parentId)
+    {
+        try
+        {
+            var data = await _service.GetAllMenuCategoriesByParentId(parentId);
+            return OkResponse(data, "CATEGORIES_RETURNED");
+        }
+        catch (GlobalAppException ex)
+        {
+            return BadRequestResponse(ex.Message);
+        }
+        catch (Exception)
+        {
+            return ServerErrorResponse();
+        }
+    }
 
+    [HttpPatch("{id}/active")]
+    public async Task<IActionResult> SetIsActive([FromRoute] string id, [FromQuery] bool value)
+    {
+        try
+        {
+            await _service.SetIsActiveAsync(id, value);
+            return OkResponse<object>(null, "CATEGORY_ACTIVE_STATUS_UPDATED");
+        }
+        catch (GlobalAppException ex)
+        {
+            return BadRequestResponse(ex.Message);
+        }
+        catch (Exception)
+        {
+            return ServerErrorResponse();
+        }
+    }
+    [HttpPatch("{id}/show-menu")]
+    public async Task<IActionResult> SetIsShowMenu([FromRoute] string id, [FromQuery] bool value)
+    {
+        try
+        {
+            await _service.SetIsShowMenuAsync(id, value);
+            return OkResponse<object>(null, "CATEGORY_SHOW_MENU_STATUS_UPDATED");
+        }
+        catch (GlobalAppException ex)
+        {
+            return BadRequestResponse(ex.Message);
+        }
+        catch (Exception)
+        {
+            return ServerErrorResponse();
+        }
+    }
     /// <summary> Id-ə görə kateqoriya qaytarır. </summary>
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById([FromRoute] string id)

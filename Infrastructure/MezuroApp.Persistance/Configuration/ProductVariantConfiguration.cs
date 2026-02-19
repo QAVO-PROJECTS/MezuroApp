@@ -19,6 +19,9 @@ public class ProductVariantConfiguration : IEntityTypeConfiguration<ProductVaria
         builder.Property(pv => pv.PriceModifier)
             .HasPrecision(18, 2)
             .HasDefaultValue(0);
+        builder.Property(pv => pv.CompareAtPriceModifier)
+            .HasPrecision(18, 2)
+            .HasDefaultValue(0);
 
         builder.Property(pv => pv.StockQuantity)
             .HasDefaultValue(0);

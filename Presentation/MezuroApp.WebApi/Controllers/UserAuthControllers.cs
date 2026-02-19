@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MezuroApp.Application.Abstracts.Services;
+using MezuroApp.Application.Dtos.Admins;
 using MezuroApp.Application.Dtos.Auth;
 using MezuroApp.Application.GlobalException;
 using MezuroApp.Domain.Entities;
@@ -75,6 +76,67 @@ namespace MezuroApp.WebApi.Controllers
             });
         }
 
+        [AllowAnonymous]
+        [Consumes("multipart/form-data")]
+        [HttpPatch("edit-profile-image")]
+        public async Task<IActionResult> EditProfileImage([FromForm]  EditProfileImageRequest request)
+        {
+            if (IsModelInvalid(out var badRequest)) return badRequest;
+            return await HandleAsync(async () =>
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrWhiteSpace(userId))
+                    return BadRequestResponse("USER_ID_NOT_FOUND");
+                await _userAuthService.EditProfileImage(userId, request.Image);
+                return OkResponse("", "EDIT_PROFILE_SUCCESS");
+            });
+
+        }
+
+        [AllowAnonymous]
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetUserProfile()
+        {
+            if (IsModelInvalid(out var badRequest)) return badRequest;
+            return await HandleAsync(async () =>
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrWhiteSpace(userId))
+                    return BadRequestResponse("USER_ID_NOT_FOUND");
+                var user = await _userAuthService.GetProfile(userId);
+                return OkResponse(user, "GET_PROFILE_SUCCESS");
+            });
+        }
+        [AllowAnonymous]
+        [HttpPut("edit-profile")]
+        public async Task<IActionResult> EditUserProfile(UpdateProfileDto dto)
+        {
+            if (IsModelInvalid(out var badRequest)) return badRequest;
+            return await HandleAsync(async () =>
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrWhiteSpace(userId))
+                    return BadRequestResponse("USER_ID_NOT_FOUND");
+                await _userAuthService.EditProfile(userId,dto);
+                return OkResponse("", "EDIT_PROFILE_SUCCESS");
+            });
+        }
+
+        [AllowAnonymous]
+        [HttpDelete("delete-profile-image")]
+        public async Task<IActionResult> DeeleteProfileImage()
+        {
+            if (IsModelInvalid(out var badRequest)) return badRequest;
+            return await HandleAsync(async () =>
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrWhiteSpace(userId))
+                    return BadRequestResponse("USER_ID_NOT_FOUND");
+                await _userAuthService.DeleteProfileImage(userId);
+                return OkResponse("", "EDIT_PROFILE_SUCCESS");
+            });
+
+        }
         /// <summary>İstifadəçi login</summary>
         [AllowAnonymous]
         [HttpPost("login")]

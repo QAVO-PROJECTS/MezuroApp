@@ -51,10 +51,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(x => x.AllowBackorder).HasDefaultValue(false);
 
 
-        builder.Property(x => x.Weight).HasPrecision(10, 2);
-        builder.Property(x => x.Height).HasPrecision(10, 2);
-        builder.Property(x => x.Length).HasPrecision(10, 2);
-        builder.Property(x => x.Width).HasPrecision(10, 2);
+
         
         builder.Property(x => x.MetaTitleAz).HasMaxLength(255);
         builder.Property(x => x.MetaTitleEn).HasMaxLength(255);
@@ -69,6 +66,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(x => x.IsFeatured).HasDefaultValue(false);
         builder.Property(x => x.IsNew).HasDefaultValue(false);
         builder.Property(x => x.IsOnSale).HasDefaultValue(false);
+        builder.Property(x => x.IsBestseller).HasDefaultValue(false);
   
         // Soft delete
         builder.Property(x => x.IsDeleted).HasDefaultValue(false);

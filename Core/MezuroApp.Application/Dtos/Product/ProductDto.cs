@@ -51,12 +51,13 @@ public class ProductDto
     public bool? IsFeatured { get; set; }
     public bool? IsNew { get; set; }
     public bool? IsOnSale { get; set; }
+    public bool? IsBestseller { get; set; }
 
-    // Physical
-    public decimal? Weight { get; set; }
-    public decimal? Length { get; set; }
-    public decimal? Width { get; set; }
-    public decimal? Height { get; set; }
+
+    public int ReviewCount { get; set; }
+    public int ViewCount { get; set; }
+    public int WishlistCount { get; set; }
+    public decimal? RatingAverage { get; set; }
 
     // Ratings
 

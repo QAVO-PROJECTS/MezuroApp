@@ -17,6 +17,10 @@ public class UpdateCategoryDto
     public string? DescriptionEn { get; set; }
     public string? DescriptionTr { get; set; }
 
+    public string? SubTitleAz { get; set; }
+    public string? SubTitleEn { get; set; }
+    public string? SubTitleRu{ get; set; }
+    public string? SubTitleTr { get; set; }
     public string? Slug { get; set; }
 
     // Image
@@ -43,6 +47,5 @@ public class UpdateCategoryDto
     public string? MetaDescriptionTr { get; set; }
 
     // Relations
-    public List<string>? ProductIds { get; set; }
-    public List<string>? DeleteProductIds { get; set; }
+
 }

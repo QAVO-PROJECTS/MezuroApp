@@ -17,13 +17,18 @@ public class User:IdentityUser<Guid>
     public DateTime? PasswordResetTokenExpires { get; set; }
     public string? TwoFactorSecret { get; set; }
    
+    public string? ProfileImage { get; set; }
     public bool? IsSubscribedToNewsletter { get; set; }
 
     public DateTime CreatedAt { get; set; }
+    public DateTime? Birthday { get; set; }
     public DateTime UpdatedAt { get; set; }
     public DateTime? LastLoginAt { get; set; }
     public bool IsDeleted { get; set; }
     public DateTime? DeletedAt { get; set; }
+    public List<Review>? Reviews { get; set; }
     public List<UserAddress>? UserAddresses { get; set; }
     public List<RefreshToken>? RefreshTokens { get; set; }
+    public Wishlist? Wishlist { get; set; }
+    public List<Order>? Orders { get; set; }
 }

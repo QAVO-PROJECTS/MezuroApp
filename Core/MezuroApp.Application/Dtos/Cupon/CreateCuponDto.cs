@@ -1,0 +1,32 @@
+using MezuroApp.Application.Dtos.Auth;
+
+namespace MezuroApp.Application.Dtos.Cupon;
+
+public class CreateCuponDto
+{
+ 
+    public string Code { get; set; } 
+
+    // Discount config
+    public DiscountType DiscountType { get; set; } 
+    public decimal DiscountValue { get; set; }
+
+    // Minimum basket limit
+    public decimal? MinimumPurchaseAmount { get; set; }
+
+    // Usage limits
+    public int? MaxUses { get; set; }
+    public int? MaxUsesPerUser { get; set; }
+    // Validity
+    public string? ValidFrom { get; set; }
+    public string? ValidUntil { get; set; }
+
+    public bool IsActive { get; set; }
+
+
+}
+public enum DiscountType
+{
+    Percentage,
+    FixedAmount
+}

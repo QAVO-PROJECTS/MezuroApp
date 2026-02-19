@@ -1,3 +1,4 @@
+using System.Globalization;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
@@ -9,12 +10,14 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Google.Apis.Auth;
+using MezuroApp.Application.Dtos.Admins;
 using MezuroApp.Domain.HelperEntities;
 using Microsoft.AspNetCore.Http;
 
 namespace MezuroApp.Persistance.Concretes.Services
 {
     public class UserAuthService : IUserAuthService
+        
     {
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole<Guid>> _roleManager;
@@ -22,6 +25,7 @@ namespace MezuroApp.Persistance.Concretes.Services
         private readonly ILogger<UserAuthService> _logger;
         private readonly IMailService _mailService;
         private readonly ITokenService _tokenService;
+        private readonly IFileService _fileService;
         private readonly IAuditLogService _auditLogService;
 
         public UserAuthService
@@ -32,6 +36,7 @@ namespace MezuroApp.Persistance.Concretes.Services
             ILogger<UserAuthService> logger,
             IMailService mailService,
             ITokenService tokenService,
+            IFileService fileService,
             IAuditLogService auditLogService
         )
         {
@@ -41,6 +46,7 @@ namespace MezuroApp.Persistance.Concretes.Services
             _logger = logger;
             _mailService = mailService;
             _tokenService = tokenService;
+            _fileService = fileService;
             _auditLogService = auditLogService;
         }
     
@@ -124,6 +130,72 @@ namespace MezuroApp.Persistance.Concretes.Services
                 throw new GlobalAppException("Qeydiyyat zamanı gözlənilməz bir səhv baş verdi.", ex);
             }
         }
+
+        public async Task EditProfileImage(string userId,IFormFile file)
+        {
+           var image= await _fileService.UploadFile(file,"user/profile");
+           var user = await _userManager.FindByIdAsync(userId);
+           if (user == null)
+           {
+               throw new GlobalAppException("USER_ID_NOT_FOUND");
+           }
+           user.ProfileImage = image;
+           await _userManager.UpdateAsync(user);
+           
+           
+        }
+
+        public async Task DeleteProfileImage(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            user.ProfileImage = null;
+            await _userManager.UpdateAsync(user);
+        }
+
+        public async Task EditProfile(string userId, UpdateProfileDto updateProfileDto)
+        {
+             var user = await _userManager.FindByIdAsync(userId);
+             const string dateFormat = "dd.MM.yyyy";
+
+             // VALID FROM
+             if (!string.IsNullOrWhiteSpace(updateProfileDto.Birthday))
+             {
+                 if (!DateTime.TryParseExact(updateProfileDto.Birthday,
+                         dateFormat,
+                         CultureInfo.InvariantCulture,
+                         DateTimeStyles.None,
+                         out var parsedFrom))
+                     throw new GlobalAppException("INVALID_DATE_FORMAT");
+
+                 // MUST – PostgreSQL timestamptz only accepts UTC
+                 user.Birthday= DateTime.SpecifyKind(parsedFrom.AddHours(-4), DateTimeKind.Utc);
+                 
+             }
+
+             if (!string.IsNullOrWhiteSpace(updateProfileDto.FirstName))
+             {
+                 user.FirstName=updateProfileDto.FirstName;
+             }
+
+             if (!string.IsNullOrWhiteSpace(updateProfileDto.LastName))
+             {
+                 user.LastName=updateProfileDto.LastName;
+             }
+
+             if (!string.IsNullOrWhiteSpace(updateProfileDto.Email))
+             {
+                 user.Email=updateProfileDto.Email;
+             }
+
+             if (!string.IsNullOrWhiteSpace(updateProfileDto.PhoneNumber))
+             {
+                 user.PhoneNumber=updateProfileDto.PhoneNumber;
+             }
+          
+             await _userManager.UpdateAsync(user);
+             
+        }
+
         public async Task<LoginResponseDto> Login(LoginRequestDto loginDto)
         {
             // 1. İstifadəçini e-poçt ilə tapırıq
@@ -287,6 +359,12 @@ namespace MezuroApp.Persistance.Concretes.Services
                 throw new GlobalAppException($"Şifrə dəyişdirilə bilmədi: {string.Join(", ", result.Errors.Select(e => e.Description))}");
         }
 
+        public async Task<ProfileDto> GetProfile(string userId)
+        {
+           var user= await _userManager.FindByIdAsync(userId);
+           return _mapper.Map<ProfileDto>(user);
+        }
+
         public async Task ResetPasswordAsync(string email, string token, string newPassword)
         {
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(token))
@@ -377,7 +455,7 @@ namespace MezuroApp.Persistance.Concretes.Services
           <!-- Footer -->
           <tr>
             <td style=""padding:16px 24px 24px; font:400 12px/1.6 -apple-system,Segoe UI,Roboto,Arial,Helvetica,sans-serif; color:#9aa3af; border-top:1px solid #eef1f6;"">
-              Bu bildiriş avtomatik yaradılıb. Suallar üçün: support@globalprocurementservices.com
+              Bu bildiriş avtomatik yaradılıb. Suallar üçün: support@MezuroAppservices.com
             </td>
           </tr>
         </table>

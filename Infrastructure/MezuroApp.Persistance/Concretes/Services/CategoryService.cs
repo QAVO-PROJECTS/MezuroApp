@@ -49,7 +49,7 @@ namespace MezuroApp.Persistance.Concretes.Services
         public async Task<List<CategoryDto>> GetAllCategories()
         {
             var categories = await _readRepo.GetAllAsync(
-                c => !c.IsDeleted &&  c.ParentId == null,
+                c => !c.IsDeleted &&  c.ParentId == null ,
                 q => q
                     .Include(c => c.Children)
                     .Include(c => c.ProductCategories)
@@ -58,13 +58,37 @@ namespace MezuroApp.Persistance.Concretes.Services
 
             return _mapper.Map<List<CategoryDto>>(categories);
         }
+        public async Task<List<CategoryDto>> GetAllActiveCategories()
+        {
+            var categories = await _readRepo.GetAllAsync(
+                c => !c.IsDeleted &&  c.ParentId == null && c.IsActive==true,
+                q => q
+                    .Include(c => c.Children)
+                    .Include(c => c.ProductCategories)
+                    .ThenInclude(pc => pc.Product)
+            );
 
+            return _mapper.Map<List<CategoryDto>>(categories);
+        }
+
+        public async Task<List<CategoryDto>> GetAllMenuCategories()
+        {
+            var categories = await _readRepo.GetAllAsync(
+                c => !c.IsDeleted &&  c.ParentId == null && c.IsActive==true && c.ShowInMenu==true,
+                q => q
+                    .Include(c => c.Children)
+                    .Include(c => c.ProductCategories)
+                    .ThenInclude(pc => pc.Product)
+            );
+
+            return _mapper.Map<List<CategoryDto>>(categories);
+        }
         public async Task<List<CategoryDto>> GetAllCategoriesByParentId(string parentId)
         {
             var pid = ParseGuidOrThrow(parentId, "ParentId");
 
             var categories = await _readRepo.GetAllAsync(
-                c => !c.IsDeleted && c.ParentId == pid,
+                c => !c.IsDeleted && c.ParentId == pid && c.IsActive==true,
                 q => q
                     .Include(c => c.Children)
                     .Include(c => c.ProductCategories)
@@ -74,12 +98,26 @@ namespace MezuroApp.Persistance.Concretes.Services
             return _mapper.Map<List<CategoryDto>>(categories);
         }
 
+        public async Task<List<CategoryDto>> GetAllMenuCategoriesByParentId(string parentId)
+        {
+            var pid = ParseGuidOrThrow(parentId, "ParentId");
+
+            var categories = await _readRepo.GetAllAsync(
+                c => !c.IsDeleted && c.ParentId == pid && c.IsActive==true && c.ShowInMenu==true,
+                q => q
+                    .Include(c => c.Children)
+                    .Include(c => c.ProductCategories)
+                    .ThenInclude(pc => pc.Product)
+            );
+
+            return _mapper.Map<List<CategoryDto>>(categories);
+        }
         public async Task<CategoryDto?> GetCategoryById(string id)
         {
             var gid = ParseGuidOrThrow(id, "Id");
 
             var category = await _readRepo.GetAsync(
-                c => c.Id == gid && !c.IsDeleted,
+                c => c.Id == gid && !c.IsDeleted && c.IsActive==true,
                 q => q
                     .Include(c => c.Children)
                     .Include(c => c.ProductCategories)
@@ -140,11 +178,7 @@ namespace MezuroApp.Persistance.Concretes.Services
             await _writeRepo.AddAsync(entity);
             await _writeRepo.CommitAsync();
 
-            if (dto.ProductIds != null && dto.ProductIds.Count > 0)
-            {
-                await AttachProductsAsync(entity.Id, dto.ProductIds);
-                await _writeRepo.CommitAsync();
-            }
+        
         }
 
         public async Task UpdateCategory(UpdateCategoryDto dto)
@@ -200,13 +234,7 @@ namespace MezuroApp.Persistance.Concretes.Services
             entity.LastUpdatedDate = UtcNow();
             await _writeRepo.UpdateAsync(entity);
 
-            if (dto.ProductIds != null && dto.ProductIds.Count > 0)
-                await AttachProductsAsync(entity.Id, dto.ProductIds);
-
-            if (dto.DeleteProductIds != null && dto.DeleteProductIds.Count > 0)
-                await DetachProductsAsync(entity.Id, dto.DeleteProductIds);
-
-            await _writeRepo.CommitAsync();
+       
         }
         
 
@@ -235,6 +263,10 @@ namespace MezuroApp.Persistance.Concretes.Services
 
             await _writeRepo.CommitAsync();
         }
+        public async Task SetIsActiveAsync(string id, bool value)
+            => await UpdateBooleanField(id, p => p.IsActive = value);
+        public async Task SetIsShowMenuAsync(string id, bool value)
+            => await UpdateBooleanField(id, p => p.ShowInMenu = value);
 
         #endregion
 
@@ -246,7 +278,25 @@ namespace MezuroApp.Persistance.Concretes.Services
                 throw new GlobalAppException($"Yanlış {field} formatı!");
             return gid;
         }
+        private static Guid ParseGuidOrThrow(string id)
+        {
+            if (!Guid.TryParse(id, out var gid))
+                throw new GlobalAppException("Id format yanlışdır!");
+            return gid;
+        }
+        private async Task UpdateBooleanField(string id, Action<Category> update)
+        {
+            var gid = ParseGuidOrThrow(id);
 
+            var entity = await _readRepo.GetAsync(x => x.Id == gid && !x.IsDeleted)
+                         ?? throw new GlobalAppException("Category not found!");
+
+            update(entity);
+            entity.LastUpdatedDate = DateTime.UtcNow;
+
+            await _writeRepo.UpdateAsync(entity);
+            await _writeRepo.CommitAsync();
+        }
         private static DateTime UtcNow() => DateTime.UtcNow;
 
         private static string Slugify(string input)

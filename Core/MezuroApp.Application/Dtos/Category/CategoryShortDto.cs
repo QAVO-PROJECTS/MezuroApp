@@ -16,6 +16,11 @@ public class CategoryShortDto
     public string? DescriptionRu { get; set; }
     public string? DescriptionEn { get; set; }
     public string? DescriptionTr { get; set; }
+    
+    public string? SubTitleAz { get; set; }
+    public string? SubTitleEn { get; set; }
+    public string? SubTitleRu{ get; set; }
+    public string? SubTitleTr { get; set; }
 
     public string? Slug { get; set; }
 

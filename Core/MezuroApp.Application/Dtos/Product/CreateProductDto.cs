@@ -46,12 +46,10 @@ public class CreateProductDto
     public bool? IsFeatured { get; set; }
     public bool? IsNew { get; set; }
     public bool? IsOnSale { get; set; }
+    public bool? IsBestseller { get; set; }
 
     // Physical
-    public decimal? Weight { get; set; }
-    public decimal? Length { get; set; }
-    public decimal? Width { get; set; }
-    public decimal? Height { get; set; }
+  
 
     // Ratings
 
@@ -68,7 +66,7 @@ public class CreateProductDto
     public string? MetaDescriptionTr { get; set; }
  
     public List<IFormFile>? ImageFiles { get; set; }
-    public List<IFormFile>? ThumbnailImageFiles { get; set; }
+ 
     // JSON olaraq gələcək
     [FromForm(Name = "imagesJson")]
     public string? ImagesJson { get; set; } = "[]";

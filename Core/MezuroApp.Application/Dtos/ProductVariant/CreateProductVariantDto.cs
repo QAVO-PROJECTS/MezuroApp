@@ -9,6 +9,7 @@ namespace MezuroApp.Application.Dtos.ProductVariant
         public string? Sku { get; set; }
 
         public decimal PriceModifier { get; set; }
+        public decimal CompareAtPriceModifier { get; set; }
         public int StockQuantity { get; set; }
 
         public List<string> OptionValueIds { get; set; } = new();

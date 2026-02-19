@@ -26,6 +26,9 @@ public class ProductProfile : Profile
         // PRODUCT → DTO
         CreateMap<Product, ProductDto>()
             .ForMember(d => d.Id, o => o.MapFrom(s => s.Id.ToString()))
+            .ForMember(d => d.RatingAverage, o => o.MapFrom(s => s.Reviews.Where(x=>x.Status==true).Sum(r => r.Rating) / s.Reviews.Count()))
+            .ForMember(d=>d.ReviewCount, o=>o.MapFrom(s=>s.Reviews.Where(x=>x.Status==true).Count()))
+
 
             .ForMember(d => d.Categories, o => o.MapFrom(s =>
                 s.ProductCategories

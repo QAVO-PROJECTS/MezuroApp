@@ -42,12 +42,10 @@ public class Product:BaseEntity
     public bool? IsFeatured { get; set; }
     public bool? IsNew { get; set; }
     public bool? IsOnSale { get; set; }
+    public bool? IsBestseller { get; set; }
 
     // Physical
-    public decimal? Weight { get; set; }
-    public decimal? Length { get; set; }
-    public decimal? Width { get; set; }
-    public decimal? Height { get; set; }
+
 
     // Ratings
     public decimal RatingAverage { get; set; }
@@ -69,8 +67,7 @@ public class Product:BaseEntity
     public string? MetaDescriptionRu { get; set; }
     public string? MetaDescriptionEn { get; set; }
     public string? MetaDescriptionTr { get; set; }
-
-
+    
     public DateTime? PublishedAt { get; set; }
     // Relations
     public List<ProductCategory>? ProductCategories { get; set; }
@@ -78,4 +75,6 @@ public class Product:BaseEntity
     public List<ProductColor>? ProductColors { get; set; }
     public List<ProductOption>? Options { get; set; }
     public List<ProductVariant>? Variants { get; set; }
+    public List<Review>? Reviews { get; set; }
+    public List<BasketItem>? Items{ get; set; }
 }

@@ -6,10 +6,15 @@ namespace MezuroApp.Application.Abstracts.Services;
 public interface ICategoryService
 {
    public Task<List<CategoryDto>> GetAllCategories();
+   Task<List<CategoryDto>> GetAllMenuCategories();
    public Task<List<CategoryDto>> GetAllCategoriesByParentId(string parentId);
+   Task<List<CategoryDto>> GetAllMenuCategoriesByParentId(string parentId);
    public Task<CategoryDto?> GetCategoryById(string id);
    public Task CreateCategory(CreateCategoryDto categoryDto);
    public Task UpdateCategory(UpdateCategoryDto categoryDto);
    public Task DeleteCategory(string id);
    public Task DeleteAllCategoriesByParentId(string parentId);
+   Task SetIsActiveAsync(string id, bool value);
+   Task SetIsShowMenuAsync(string id, bool value);
+   Task<List<CategoryDto>> GetAllActiveCategories();
 }

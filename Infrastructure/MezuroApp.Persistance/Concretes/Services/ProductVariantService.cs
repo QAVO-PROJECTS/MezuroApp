@@ -58,7 +58,8 @@ public class ProductVariantService : IProductVariantService
         var entity = await _vr.GetAsync(
             x => x.Id == gid && !x.IsDeleted,
             q => q.Include(x => x.OptionValues)
-                  .ThenInclude(v => v.OptionValue)
+                  .ThenInclude(v => v.OptionValue).Include(x=>x.ProductColor).
+                  ThenInclude(x=>x.Product).Include(x=>x.Product)
         ) ?? throw new GlobalAppException("PRODUCT_VARIANT_NOT_FOUND");
 
         return _mapper.Map<ProductVariantDto>(entity);
@@ -74,7 +75,8 @@ public class ProductVariantService : IProductVariantService
         var list = await _vr.GetAllAsync(
             x => x.ProductId == pid && !x.IsDeleted,
             q => q.Include(x => x.OptionValues)
-                  .ThenInclude(v => v.OptionValue)
+                  .ThenInclude(v => v.OptionValue).Include(x=>x.ProductColor).
+                  ThenInclude(x=>x.Product).Include(x=>x.Product)
         );
 
         return _mapper.Map<List<ProductVariantDto>>(list);

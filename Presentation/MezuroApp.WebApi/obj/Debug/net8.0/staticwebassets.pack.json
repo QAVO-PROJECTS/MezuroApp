@@ -197,6 +197,18 @@
       "PackagePath": "staticwebassets/files/products/fb9be920-780a-4730-b6b5-d976f0dc3a7d.webp"
     },
     {
+      "Id": "/Users/gulchohrasultanova/Desktop/MezuroApp/Presentation/MezuroApp.WebApi/wwwroot/files/user/profile/0c730599-6f4a-4d6a-bab0-d505d41bdd8e.webp",
+      "PackagePath": "staticwebassets/files/user/profile/0c730599-6f4a-4d6a-bab0-d505d41bdd8e.webp"
+    },
+    {
+      "Id": "/Users/gulchohrasultanova/Desktop/MezuroApp/Presentation/MezuroApp.WebApi/wwwroot/files/user/profile/cd1441e5-0af0-4f60-b0dd-b9810e3c2803.webp",
+      "PackagePath": "staticwebassets/files/user/profile/cd1441e5-0af0-4f60-b0dd-b9810e3c2803.webp"
+    },
+    {
+      "Id": "/Users/gulchohrasultanova/Desktop/MezuroApp/Presentation/MezuroApp.WebApi/wwwroot/files/user/profile/f0a88444-5e71-4570-a28f-4fe1e9d7fbb2.webp",
+      "PackagePath": "staticwebassets/files/user/profile/f0a88444-5e71-4570-a28f-4fe1e9d7fbb2.webp"
+    },
+    {
       "Id": "obj/Debug/net8.0/staticwebassets/msbuild.MezuroApp.WebApi.Microsoft.AspNetCore.StaticWebAssets.props",
       "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
     },

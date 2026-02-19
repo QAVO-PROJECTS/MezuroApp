@@ -49,6 +49,48 @@ public class ProductsController : BaseApiController
         catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
         catch { return ServerErrorResponse(); }
     }
+    [HttpGet("best-seller")]
+    public async Task<IActionResult> GetAllBestSeller(
+
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            var result = await _service.GetAllBestSellerAsync(page, pageSize);
+            return OkResponse(result, "PRODUCTS_RETURNED");
+        }
+        catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
+        catch { return ServerErrorResponse(); }
+    }
+    [HttpGet("on-sale")]
+    public async Task<IActionResult> GetAllOnSale(
+ 
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            var result = await _service.GetAllOnSaleAsync(page, pageSize);
+            return OkResponse(result, "PRODUCTS_RETURNED");
+        }
+        catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
+        catch { return ServerErrorResponse(); }
+    }
+    [HttpGet("newest")]
+    public async Task<IActionResult> GetAllNewest(
+  
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            var result = await _service.GetAllNewProductAsync(page, pageSize);
+            return OkResponse(result, "PRODUCTS_RETURNED");
+        }
+        catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
+        catch { return ServerErrorResponse(); }
+    }
     /// <summary> Id-ə görə məhsulu qaytarır </summary>
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById([FromRoute] string id)
@@ -144,6 +186,23 @@ public class ProductsController : BaseApiController
         {
             await _service.SetIsActiveAsync(id, value);
             return OkResponse<object>(null, "PRODUCT_ACTIVE_STATUS_UPDATED");
+        }
+        catch (GlobalAppException ex)
+        {
+            return BadRequestResponse(ex.Message);
+        }
+        catch (Exception)
+        {
+            return ServerErrorResponse();
+        }
+    }
+    [HttpPatch("{id}/bestseller")]
+    public async Task<IActionResult> SetIsBestSeller([FromRoute] string id, [FromQuery] bool value)
+    {
+        try
+        {
+            await _service.SetIsBestSellerAsync(id, value);
+            return OkResponse<object>(null, "PRODUCT_BESTSELLER_STATUS_UPDATED");
         }
         catch (GlobalAppException ex)
         {

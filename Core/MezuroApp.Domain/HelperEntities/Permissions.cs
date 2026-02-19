@@ -16,6 +16,16 @@ namespace MezuroApp.Domain.HelperEntities
             public const string SetNew      = "Products.SetNew";
             public const string SetSale     = "Products.SetSale";
         }
+        
+        public static class Coupons
+        {
+            public const string Create = "Coupons.Create";
+            public const string Update = "Coupons.Update";
+            public const string Delete = "Coupons.Delete";
+            public const string Read   = "Coupons.Read";
+            public const string SetActive = "Coupons.SetActive"; // istəsən ayrıca policy də istifadə edə bilərsən
+        }
+
 
         public static class Categories
         {
@@ -38,6 +48,19 @@ namespace MezuroApp.Domain.HelperEntities
             public const string Update = "Options.Update";
             public const string Delete = "Options.Delete";
 
+        }
+        public static class Reviews
+        {
+            public const string Create      = "Reviews.Create";
+            public const string Update      = "Reviews.Update";
+            public const string Delete      = "Reviews.Delete";
+            public const string GetAll        = "Reviews.GetAll";
+
+            public const string SetStatus   = "Reviews.SetStatus";   // Status dəyişmək
+            public const string Reply       = "Reviews.Reply";       // Admin cavabı
+            public const string Like        = "Reviews.Like";        // Like
+            public const string Dislike     = "Reviews.Dislike";     // Dislike
+            public const string Sort        = "Reviews.Sort";        // Sort etmək
         }
         public static class ProductOptions
         {
@@ -70,6 +93,13 @@ namespace MezuroApp.Domain.HelperEntities
             yield return Products.SetFeatured;
             yield return Products.SetNew;
             yield return Products.SetSale;
+            
+            yield return Coupons.Create;
+            yield return Coupons.Update;
+            yield return Coupons.Delete;
+            yield return Coupons.Read;
+            yield return Coupons.SetActive;
+
 
             // CATEGORIES
             yield return Categories.Create;
@@ -101,6 +131,16 @@ namespace MezuroApp.Domain.HelperEntities
 
             // ADMINS
             yield return Admins.Manage;
+            // REVIEWS
+            yield return Reviews.Create;
+            yield return Reviews.Update;
+            yield return Reviews.Delete;
+            yield return Reviews.GetAll;
+            yield return Reviews.SetStatus;
+            yield return Reviews.Reply;
+            yield return Reviews.Like;
+            yield return Reviews.Dislike;
+            yield return Reviews.Sort;
         }
     }
 }
