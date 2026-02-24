@@ -1,14 +1,19 @@
 using MailKit;
 using MezuroApp.Application.Abstracts.Repositories;
+using MezuroApp.Application.Abstracts.Repositories.AbandonedCarts;
 using MezuroApp.Application.Abstracts.Repositories.Addresses;
 using MezuroApp.Application.Abstracts.Repositories.BasketItems;
 using MezuroApp.Application.Abstracts.Repositories.Baskets;
 using MezuroApp.Application.Abstracts.Repositories.Categories;
 using MezuroApp.Application.Abstracts.Repositories.Cupons;
+using MezuroApp.Application.Abstracts.Repositories.EmailCampaignLogs;
+using MezuroApp.Application.Abstracts.Repositories.EmailCampaigns;
+using MezuroApp.Application.Abstracts.Repositories.NewsletterSubscribers;
 using MezuroApp.Application.Abstracts.Repositories.Options;
 using MezuroApp.Application.Abstracts.Repositories.OptionValues;
 using MezuroApp.Application.Abstracts.Repositories.OrderItems;
 using MezuroApp.Application.Abstracts.Repositories.Orders;
+using MezuroApp.Application.Abstracts.Repositories.PaymentTransactions;
 using MezuroApp.Application.Abstracts.Repositories.ProductCategories;
 using MezuroApp.Application.Abstracts.Repositories.ProductColorImages;
 using MezuroApp.Application.Abstracts.Repositories.ProductColors;
@@ -22,16 +27,22 @@ using MezuroApp.Application.Abstracts.Repositories.WishlistItems;
 using MezuroApp.Application.Abstracts.Repositories.Wishlists;
 using MezuroApp.Application.Abstracts.Services;
 using MezuroApp.Infrastructure.Concretes.Services;
+using MezuroApp.Persistance.Concretes.BackgroundServices;
 using MezuroApp.Persistance.Concretes.Repositories;
+using MezuroApp.Persistance.Concretes.Repositories.AbandonedCarts;
 using MezuroApp.Persistance.Concretes.Repositories.Addresses;
 using MezuroApp.Persistance.Concretes.Repositories.BasketItems;
 using MezuroApp.Persistance.Concretes.Repositories.Baskets;
 using MezuroApp.Persistance.Concretes.Repositories.Categories;
 using MezuroApp.Persistance.Concretes.Repositories.Cupons;
+using MezuroApp.Persistance.Concretes.Repositories.EmailCampaignLogs;
+using MezuroApp.Persistance.Concretes.Repositories.EmailCampaigns;
+using MezuroApp.Persistance.Concretes.Repositories.NewsletterSubscribers;
 using MezuroApp.Persistance.Concretes.Repositories.Options;
 using MezuroApp.Persistance.Concretes.Repositories.OptionValues;
 using MezuroApp.Persistance.Concretes.Repositories.OrderItems;
 using MezuroApp.Persistance.Concretes.Repositories.Orders;
+using MezuroApp.Persistance.Concretes.Repositories.PaymentTransactions;
 using MezuroApp.Persistance.Concretes.Repositories.ProductCategories;
 using MezuroApp.Persistance.Concretes.Repositories.ProductColorImages;
 using MezuroApp.Persistance.Concretes.Repositories.ProductColors;
@@ -121,6 +132,24 @@ namespace MezuroApp.Persistance;
             //OrderItem
             services.AddScoped<IOrderItemReadRepository, OrderItemReadRepository>();
             services.AddScoped<IOrderItemWriteRepository, OrderItemWriteRepository>();
+            //PaymentTransaction
+            services.AddScoped<IPaymentTransactionReadRepository, PaymentTransactionReadRepository>();
+            services.AddScoped<IPaymentTransactionWriteRepository, PaymentTransactionWriteRepository>();
+            //AbandonedCart
+            services.AddScoped<IAbandonedCartReadRepository,AbandonedCartReadRepository>();
+            services.AddScoped<IAbandonedCartWriteRepository, AbandonedCartWriteRepository>();
+            //NewsletterSubscriber
+    
+
+            services.AddScoped<INewsletterSubscriberReadRepository, NewsletterSubscriberReadRepository>();
+            services.AddScoped<INewsletterSubscriberWriteRepository, NewsletterSubscriberWriteRepository>();
+            //EmailCampaign
+            services.AddScoped<IEmailCampaignWriteRepository, EmailCampaignWriteRepository>();
+            services.AddScoped<IEmailCampaignReadRepository, EmailCampaignReadRepository>();
+            //EmailCampaign
+            services.AddScoped<IEmailCampaignLogReadRepository, EmailCampaignLogReadRepository>();
+            services.AddScoped<IEmailCampaignLogWriteRepository, EmailCampaignLogWriteRepository>();
+            
             
             // Services
             services.AddScoped<IMailService,MailService>();
@@ -142,6 +171,12 @@ namespace MezuroApp.Persistance;
             services.AddScoped<ICuponService, CuponService>();
             services.AddScoped<IAddressService, AddressService>();
             services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<INewsletterService, NewsletterService>();
+            services.AddScoped<IEmailCampaignService, EmailCampaignService>();
+            //Background Services
+            services.AddHostedService<AbandonedCartBackgroundService>();
+            services.AddHostedService<EmailCampaignSenderBackgroundService>();
+
 
 
 

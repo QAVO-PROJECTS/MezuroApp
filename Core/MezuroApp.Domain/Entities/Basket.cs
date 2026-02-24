@@ -10,4 +10,5 @@ public class Basket : BaseEntity
     public string? FootprintId { get; set; } // cihaz/browser üçün unikal id
 
     public List<BasketItem> BasketItems { get; set; } = new();
+    public List<AbandonedCart> ? AbandonedCarts { get; set; }
 }

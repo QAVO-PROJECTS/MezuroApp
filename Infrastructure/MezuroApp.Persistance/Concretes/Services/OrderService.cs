@@ -33,6 +33,7 @@ public class OrderService : IOrderService
 
     private readonly UserManager<User> _userManager;
     private readonly IMapper _mapper;
+    private readonly IEmailCampaignService _campaignService;
 
     public OrderService(
         IBasketReadRepository basketRead,
@@ -46,7 +47,8 @@ public class OrderService : IOrderService
         ICuponReadRepository cuponRead,
         ICuponWriteRepository cuponWrite,
         UserManager<User> userManager,
-        IMapper mapper)
+        IMapper mapper,
+        IEmailCampaignService campaignService)
     {
         _basketRead = basketRead;
         _basketWrite = basketWrite;
@@ -65,6 +67,7 @@ public class OrderService : IOrderService
 
         _userManager = userManager;
         _mapper = mapper;
+        _campaignService = campaignService;
     }
 
     // ==========================================================
@@ -587,6 +590,7 @@ public class OrderService : IOrderService
 
         await _orderWrite.UpdateAsync(order);
         await _orderWrite.CommitAsync();
+        await _campaignService.CreateAndScheduleOrderStatusCampaignAsync(order);
     }
     private static string NormalizeStatus(string status)
         => (status ?? "").Trim().ToLowerInvariant();

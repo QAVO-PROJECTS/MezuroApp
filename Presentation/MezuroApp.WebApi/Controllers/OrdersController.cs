@@ -63,6 +63,20 @@ public class OrdersController : BaseApiController
         catch { return ServerErrorResponse(); }
     }
 
+    // [Authorize(Roles = "Admin,SuperAdmin")]
+    [HttpPatch("change-status")]
+    public async Task<IActionResult> ChangeStatus([FromQuery] string status, [FromQuery] string orderId)
+    {
+        try
+        {
+              await _service.SetOrderStatusAsync(orderId, status);
+              return OkResponse(orderId, "ORDER_RETURNED");
+        }
+        catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
+        catch { return ServerErrorResponse(); }
+    }
+
+
     [HttpGet("my/by-status")]
     [Authorize]
     public async Task<IActionResult> GetMyOrdersByStatus([FromQuery] string status)

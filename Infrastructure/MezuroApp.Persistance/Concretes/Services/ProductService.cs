@@ -26,6 +26,7 @@ public class ProductService : IProductService
     private readonly IFileService _fileService;
     private readonly IWishlistItemReadRepository _wishlistReadRepo;
     private readonly IMapper _mapper;
+    private readonly IEmailCampaignService _campaignService;
 
     private const string ProductFolder = "products";
 
@@ -36,6 +37,7 @@ public class ProductService : IProductService
         IProductCategoryReadRepository categoryReadRepo,
         IFileService fileService,
         IWishlistItemReadRepository wishlistReadRepo,
+        IEmailCampaignService campaignService,
         IMapper mapper)
     {
         _readRepo = readRepo;
@@ -45,6 +47,7 @@ public class ProductService : IProductService
         _fileService = fileService;
         _wishlistReadRepo = wishlistReadRepo;
         _mapper = mapper;
+        _campaignService = campaignService;
     }
 
     // ================================================
@@ -260,7 +263,9 @@ public class ProductService : IProductService
 
         // 4) Save Product
         await _writeRepo.AddAsync(entity);
+       
         await _writeRepo.CommitAsync();
+    
 
         // 5) Category Relations
         if (dto.ProductCategoryIds != null)
@@ -281,6 +286,10 @@ public class ProductService : IProductService
             }
 
             await _writeRepo.CommitAsync();
+        }
+        if (entity.IsActive == true)
+        {
+            await _campaignService.CreateAndScheduleNewProductCampaignAsync(entity);
         }
     }
 
@@ -529,10 +538,14 @@ public class ProductService : IProductService
     public async Task SetIsActiveAsync(string id, bool value)
     {
         var gid = ParseGuidOrThrow(id);
-        var product = await _readRepo.GetAsync(x => x.Id == gid && !x.IsDeleted)
+
+        var product = await _readRepo.GetAsync(x => x.Id == gid && !x.IsDeleted, enableTracking: true)
                       ?? throw new GlobalAppException("Product not found!");
 
-        if (product.PublishedAt == null && value)
+        var wasInactive = product.IsActive == false;
+        var wasNeverPublished = product.PublishedAt == null;
+
+        if (value && wasNeverPublished)
             product.PublishedAt = DateTime.UtcNow;
 
         product.IsActive = value;
@@ -540,8 +553,11 @@ public class ProductService : IProductService
 
         await _writeRepo.UpdateAsync(product);
         await _writeRepo.CommitAsync();
-    }
 
+        // ✅ Aktivləşəndə 1 dəfə trigger et
+        if (value && wasInactive)
+            await _campaignService.CreateAndScheduleNewProductCampaignAsync(product);
+    }
     public async Task SetIsFeaturedAsync(string id, bool value)
         => await UpdateBooleanField(id, p => p.IsFeatured = value);
 

@@ -22,6 +22,76 @@ namespace MezuroApp.Persistance.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("MezuroApp.Domain.Entities.AbandonedCart", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("BasketId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("BasketLastUpdatedSnapshotUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CartItemsJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<Guid?>("ConvertedToOrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DeletedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FootprintId")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastUpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("RecoveryEmailSent")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("RecoveryEmailSentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("TotalAmount")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BasketId");
+
+                    b.HasIndex("ConvertedToOrderId");
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("FootprintId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("abandoned_carts", (string)null);
+                });
+
             modelBuilder.Entity("MezuroApp.Domain.Entities.Basket", b =>
                 {
                     b.Property<Guid>("Id")
@@ -323,6 +393,295 @@ namespace MezuroApp.Persistance.Migrations
                     b.ToTable("Cupons");
                 });
 
+            modelBuilder.Entity("MezuroApp.Domain.Entities.EmailCampaign", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CampaignType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("ContentAz")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContentEn")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContentRu")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContentTr")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DeletedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastUpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime?>("ScheduledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasDefaultValue("draft");
+
+                    b.Property<string>("SubjectAz")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("SubjectEn")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("SubjectRu")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("SubjectTr")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("TargetSegment")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("TotalBounced")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("TotalClicked")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("TotalOpened")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("TotalRecipients")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("TotalSent")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("TotalUnsubscribed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.ToTable("email_campaigns", (string)null);
+                });
+
+            modelBuilder.Entity("MezuroApp.Domain.Entities.EmailCampaignLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BounceType")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<Guid>("CampaignId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ClickedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DeletedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ExternalMessageId")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastUpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("NewsletterSubscriberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("OpenedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasDefaultValue("pending");
+
+                    b.Property<Guid?>("SubscriberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UnsubscribedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CampaignId");
+
+                    b.HasIndex("NewsletterSubscriberId");
+
+                    b.HasIndex("SubscriberId");
+
+                    b.ToTable("email_campaign_logs", (string)null);
+                });
+
+            modelBuilder.Entity("MezuroApp.Domain.Entities.NewsletterSubscriber", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DeletedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("FirstName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Frequency")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasDefaultValue("weekly");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LastName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("LastUpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Preferences")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("PreferredLanguage")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)")
+                        .HasDefaultValue("az");
+
+                    b.Property<DateTime>("SubscribedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SubscriptionSource")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("UnsubscribeReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UnsubscribeToken")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime?>("UnsubscribedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("VerificationToken")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("VerifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("UnsubscribeToken")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("newsletter_subscribers", (string)null);
+                });
+
             modelBuilder.Entity("MezuroApp.Domain.Entities.Option", b =>
                 {
                     b.Property<Guid>("Id")
@@ -502,6 +861,9 @@ namespace MezuroApp.Persistance.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
                         .HasColumnName("order_number");
+
+                    b.Property<string>("PaymentMethod")
+                        .HasColumnType("text");
 
                     b.Property<string>("PaymentStatus")
                         .ValueGeneratedOnAdd()
@@ -1002,10 +1364,12 @@ namespace MezuroApp.Persistance.Migrations
                     b.HasIndex("Price");
 
                     b.HasIndex("Sku")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"IsDeleted\" = false");
 
                     b.HasIndex("Slug")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"IsDeleted\" = false");
 
                     b.HasIndex("IsActive", "PublishedAt");
 
@@ -1623,6 +1987,9 @@ namespace MezuroApp.Persistance.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("NewsletterPreferences")
+                        .HasColumnType("text");
+
                     b.Property<string>("NormalizedEmail")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -1983,6 +2350,30 @@ namespace MezuroApp.Persistance.Migrations
                     b.HasDiscriminator().HasValue("Admin");
                 });
 
+            modelBuilder.Entity("MezuroApp.Domain.Entities.AbandonedCart", b =>
+                {
+                    b.HasOne("MezuroApp.Domain.Entities.Basket", "Basket")
+                        .WithMany("AbandonedCarts")
+                        .HasForeignKey("BasketId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MezuroApp.Domain.Entities.Order", "ConvertedToOrder")
+                        .WithMany("AbandonedCarts")
+                        .HasForeignKey("ConvertedToOrderId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MezuroApp.Domain.Entities.User", "User")
+                        .WithMany("AbandonedCarts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Basket");
+
+                    b.Navigation("ConvertedToOrder");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("MezuroApp.Domain.Entities.Basket", b =>
                 {
                     b.HasOne("MezuroApp.Domain.Entities.User", "User")
@@ -2038,6 +2429,48 @@ namespace MezuroApp.Persistance.Migrations
                         .IsRequired();
 
                     b.Navigation("Admin");
+                });
+
+            modelBuilder.Entity("MezuroApp.Domain.Entities.EmailCampaign", b =>
+                {
+                    b.HasOne("MezuroApp.Domain.Entities.User", "CreatedBy")
+                        .WithMany("EmailCampaigns")
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("CreatedBy");
+                });
+
+            modelBuilder.Entity("MezuroApp.Domain.Entities.EmailCampaignLog", b =>
+                {
+                    b.HasOne("MezuroApp.Domain.Entities.EmailCampaign", "Campaign")
+                        .WithMany("Logs")
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MezuroApp.Domain.Entities.NewsletterSubscriber", null)
+                        .WithMany("CampaignLogs")
+                        .HasForeignKey("NewsletterSubscriberId");
+
+                    b.HasOne("MezuroApp.Domain.Entities.NewsletterSubscriber", "Subscriber")
+                        .WithMany()
+                        .HasForeignKey("SubscriberId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Campaign");
+
+                    b.Navigation("Subscriber");
+                });
+
+            modelBuilder.Entity("MezuroApp.Domain.Entities.NewsletterSubscriber", b =>
+                {
+                    b.HasOne("MezuroApp.Domain.Entities.User", "User")
+                        .WithMany("NewsletterSubscribers")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MezuroApp.Domain.Entities.Order", b =>
@@ -2335,6 +2768,8 @@ namespace MezuroApp.Persistance.Migrations
 
             modelBuilder.Entity("MezuroApp.Domain.Entities.Basket", b =>
                 {
+                    b.Navigation("AbandonedCarts");
+
                     b.Navigation("BasketItems");
                 });
 
@@ -2345,6 +2780,16 @@ namespace MezuroApp.Persistance.Migrations
                     b.Navigation("ProductCategories");
                 });
 
+            modelBuilder.Entity("MezuroApp.Domain.Entities.EmailCampaign", b =>
+                {
+                    b.Navigation("Logs");
+                });
+
+            modelBuilder.Entity("MezuroApp.Domain.Entities.NewsletterSubscriber", b =>
+                {
+                    b.Navigation("CampaignLogs");
+                });
+
             modelBuilder.Entity("MezuroApp.Domain.Entities.Option", b =>
                 {
                     b.Navigation("ProductOptions");
@@ -2352,6 +2797,8 @@ namespace MezuroApp.Persistance.Migrations
 
             modelBuilder.Entity("MezuroApp.Domain.Entities.Order", b =>
                 {
+                    b.Navigation("AbandonedCarts");
+
                     b.Navigation("OrderItems");
 
                     b.Navigation("PaymentTransactions");
@@ -2405,6 +2852,12 @@ namespace MezuroApp.Persistance.Migrations
 
             modelBuilder.Entity("MezuroApp.Domain.Entities.User", b =>
                 {
+                    b.Navigation("AbandonedCarts");
+
+                    b.Navigation("EmailCampaigns");
+
+                    b.Navigation("NewsletterSubscribers");
+
                     b.Navigation("Orders");
 
                     b.Navigation("RefreshTokens");

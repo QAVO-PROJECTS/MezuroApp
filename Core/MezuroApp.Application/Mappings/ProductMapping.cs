@@ -23,23 +23,24 @@ public class ProductProfile : Profile
             .ForMember(d => d.ProductColors, opt => opt.Ignore())
             .ForAllMembers(o => o.Condition((src, dest, val) => val != null));
 
-        // PRODUCT → DTO
         CreateMap<Product, ProductDto>()
             .ForMember(d => d.Id, o => o.MapFrom(s => s.Id.ToString()))
-            .ForMember(d => d.RatingAverage, o => o.MapFrom(s => s.Reviews.Where(x=>x.Status==true).Sum(r => r.Rating) / s.Reviews.Count()))
-            .ForMember(d=>d.ReviewCount, o=>o.MapFrom(s=>s.Reviews.Where(x=>x.Status==true).Count()))
-
-
+            .ForMember(d => d.RatingAverage, o => o.Ignore())
+            .ForMember(d => d.ReviewCount, o => o.Ignore())
+            .AfterMap((src, dest) =>
+            {
+                var approved = (src.Reviews ?? new List<Review>()).Where(r => r.Status == true).ToList();
+                dest.ReviewCount = approved.Count;
+                dest.RatingAverage = dest.ReviewCount == 0 ? 0m : approved.Sum(r => (decimal)r.Rating) / dest.ReviewCount;
+            })
             .ForMember(d => d.Categories, o => o.MapFrom(s =>
                 s.ProductCategories
                     .Where(pc => !pc.IsDeleted)
                     .Select(pc => pc.Category)
             ))
-
             .ForMember(d => d.Options, o => o.MapFrom(s =>
-                    s.Options.Where(o => !o.IsDeleted) // ProductOptionDto mapping edəcək
+                s.Options.Where(o => !o.IsDeleted)
             ))
-
             .ForMember(d => d.Colors, o => o.MapFrom(s =>
                 s.ProductColors.Where(pc => !pc.IsDeleted)
             ));

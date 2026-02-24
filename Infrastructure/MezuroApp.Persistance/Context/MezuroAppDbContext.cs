@@ -33,6 +33,10 @@ namespace MezuroApp.Persistance.Context
         public DbSet<Cupon>  Cupons { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<AbandonedCart> AbandonedCarts { get; set; }
+        public DbSet<EmailCampaignLog> EmailCampaignLogs { get; set; }
+        public DbSet<EmailCampaign> EmailCampaigns { get; set; }
+        public DbSet<NewsletterSubscriber> NewsletterSubscribers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

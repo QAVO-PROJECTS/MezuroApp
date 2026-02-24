@@ -26,9 +26,13 @@ public class User:IdentityUser<Guid>
     public DateTime? LastLoginAt { get; set; }
     public bool IsDeleted { get; set; }
     public DateTime? DeletedAt { get; set; }
+    public string? NewsletterPreferences { get; set; } 
     public List<Review>? Reviews { get; set; }
     public List<UserAddress>? UserAddresses { get; set; }
     public List<RefreshToken>? RefreshTokens { get; set; }
     public Wishlist? Wishlist { get; set; }
     public List<Order>? Orders { get; set; }
+    public List<EmailCampaign>? EmailCampaigns { get; set; }
+    public List<AbandonedCart> ? AbandonedCarts { get; set; }
+    public List<NewsletterSubscriber>? NewsletterSubscribers { get; set; }
 }

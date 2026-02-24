@@ -28,10 +28,12 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         
         // SKU
         builder.Property(x => x.Sku).IsRequired().HasMaxLength(100);
-        builder.HasIndex(x => x.Sku).IsUnique();
+        builder.HasIndex(x => x.Sku).IsUnique()
+            .HasFilter("\"IsDeleted\" = false");
 
         builder.Property(x => x.Slug).IsRequired().HasMaxLength(500);
-        builder.HasIndex(x => x.Slug).IsUnique();
+        builder.HasIndex(x => x.Slug).IsUnique()
+            .HasFilter("\"IsDeleted\" = false");
 
         // Pricing
         builder.Property(x => x.Price)

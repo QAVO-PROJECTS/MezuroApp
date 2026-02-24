@@ -27,6 +27,7 @@ public class Order:BaseEntity
     public string? BillingPostalCode { get; set; }
     public string? Status {get; set;}
     public string? PaymentStatus { get; set; }
+    public string? PaymentMethod { get; set; }
     public string? FulfillmentStatus { get; set; }
     public decimal SubTotal { get; set; }
     public decimal? DiscountAmount { get; set; }
@@ -46,4 +47,5 @@ public class Order:BaseEntity
     
     public List<OrderItem>? OrderItems { get; set; }
     public List<PaymentTransaction>? PaymentTransactions  { get; set; }
+    public List<AbandonedCart> ? AbandonedCarts { get; set; }
 }

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MezuroApp.WebApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8c4e4eef59338125ff044401c0066e7e6f5c6eb6")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+841bf13feaeae58299e921287c92d1679bd712e2")]
 [assembly: System.Reflection.AssemblyProductAttribute("MezuroApp.WebApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MezuroApp.WebApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

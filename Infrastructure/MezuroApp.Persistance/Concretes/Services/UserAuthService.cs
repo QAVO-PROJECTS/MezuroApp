@@ -26,6 +26,7 @@ namespace MezuroApp.Persistance.Concretes.Services
         private readonly IMailService _mailService;
         private readonly ITokenService _tokenService;
         private readonly IFileService _fileService;
+        private readonly INewsletterService _newsletterService;
         private readonly IAuditLogService _auditLogService;
 
         public UserAuthService
@@ -37,6 +38,7 @@ namespace MezuroApp.Persistance.Concretes.Services
             IMailService mailService,
             ITokenService tokenService,
             IFileService fileService,
+            INewsletterService newsletterService,
             IAuditLogService auditLogService
         )
         {
@@ -47,6 +49,7 @@ namespace MezuroApp.Persistance.Concretes.Services
             _mailService = mailService;
             _tokenService = tokenService;
             _fileService = fileService;
+            _newsletterService = newsletterService;
             _auditLogService = auditLogService;
         }
     
@@ -85,9 +88,12 @@ namespace MezuroApp.Persistance.Concretes.Services
                 {
                     await _roleManager.CreateAsync(new IdentityRole<Guid>("Customer"));
                 }
-
+        
 
                 await _userManager.AddToRoleAsync(user, "Customer");
+                // DI: private readonly INewsletterService _newsletterService;
+
+                await _newsletterService.SubscribeForUserAsync(user.Id, user.Email);
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
      
                 var confirmationLink = $"https://sshss.com/confirm-email?userId={user.Id}&token={token}";

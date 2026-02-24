@@ -878,8 +878,89 @@ public abstract class BaseApiController : ControllerBase
     "Invalid payment method. Allowed: card, debit_card, cash.",
     "Geçersiz ödeme yöntemi. İzin verilen: card, debit_card, cash.",
     "Неверный способ оплаты. Допустимые: card, debit_card, cash."
+),["PAYMENT_STARTED"] = (
+    "Ödəniş prosesi başladıldı.",
+    "Payment process started.",
+    "Ödeme süreci başlatıldı.",
+    "Процесс оплаты запущен."
+),
+["PAYMENT_CALLBACK_OK"] = (
+    "Ödəniş nəticəsi qəbul olundu.",
+    "Payment result received.",
+    "Ödeme sonucu alındı.",
+    "Результат оплаты получен."
+),
+["PAYMENT_STATUS_RETURNED"] = (
+    "Ödəniş statusu qaytarıldı.",
+    "Payment status returned.",
+    "Ödeme durumu döndürüldü.",
+    "Статус оплаты возвращён."
+),
+["PAYMENT_START_FAILED"] = (
+    "Ödənişi başlatmaq mümkün olmadı.",
+    "Failed to start payment.",
+    "Ödeme başlatılamadı.",
+    "Не удалось начать оплату."
+),
+["ORDER_ALREADY_PAID"] = (
+    "Bu sifariş artıq ödənilib.",
+    "This order is already paid.",
+    "Bu sipariş zaten ödendi.",
+    "Этот заказ уже оплачен."
+),
+["INVALID_ORDER_ID"] = (
+    "Sifariş ID formatı yanlışdır!",
+    "Invalid order id format!",
+    "Geçersiz sipariş id formatı!",
+    "Неверный формат id заказа!"
+),
+["ORDER_NOT_FOUND"] = (
+    "Sifariş tapılmadı.",
+    "Order not found.",
+    "Sipariş bulunamadı.",
+    "Заказ не найден."
+),
+["EPOINT_SIGNATURE_MISMATCH"] = (
+    "Epoint imzası uyğunsuzdur.",
+    "Epoint signature mismatch.",
+    "Epoint imzası uyuşmuyor.",
+    "Подпись Epoint не совпадает."
+),["NEWSLETTER_SUBSCRIBED"] = (
+    "Abunəlik uğurla aktiv edildi.",
+    "Subscription activated successfully.",
+    "Abonelik başarıyla aktif edildi.",
+    "Подписка успешно активирована."
+),
+["NEWSLETTER_UNSUBSCRIBED"] = (
+    "Abunəlik deaktiv edildi.",
+    "Subscription has been deactivated.",
+    "Abonelik devre dışı bırakıldı.",
+    "Подписка отключена."
+),
+["NEWSLETTER_ME_RETURNED"] = (
+    "Abunəlik məlumatları qaytarıldı.",
+    "Subscription info returned.",
+    "Abonelik bilgisi döndürüldü.",
+    "Данные подписки возвращены."
+),
+["NEWSLETTER_ENSURED"] = (
+    "Abunəlik yaradıldı və ya yeniləndi.",
+    "Subscription ensured (created or updated).",
+    "Abonelik oluşturuldu veya güncellendi.",
+    "Подписка создана или обновлена."
+),
+["SUBSCRIBER_NOT_FOUND"] = (
+    "Abunə tapılmadı.",
+    "Subscriber not found.",
+    "Abone bulunamadı.",
+    "Подписчик не найден."
+),
+["INVALID_EMAIL"] = (
+    "E-poçt formatı yanlışdır.",
+    "Invalid email format.",
+    "Geçersiz e-posta formatı.",
+    "Неверный формат электронной почты."
 )
-
 
             
     };
