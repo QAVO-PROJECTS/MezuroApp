@@ -16,6 +16,7 @@ public class ProductsController : BaseApiController
     {
         _service = service;
     }
+    [Authorize(Policy = Permissions.Products.Read)]
 
     /// <summary> Bütün məhsulları qaytarır </summary>
     [HttpGet]
@@ -113,8 +114,7 @@ public class ProductsController : BaseApiController
         }
     }
 
-    // [Authorize(Policy = Permissions.Products.Create)]
-    /// <summary> Yeni məhsul yaradır </summary>
+    // [Authorize(Policy = Permissions.Products.Update)]
     [HttpPost]
     public async Task<IActionResult> Create([FromForm] CreateProductDto dto)
     {
@@ -133,8 +133,7 @@ public class ProductsController : BaseApiController
         }
     }
 
-    // [Authorize(Policy = Permissions.Products.Update)]
-    /// <summary> Məhsulu yeniləyir </summary>
+    [Authorize(Policy = Permissions.Products.Update)]
     [HttpPut]
     public async Task<IActionResult> Update([FromForm] UpdateProductDto dto)
     {
@@ -153,8 +152,7 @@ public class ProductsController : BaseApiController
         }
     }
 
-    // [Authorize(Policy = Permissions.Products.Delete)]
-    /// <summary> Məhsulu Id-ə görə silir (soft delete) </summary>
+    [Authorize(Policy = Permissions.Products.Update)]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete([FromRoute] string id)
     {
@@ -173,12 +171,8 @@ public class ProductsController : BaseApiController
         }
     }
 
-    // -------------------------------------------------------
-    // STATUS METHODS (toggle)
-    // -------------------------------------------------------
 
-    // [Authorize(Policy = Permissions.Products.SetActive)]
-    /// <summary> Məhsulun IsActive statusunu dəyişir </summary>
+    [Authorize(Policy = Permissions.Products.Update)]
     [HttpPatch("{id}/active")]
     public async Task<IActionResult> SetIsActive([FromRoute] string id, [FromQuery] bool value)
     {
@@ -196,6 +190,7 @@ public class ProductsController : BaseApiController
             return ServerErrorResponse();
         }
     }
+    [Authorize(Policy = Permissions.Products.Update)]
     [HttpPatch("{id}/bestseller")]
     public async Task<IActionResult> SetIsBestSeller([FromRoute] string id, [FromQuery] bool value)
     {
@@ -215,7 +210,7 @@ public class ProductsController : BaseApiController
     }
 
     
-    [Authorize(Policy = Permissions.Products.SetFeatured)]
+    [Authorize(Policy = Permissions.Products.Update)]
 
     /// <summary> Məhsulun IsFeatured statusunu dəyişir </summary>
     [HttpPatch("{id}/featured")]
@@ -237,7 +232,7 @@ public class ProductsController : BaseApiController
     }
 
     
-    [Authorize(Policy = Permissions.Products.SetNew)]
+    [Authorize(Policy = Permissions.Products.Update)]
 
     /// <summary> Məhsulun IsNew statusunu dəyişir </summary>
     [HttpPatch("{id}/new")]
@@ -258,7 +253,7 @@ public class ProductsController : BaseApiController
         }
     }
 
-    [Authorize(Policy = Permissions.Products.SetSale)]
+    [Authorize(Policy = Permissions.Products.Update)]
     /// <summary> Məhsulun IsOnSale statusunu dəyişir </summary>
     [HttpPatch("{id}/onsale")]
     public async Task<IActionResult> SetIsOnSale([FromRoute] string id, [FromQuery] bool value)

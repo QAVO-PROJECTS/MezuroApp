@@ -22,19 +22,15 @@ public class CreateCategoryDto
     public string? SubTitleEn { get; set; }
     public string? SubTitleRu{ get; set; }
     public string? SubTitleTr { get; set; }
-    public string Slug { get; set; }
+
 
     // Image
     public IFormFile? ImageUrl { get; set; }
     public string? ImageAltText { get; set; }
 
-    // Hierarchy
-    public int Level { get; set; }
-    public int SortOrder { get; set; }
 
-    // Navigation
-    public bool? ShowInMenu { get; set; }
-    public bool? IsActive { get; set; }
+
+ 
 
     // SEO
     public string? MetaTitleAz { get; set; }

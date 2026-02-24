@@ -49,12 +49,12 @@ namespace MezuroApp.Persistance.Concretes.Services
         public async Task<List<CategoryDto>> GetAllCategories()
         {
             var categories = await _readRepo.GetAllAsync(
-                c => !c.IsDeleted &&  c.ParentId == null ,
+                c =>   c.ParentId == null  && !c.IsDeleted,
                 q => q
                     .Include(c => c.Children)
                     .Include(c => c.ProductCategories)
                         .ThenInclude(pc => pc.Product)
-            );
+            );  
 
             return _mapper.Map<List<CategoryDto>>(categories);
         }
@@ -143,30 +143,18 @@ namespace MezuroApp.Persistance.Concretes.Services
                          ?? throw new GlobalAppException("Parent kateqoriya tapılmadı!");
             }
 
-            // SLUG UNIQE CONTROL
-            string baseSlug;
-
-            if (!string.IsNullOrWhiteSpace(dto.Slug))
-            {
-                baseSlug = Slugify(dto.Slug);
-
-                var exists = await _readRepo.GetAsync(
-                    x => !x.IsDeleted && x.Slug == baseSlug
-                );
-
-                if (exists != null)
-                    throw new GlobalAppException("Bu slug artıq mövcuddur!");
-            }
-            else
-            {
-                baseSlug = Slugify(dto.NameEn ?? dto.NameAz ?? Guid.NewGuid().ToString("N"));
-            }
+            // base slug: adlardan götür (Slug gəlmirsə)
+     
+            // UNIQE slug
+    
 
             var entity = _mapper.Map<Category>(dto);
+            var baseSlug = Slugify(dto.NameEn ?? dto.NameAz ?? Guid.NewGuid().ToString("N"));
+            entity.Slug = await EnsureUniqueSlugAsync(baseSlug);
 
             entity.ParentId = parentId;
             entity.Level = parent == null ? 1 : parent.Level + 1;
-            entity.Slug = baseSlug;
+
 
             entity.CreatedDate = UtcNow();
             entity.LastUpdatedDate = entity.CreatedDate;
@@ -177,8 +165,6 @@ namespace MezuroApp.Persistance.Concretes.Services
 
             await _writeRepo.AddAsync(entity);
             await _writeRepo.CommitAsync();
-
-        
         }
 
         public async Task UpdateCategory(UpdateCategoryDto dto)
@@ -203,24 +189,10 @@ namespace MezuroApp.Persistance.Concretes.Services
                          ?? throw new GlobalAppException("Parent kateqoriya tapılmadı!");
             }
 
-            // SLUG UNIQE CONTROL
-            if (!string.IsNullOrWhiteSpace(dto.Slug))
-            {
-                var normalizedSlug = Slugify(dto.Slug);
-
-                var exists = await _readRepo.GetAsync(
-                    x => !x.IsDeleted && x.Slug == normalizedSlug
-                );
-
-                if (exists != null && exists.Id != entity.Id)
-                    throw new GlobalAppException("Bu slug artıq mövcuddur!");
-
-                entity.Slug = normalizedSlug;
-            }
-
-            // rest mapping
+            // 1) map (dto-dan gələn field-ları entity-ə yaz)
             _mapper.Map(dto, entity);
 
+            // 2) parent/level
             if (dto.ParentId != null)
             {
                 entity.ParentId = newParentId;
@@ -228,13 +200,25 @@ namespace MezuroApp.Persistance.Concretes.Services
                 await RecalculateChildrenLevelsAsync(entity.Id, entity.Level + 1);
             }
 
+            // 3) SLUG: dto-dan gəlmirsə -> NAME-lərdən generasiya et
+            // NameEn/NameAz boşdursa, köhnə slug-u saxla
+            var nameForSlug = entity.NameEn ?? entity.NameAz;
+
+            if (!string.IsNullOrWhiteSpace(nameForSlug))
+            {
+                var baseSlug = Slugify(nameForSlug);
+                entity.Slug = await EnsureUniqueSlugAsync(baseSlug, entity.Id);
+            }
+            // əks halda entity.Slug olduğu kimi qalır
+
+            // 4) image
             if (dto.ImageUrl != null && dto.ImageUrl.Length > 0)
                 entity.ImageUrl = await _fileService.UploadFile(dto.ImageUrl, CategoryFolder);
 
             entity.LastUpdatedDate = UtcNow();
-            await _writeRepo.UpdateAsync(entity);
 
-       
+            await _writeRepo.UpdateAsync(entity);
+            await _writeRepo.CommitAsync();
         }
         
 
@@ -307,26 +291,23 @@ namespace MezuroApp.Persistance.Concretes.Services
             return s;
         }
 
-        private async Task<string> EnsureUniqueSlugAsync(string baseSlug, Guid? currentId)
+        private async Task<string> EnsureUniqueSlugAsync(string baseSlug, Guid? currentId = null)
         {
             var slug = baseSlug;
             var i = 1;
 
             while (true)
             {
-                var existsEntity = await _readRepo.GetAsync(x =>
-                    !x.IsDeleted &&
-                    x.Slug == slug &&
-                    (currentId == null || x.Id != currentId.Value)
-                );
+                var exists = await _readRepo.GetAsync(x =>
+                    x.Slug == slug && (currentId == null || x.Id != currentId.Value)
+                ); // <-- !x.IsDeleted YOX!
 
-                if (existsEntity == null)
+                if (exists == null)
                     return slug;
 
                 slug = $"{baseSlug}-{i++}";
             }
         }
-
         private async Task RecalculateChildrenLevelsAsync(Guid categoryId, int childLevel)
         {
             var children = await _readRepo.GetAllAsync(

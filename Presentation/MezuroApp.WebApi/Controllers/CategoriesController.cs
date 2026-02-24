@@ -8,16 +8,17 @@ using Microsoft.AspNetCore.Authorization;
 namespace MezuroApp.WebApi.Controllers;
 
 [Route("api/[controller]")]
-public class CategoryController : BaseApiController
+public class CategoriesController : BaseApiController
 {
     private readonly ICategoryService _service;
 
-    public CategoryController(ICategoryService service)
+    public CategoriesController(ICategoryService service)
     {
         _service = service;
     }
 
     /// <summary> Bütün kateqoriyaları qaytarır. </summary>
+    [Authorize(Policy = Permissions.Categories.Read)]
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -35,6 +36,7 @@ public class CategoryController : BaseApiController
             return ServerErrorResponse();
         }
     }
+    // For User
     [HttpGet("active")]
     public async Task<IActionResult> GetAllActive()
     {
@@ -52,6 +54,7 @@ public class CategoryController : BaseApiController
             return ServerErrorResponse();
         }
     }
+    //For User
     [HttpGet("show-menu")]
     public async Task<IActionResult> GetAllMenuCategories()
     {
@@ -69,8 +72,8 @@ public class CategoryController : BaseApiController
             return ServerErrorResponse();
         }
     }
+     //For User 
 
-    /// <summary> ParentId-ə görə kateqoriyaları qaytarır. </summary>
     [HttpGet("by-parent/{parentId}")]
     public async Task<IActionResult> GetByParentId([FromRoute] string parentId)
     {
@@ -88,6 +91,7 @@ public class CategoryController : BaseApiController
             return ServerErrorResponse();
         }
     }
+    //For User
     [HttpGet("show-menu-by-parent/{parentId}")]
     public async Task<IActionResult> GetMenuCategoriesByParentId([FromRoute] string parentId)
     {
@@ -105,6 +109,7 @@ public class CategoryController : BaseApiController
             return ServerErrorResponse();
         }
     }
+    [Authorize(Policy = Permissions.Categories.Update)]
 
     [HttpPatch("{id}/active")]
     public async Task<IActionResult> SetIsActive([FromRoute] string id, [FromQuery] bool value)
@@ -123,6 +128,7 @@ public class CategoryController : BaseApiController
             return ServerErrorResponse();
         }
     }
+    [Authorize(Policy = Permissions.Categories.Update)]
     [HttpPatch("{id}/show-menu")]
     public async Task<IActionResult> SetIsShowMenu([FromRoute] string id, [FromQuery] bool value)
     {
@@ -140,7 +146,7 @@ public class CategoryController : BaseApiController
             return ServerErrorResponse();
         }
     }
-    /// <summary> Id-ə görə kateqoriya qaytarır. </summary>
+    //For User
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById([FromRoute] string id)
     {
@@ -162,7 +168,7 @@ public class CategoryController : BaseApiController
         }
     }
 
-    [Authorize(Policy = Permissions.Categories.Create)]
+    [Authorize(Policy = Permissions.Categories.Update)]
     [HttpPost]
     public async Task<IActionResult> Create([FromForm] CreateCategoryDto dto)
     {
@@ -180,8 +186,8 @@ public class CategoryController : BaseApiController
             return ServerErrorResponse();
         }
     }
-    // [Authorize(Policy = Permissions.Categories.Update)]
-    /// <summary> Kateqoriyanı yeniləyir. </summary>
+
+     [Authorize(Policy = Permissions.Categories.Update)]
     [HttpPut]
     public async Task<IActionResult> Update([FromForm] UpdateCategoryDto dto)
     {
@@ -200,8 +206,8 @@ public class CategoryController : BaseApiController
         }
     }
 
-    // [Authorize(Policy = Permissions.Categories.Delete)]
-    /// <summary> Id-ə görə kateqoriyanı silir (soft delete). </summary>
+ 
+    [Authorize(Policy = Permissions.Categories.Update)]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete([FromRoute] string id)
     {
@@ -219,8 +225,8 @@ public class CategoryController : BaseApiController
             return ServerErrorResponse();
         }
     }
-    // [Authorize(Policy = Permissions.Categories.Delete)]
-    /// <summary> ParentId-ə görə bütün kateqoriyaları silir (soft delete). </summary>
+
+    [Authorize(Policy = Permissions.Categories.Update)]
     [HttpDelete("by-parent/{parentId}")]
     public async Task<IActionResult> DeleteByParent([FromRoute] string parentId)
     {

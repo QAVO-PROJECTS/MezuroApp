@@ -101,7 +101,7 @@ public class ProductService : IProductService
     public async Task<List<ProductDto>> GetAllAsync()
     {
         var entities = await _readRepo.GetAllAsync(
-            x => !x.IsDeleted,
+            x => !x.IsDeleted || x.IsDeleted,
             q => q.Include(x => x.Images.Where(x => !x.IsDeleted))
                 .Include(x => x.ProductCategories.Where(x => !x.IsDeleted))
                 .ThenInclude(pc => pc.Category)

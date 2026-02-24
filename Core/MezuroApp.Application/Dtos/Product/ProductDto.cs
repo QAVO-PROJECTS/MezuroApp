@@ -52,6 +52,7 @@ public class ProductDto
     public bool? IsNew { get; set; }
     public bool? IsOnSale { get; set; }
     public bool? IsBestseller { get; set; }
+    public bool? IsDeleted { get; set; }
 
 
     public int ReviewCount { get; set; }

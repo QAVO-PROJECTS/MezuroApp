@@ -108,7 +108,10 @@ public sealed class NewsletterService : INewsletterService
 
         var normalized = email.Trim().ToLowerInvariant();
 
-        var sub = await _read.GetAsync(x => x.Email.ToLower() == normalized && !x.IsDeleted, enableTracking: true);
+        var sub = await _read.GetAsync(
+            x => !x.IsDeleted && x.Email == email,
+            enableTracking: true
+        );
 
         if (sub == null)
         {
@@ -175,76 +178,97 @@ public sealed class NewsletterService : INewsletterService
     // ================
     // 4) EnsureForCurrentUser (logged-in user üçün)
     // ================
-    public async Task<NewsletterSubscriberDto> EnsureForCurrentUserAsync(string userId, EnsureSubscriberRequestDto? dto)
+public async Task<NewsletterSubscriberDto> EnsureForCurrentUserAsync(string userId, EnsureSubscriberRequestDto? dto)
+{
+    if (!Guid.TryParse(userId, out var uid))
+        throw new GlobalAppException("INVALID_USER_ID");
+
+    var user = await _userManager.FindByIdAsync(userId);
+    if (user == null || string.IsNullOrWhiteSpace(user.Email))
+        throw new GlobalAppException("USER_NOT_FOUND");
+
+    var email = user.Email.Trim().ToLowerInvariant();
+
+    // ✅ Eyni email-ə aid hamısını çək (duplicate varsa merge edəcəyik)
+    var subs = await _read.GetAllAsync(
+        x => !x.IsDeleted && x.Email.ToLower() == email,
+        enableTracking: true
+    );
+
+    var pref = dto?.Preferences ?? DefaultPreferences();
+    var freq = NormalizeFrequency(dto?.Frequency) ?? "weekly";
+    var lang = NormalizeLang(dto?.PreferredLanguage) ?? "az";
+
+    // ✅ subscriber yoxdursa create
+    if (subs == null || subs.Count == 0)
     {
-        if (!Guid.TryParse(userId, out var uid))
-            throw new GlobalAppException("INVALID_USER_ID");
-
-        var user = await _userManager.FindByIdAsync(userId);
-        if (user == null || string.IsNullOrWhiteSpace(user.Email))
-            throw new GlobalAppException("USER_NOT_FOUND");
-
-        var email = user.Email.Trim().ToLowerInvariant();
-
-        var sub = await _read.GetAsync(x => x.Email.ToLower() == email && !x.IsDeleted, enableTracking: true);
-
-        var pref = dto?.Preferences ?? DefaultPreferences();
-        var freq = NormalizeFrequency(dto?.Frequency) ?? "weekly";
-        var lang = NormalizeLang(dto?.PreferredLanguage) ?? "az";
-
-        if (sub == null)
+        var created = new NewsletterSubscriber
         {
-            sub = new NewsletterSubscriber
-            {
-                Id = Guid.NewGuid(),
-                Email = email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
+            Id = Guid.NewGuid(),
+            Email = email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
 
-                UserId = uid,
-                IsActive = true,
+            UserId = uid,
+            IsActive = true,
 
-                // user email confirmeddirsə verified = true
-                IsVerified = user.EmailConfirmed,
-                VerifiedAt = user.EmailConfirmed ? DateTime.UtcNow : null,
+            IsVerified = user.EmailConfirmed,
+            VerifiedAt = user.EmailConfirmed ? DateTime.UtcNow : null,
 
-                SubscriptionSource = "profile",
+            SubscriptionSource = "profile",
 
-                Preferences = JsonSerializer.Serialize(pref, JsonOpts),
-                Frequency = freq,
-                PreferredLanguage = lang,
+            Preferences = JsonSerializer.Serialize(pref, JsonOpts),
+            Frequency = freq,
+            PreferredLanguage = lang,
 
-                SubscribedAt = DateTime.UtcNow,
-                CreatedDate = DateTime.UtcNow,
-                LastUpdatedDate = DateTime.UtcNow,
-                IsDeleted = false
-            };
+            SubscribedAt = DateTime.UtcNow,
+            CreatedDate = DateTime.UtcNow,
+            LastUpdatedDate = DateTime.UtcNow,
+            IsDeleted = false
+        };
 
-            await _write.AddAsync(sub);
-            await _write.CommitAsync();
-            return Map(sub);
-        }
-
-        // update
-        sub.IsActive = true;
-        sub.UserId = uid;
-        sub.FirstName ??= user.FirstName;
-        sub.LastName ??= user.LastName;
-
-        sub.Preferences = JsonSerializer.Serialize(pref, JsonOpts);
-        sub.Frequency = freq;
-        sub.PreferredLanguage = lang;
-
-        sub.IsVerified = user.EmailConfirmed;
-        if (sub.IsVerified && sub.VerifiedAt == null) sub.VerifiedAt = DateTime.UtcNow;
-
-        sub.LastUpdatedDate = DateTime.UtcNow;
-
-        await _write.UpdateAsync(sub);
+        await _write.AddAsync(created);
         await _write.CommitAsync();
-
-        return Map(sub);
+        return Map(created);
     }
+
+    // ✅ PRIMARY seç: UserId olan varsa onu götür, yoxdursa ən yenisini götür
+    var primary =
+        subs.FirstOrDefault(x => x.UserId == uid)
+        ?? subs.FirstOrDefault(x => x.UserId != null)
+        ?? subs.OrderByDescending(x => x.CreatedDate).First();
+
+    // ✅ primary-ni user-ə bağla + update et
+    primary.IsActive = true;
+    primary.UserId = uid;
+    primary.FirstName ??= user.FirstName;
+    primary.LastName ??= user.LastName;
+
+    // dto gəlməyibsə guest preferences saxlanılsın istəyirsənsə bu 3 sətri ŞƏRTLİ et:
+    primary.Preferences = JsonSerializer.Serialize(pref, JsonOpts);
+    primary.Frequency = freq;
+    primary.PreferredLanguage = lang;
+
+    primary.IsVerified = user.EmailConfirmed;
+    if (primary.IsVerified && primary.VerifiedAt == null)
+        primary.VerifiedAt = DateTime.UtcNow;
+
+    primary.LastUpdatedDate = DateTime.UtcNow;
+
+    // ✅ qalan duplicate-ləri soft delete et
+    foreach (var other in subs.Where(x => x.Id != primary.Id))
+    {
+        other.IsDeleted = true;
+        other.DeletedDate = DateTime.UtcNow;
+        other.LastUpdatedDate = DateTime.UtcNow;
+        await _write.UpdateAsync(other);
+    }
+
+    await _write.UpdateAsync(primary);
+    await _write.CommitAsync();
+
+    return Map(primary);
+}
 
     // ================
     // 5) GetMe (logged-in user)

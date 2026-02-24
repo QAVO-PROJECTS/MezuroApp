@@ -93,7 +93,7 @@ namespace MezuroApp.Persistance.Concretes.Services
                 await _userManager.AddToRoleAsync(user, "Customer");
                 // DI: private readonly INewsletterService _newsletterService;
 
-                await _newsletterService.SubscribeForUserAsync(user.Id, user.Email);
+                await _newsletterService.EnsureForCurrentUserAsync(user.Id.ToString(), null);
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
      
                 var confirmationLink = $"https://sshss.com/confirm-email?userId={user.Id}&token={token}";
@@ -218,6 +218,7 @@ namespace MezuroApp.Persistance.Concretes.Services
                 throw new GlobalAppException("Zehmet olmazsa mailinizi tesdiq edin!");
             }
 
+            await _newsletterService.EnsureForCurrentUserAsync(user.Id.ToString(), null);
             // 3. İstifadəçi tapılıb və şifrə düzgün daxil edilib
             // Access Token və Refresh Token yaradırıq
             var accessToken = await _tokenService.GenerateAccessTokenAsync(user);

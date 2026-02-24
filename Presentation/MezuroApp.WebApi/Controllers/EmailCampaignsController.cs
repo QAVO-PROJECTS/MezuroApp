@@ -18,7 +18,7 @@ public sealed class EmailCampaignsController : BaseApiController
         _service = service;
     }
 
-    // Admin-only (səndə admin role necədirsə elə yaz)
+
     [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateEmailCampaignDto dto)
@@ -36,39 +36,8 @@ public sealed class EmailCampaignsController : BaseApiController
         catch { return ServerErrorResponse(); }
     }
 
-    [Authorize(Roles = "Admin")]
-    [HttpPost("{id}/schedule")]
-    public async Task<IActionResult> Schedule(string id, [FromBody] ScheduleCampaignDto dto)
-    {
-        try
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrWhiteSpace(userId))
-                return BadRequestResponse("USER_ID_NOT_FOUND");
 
-            var data = await _service.ScheduleAsync(userId, id, dto.ScheduledAt);
-            return OkResponse(data, "CAMPAIGN_SCHEDULED");
-        }
-        catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
-        catch { return ServerErrorResponse(); }
-    }
 
-    [Authorize(Roles = "Admin")]
-    [HttpPost("{id}/send-now")]
-    public async Task<IActionResult> SendNow(string id)
-    {
-        try
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrWhiteSpace(userId))
-                return BadRequestResponse("USER_ID_NOT_FOUND");
-
-            var data = await _service.SendNowAsync(userId, id);
-            return OkResponse(data, "CAMPAIGN_SEND_QUEUED");
-        }
-        catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
-        catch { return ServerErrorResponse(); }
-    }
 
     [Authorize(Roles = "Admin")]
     [HttpPost("{id}/cancel")]

@@ -47,8 +47,7 @@ namespace MezuroApp.Application.Mappings
                 .ForMember(d => d.ParentId, opt => opt.MapFrom(s =>
                     string.IsNullOrWhiteSpace(s.ParentId) ? (Guid?)null : Guid.Parse(s.ParentId)))
                 .ForMember(d => d.ImageUrl,  opt => opt.Ignore())
-                .ForMember(d => d.Level,     opt => opt.MapFrom(s => s.Level))
-                .ForMember(d => d.SortOrder, opt => opt.MapFrom(s => s.SortOrder))
+
                 .ForMember(d => d.ProductCategories, opt => opt.Ignore())
                 .ForMember(d => d.Children,  opt => opt.Ignore());
 

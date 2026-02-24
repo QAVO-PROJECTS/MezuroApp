@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MezuroApp.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+841bf13feaeae58299e921287c92d1679bd712e2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a2a822264d4ffb735f9a9e4dbaea8c0bc852f240")]
 [assembly: System.Reflection.AssemblyProductAttribute("MezuroApp.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MezuroApp.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

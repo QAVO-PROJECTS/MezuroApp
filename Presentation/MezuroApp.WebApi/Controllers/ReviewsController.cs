@@ -78,8 +78,7 @@ public class ReviewsController : BaseApiController
         catch { return ServerErrorResponse(); }
     }
 
-    /// <summary>Rəyə admin cavabı əlavə edir.</summary>
-    [Authorize(Policy = Permissions.Reviews.Reply)]
+ 
     [HttpPatch("reply")]
     public async Task<IActionResult> Reply([FromBody] ReplyReviewDto dto)
     {
@@ -94,8 +93,7 @@ public class ReviewsController : BaseApiController
         catch { return ServerErrorResponse(); }
     }
 
-    /// <summary>Rəyin statusunu dəyişir.</summary>
-     [Authorize(Policy = Permissions.Reviews.SetStatus)]
+
     [HttpPatch("{id}/status")]
     public async Task<IActionResult> EditStatus([FromRoute] string id, [FromQuery] bool status)
     {
@@ -147,8 +145,7 @@ public class ReviewsController : BaseApiController
         catch { return ServerErrorResponse(); }
     }
 
-    /// <summary>Rəyi silir (soft delete).</summary>
-    [Authorize(Policy = Permissions.Reviews.Delete)]
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete([FromRoute] string id)
     {

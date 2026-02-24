@@ -931,6 +931,75 @@ public abstract class BaseApiController : ControllerBase
     "Abonelik başarıyla aktif edildi.",
     "Подписка успешно активирована."
 ),
+["CAMPAIGN_CREATED"] = (
+    "Kampaniya uğurla yaradıldı.",
+    "Campaign created successfully.",
+    "Kampanya başarıyla oluşturuldu.",
+    "Кампания успешно создана."
+),
+
+["USER_ID_NOT_FOUND"] = (
+    "İstifadəçi identifikatoru tapılmadı.",
+    "User identifier not found.",
+    "Kullanıcı kimliği bulunamadı.",
+    "Идентификатор пользователя не найден."
+),
+
+["CAMPAIGN_CANCELLED"] = (
+    "Kampaniya ləğv edildi.",
+    "Campaign has been cancelled.",
+    "Kampanya iptal edildi.",
+    "Кампания была отменена."
+),
+
+["CAMPAIGNS_RETURNED"] = (
+    "Kampaniyalar uğurla qaytarıldı.",
+    "Campaigns retrieved successfully.",
+    "Kampanyalar başarıyla getirildi.",
+    "Кампании успешно получены."
+),
+
+["CAMPAIGN_RETURNED"] = (
+    "Kampaniya məlumatları qaytarıldı.",
+    "Campaign details retrieved successfully.",
+    "Kampanya detayları başarıyla getirildi.",
+    "Данные кампании успешно получены."
+),
+
+["CAMPAIGN_NOT_FOUND"] = (
+    "Kampaniya tapılmadı.",
+    "Campaign not found.",
+    "Kampanya bulunamadı.",
+    "Кампания не найдена."
+),
+
+["CAMPAIGN_ALREADY_SENT"] = (
+    "Kampaniya artıq göndərilib.",
+    "Campaign has already been sent.",
+    "Kampanya zaten gönderildi.",
+    "Кампания уже отправлена."
+),
+
+["CAMPAIGN_CANNOT_BE_CANCELLED"] = (
+    "Göndərilmiş kampaniya ləğv edilə bilməz.",
+    "A sent campaign cannot be cancelled.",
+    "Gönderilmiş kampanya iptal edilemez.",
+    "Отправленную кампанию нельзя отменить."
+),
+
+["CAMPAIGN_CANNOT_BE_SCHEDULED"] = (
+    "Bu kampaniya planlaşdırıla bilməz.",
+    "This campaign cannot be scheduled.",
+    "Bu kampanya planlanamaz.",
+    "Эту кампанию нельзя запланировать."
+),
+
+["SERVER_ERROR"] = (
+    "Server xətası baş verdi.",
+    "An internal server error occurred.",
+    "Sunucu hatası oluştu.",
+    "Произошла внутренняя ошибка сервера."
+),
 ["NEWSLETTER_UNSUBSCRIBED"] = (
     "Abunəlik deaktiv edildi.",
     "Subscription has been deactivated.",

@@ -80,15 +80,17 @@ public sealed class EmailCampaignService : IEmailCampaignService
 
             CampaignType = dto.CampaignType,
             TargetSegment = dto.TargetSegment,
+            ScheduledAt = DateTime.UtcNow,
+      
 
-            Status = "draft",
+            Status = "scheduled",
             CreatedById = adminId,
 
-            CreatedDate = DateTime.UtcNow,
+            CreatedDate = DateTime.UtcNow.AddMinutes(2),
             LastUpdatedDate = DateTime.UtcNow,
             IsDeleted = false
         };
-
+    
         await _campaignWrite.AddAsync(campaign);
         await _campaignWrite.CommitAsync();
 
@@ -109,6 +111,7 @@ public async Task SendCampaignInternalAsync(Guid campaignId, CancellationToken c
         // scheduled -> sending keçməyibsə də göndərməyə icazə verək
         if (campaign.Status != "sending" && campaign.Status != "scheduled")
             return;
+        await EnsureLogsForSegmentAsync(campaign, ct);
 
         var batchSize = _cfg.GetValue<int>("EmailCampaign:BatchSize", 50);
 
@@ -247,7 +250,7 @@ public async Task SendCampaignInternalAsync(Guid campaignId, CancellationToken c
         // order.Email boş olmamalıdır
         if (string.IsNullOrWhiteSpace(order.Email)) return;
 
-        var segmentJson = JsonSerializer.Serialize(new { type = "order_status_updates" });
+    
 
         var campaign = new EmailCampaign
         {
@@ -266,7 +269,7 @@ public async Task SendCampaignInternalAsync(Guid campaignId, CancellationToken c
             ContentTr = $"Sipariş: {order.OrderNumber} | Yeni durum: {order.Status}",
 
             CampaignType = "order_status",
-            TargetSegment = segmentJson, // ✅ jsonb üçün düzgün
+            TargetSegment = "order_status_updates", // ✅ jsonb üçün düzgün
 
             Status = "scheduled",
             ScheduledAt = DateTime.UtcNow,
@@ -381,12 +384,132 @@ public async Task SendCampaignInternalAsync(Guid campaignId, CancellationToken c
             _ => c.ContentAz
         };
     }
+    private async Task EnsureLogsForSegmentAsync(EmailCampaign campaign, CancellationToken ct)
+    {
+        // artıq log varsa toxunma
+        var existing = await _logRead.GetCountAsync(l =>
+            !l.IsDeleted && l.CampaignId == campaign.Id
+        );
+        if (existing > 0) return;
+
+        // order_status kampaniyası 1 nəfərə gedir, onu ayrıca yazırsan
+        if (campaign.CampaignType == "order_status") return;
+
+        // subscriber-ları çək
+        var subscribers = await _subsRead.GetAllAsync(
+            s => !s.IsDeleted && s.IsActive,
+            enableTracking: false
+        );
+
+        var jsonOpts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+        bool Eligible(NewsletterSubscriber s)
+        {
+            if (string.IsNullOrWhiteSpace(s.Preferences)) return false;
+
+            NewsletterPreferencesDto? pref;
+            try { pref = JsonSerializer.Deserialize<NewsletterPreferencesDto>(s.Preferences, jsonOpts); }
+            catch { return false; }
+
+            var seg = (campaign.TargetSegment ?? "").Trim().ToLowerInvariant();
+
+            return seg switch
+            {
+                "create_promotion"        => pref?.Promotions == true,
+                "newsletter_newproduct"   => pref?.NewProducts == true,
+                "weekly_digest"           => pref?.WeeklyDigest == true,
+                "order_status_updates"    => pref?.OrderStatusUpdates == true,
+                _ => false
+            };
+        }
+
+        var eligible = subscribers.Where(Eligible).ToList();
+
+        foreach (var sub in eligible)
+        {
+            await _logWrite.AddAsync(new EmailCampaignLog
+            {
+                Id = Guid.NewGuid(),
+                CampaignId = campaign.Id,
+                SubscriberId = sub.Id,
+                Email = sub.Email,
+                Status = "pending",
+                CreatedDate = DateTime.UtcNow
+            });
+        }
+
+        await _logWrite.CommitAsync();
+    }
+    private async Task EnsureLogsCreatedAsync(EmailCampaign campaign)
+    {
+        var existing = await _logRead.GetCountAsync(l =>
+            !l.IsDeleted && l.CampaignId == campaign.Id
+        );
+
+        if (existing > 0) return;
+
+        // segmentə görə subscriber-ları seç
+        var subs = await _subsRead.GetAllAsync(s => !s.IsDeleted && s.IsActive, enableTracking: false);
+
+        List<NewsletterSubscriber> eligible = new();
+
+        // TargetSegment-in səndə plain string olduğunu fərz edirik:
+        switch ((campaign.TargetSegment ?? "").Trim().ToLowerInvariant())
+        {
+            case "newsletter_newproduct":
+                eligible = subs.Where(s => PrefBool(s.Preferences, "newProducts")).ToList();
+                break;
+
+            case "create_promotion":
+            case "newsletter_promotion":
+                eligible = subs.Where(s => PrefBool(s.Preferences, "promotions")).ToList();
+                break;
+
+            case "weekly_digest":
+                eligible = subs.Where(s => PrefBool(s.Preferences, "weeklyDigest")).ToList();
+                break;
+
+            default:
+                // heç nə match olmadısa hamısına göndərmək istəsən:
+                // eligible = subs.ToList();
+                eligible = new();
+                break;
+        }
+
+        foreach (var sub in eligible)
+        {
+            await _logWrite.AddAsync(new EmailCampaignLog
+            {
+                Id = Guid.NewGuid(),
+                CampaignId = campaign.Id,
+                SubscriberId = sub.Id,
+                Email = sub.Email,
+                Status = "pending",
+                CreatedDate = DateTime.UtcNow
+            });
+        }
+
+        await _logWrite.CommitAsync();
+    }
+
+    private static bool PrefBool(string? json, string key)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return false;
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            if (!doc.RootElement.TryGetProperty(key, out var p)) return false;
+            return p.ValueKind == JsonValueKind.True;
+        }
+        catch { return false; }
+    }
     public async Task<EmailCampaignDto> ScheduleAsync(string adminUserId, string campaignId, DateTime scheduledAtUtc)
     {
         var campaign = await GetCampaignTracked(campaignId);
 
         if (campaign.Status is "sending" or "sent")
             throw new GlobalAppException("CAMPAIGN_CANNOT_BE_SCHEDULED");
+        await EnsureLogsCreatedAsync(campaign);
 
         campaign.Status = "scheduled";
         campaign.ScheduledAt = DateTime.SpecifyKind(scheduledAtUtc, DateTimeKind.Utc);
