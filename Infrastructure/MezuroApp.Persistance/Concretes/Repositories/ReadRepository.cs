@@ -20,6 +20,7 @@ namespace MezuroApp.Persistance.Concretes.Repositories
 
         protected DbSet<T> Table => _db.Set<T>();
 
+        public IQueryable<T> Query() => Table.AsQueryable();
         public async Task<IList<T>> GetAllAsync(
             Expression<Func<T, bool>>? predicate = null,
             Func<IQueryable<T>, IQueryable<T>>? include = null,

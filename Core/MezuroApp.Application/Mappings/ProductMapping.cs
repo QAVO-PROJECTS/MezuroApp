@@ -17,6 +17,7 @@ public class ProductProfile : Profile
 
         // UPDATE
         CreateMap<UpdateProductDto, Product>()
+            .ForMember(d => d.Id, opt => opt.Ignore())    
             .ForMember(d => d.Images, opt => opt.Ignore())
             .ForMember(d => d.ProductCategories, opt => opt.Ignore())
             .ForMember(d => d.Variants, opt => opt.Ignore())

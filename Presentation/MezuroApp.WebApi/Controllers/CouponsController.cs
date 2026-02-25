@@ -24,7 +24,7 @@ namespace MezuroApp.WebApi.Controllers
         // 📌 LISTS
         // ================================
         [HttpGet]
-        // [Authorize(Policy = Permissions.Coupons.Read)]
+        [Authorize(Policy = Permissions.Coupons.Read)]
         public async Task<IActionResult> GetAll()
         {
             try
@@ -39,13 +39,14 @@ namespace MezuroApp.WebApi.Controllers
            
         }
 
-        [HttpGet("active")]
-        // [Authorize(Policy = Permissions.Coupons.Read)]
-        public async Task<IActionResult> GetAllActive()
+        [HttpGet("filter-active")]
+        [Authorize(Policy = Permissions.Coupons.Read)]
+        public async Task<IActionResult> GetAllActive(  string? validFrom,
+            string? validUntil,bool isActive, int pageNumber, int pageSize)
         {
             try
             {
-                var data = await _service.GetAllActiveCupons();
+                var data = await _service.GetAllFilterCupons(validFrom,validUntil,isActive, pageNumber, pageSize);
                 return OkResponse(data, "COUPONS_RETURNED");
             }
             catch (GlobalAppException ex)
@@ -58,24 +59,7 @@ namespace MezuroApp.WebApi.Controllers
             }
         }
 
-        [HttpGet("inactive")]
-        // [Authorize(Policy = Permissions.Coupons.Read)]
-        public async Task<IActionResult> GetAllInactive()
-        {
-            try
-            {
-                var data = await _service.GetAllInactiveCupons();
-                return OkResponse(data, "COUPONS_RETURNED");
-            }
-            catch (GlobalAppException ex)
-            {
-                return BadRequestResponse(ex.Message);
-            }
-            catch
-            {
-                return ServerErrorResponse();
-            }
-        }
+  
 
         [HttpGet("paged")]
         [Authorize(Policy = Permissions.Coupons.Read)]
@@ -110,7 +94,7 @@ namespace MezuroApp.WebApi.Controllers
         // 📌 GET BY ID / CODE
         // ================================
         [HttpGet("{id}")]
-        // [Authorize(Policy = Permissions.Coupons.Read)]
+        [Authorize(Policy = Permissions.Coupons.Read)]
         public async Task<IActionResult> GetById([FromRoute] string id)
         {
             try
@@ -153,7 +137,7 @@ namespace MezuroApp.WebApi.Controllers
         // ➕ CREATE
         // ================================
         [HttpPost]
-        // [Authorize(Policy = Permissions.Coupons.Create)]
+         [Authorize(Policy = Permissions.Coupons.Update)]
         public async Task<IActionResult> Create([FromBody] CreateCuponDto dto)
         {
             try
@@ -188,7 +172,7 @@ namespace MezuroApp.WebApi.Controllers
         // ✏️ UPDATE
         // ================================
         [HttpPut]
-        // [Authorize(Policy = Permissions.Coupons.Update)]
+        [Authorize(Policy = Permissions.Coupons.Update)]
         public async Task<IActionResult> Update([FromBody] UpdateCuponDto dto)
         {
             try
@@ -212,7 +196,7 @@ namespace MezuroApp.WebApi.Controllers
         // 🟢/🔴 SET ACTIVE
    
 
-        // [Authorize(Policy = Permissions.Coupons.SetActive)]
+        [Authorize(Policy = Permissions.Coupons.Update)]
         [HttpPatch("{id}/isactive")]
         public async Task<IActionResult> IsActive([FromRoute] string id, [FromQuery] bool value)
         {
@@ -235,7 +219,7 @@ namespace MezuroApp.WebApi.Controllers
         // ❌ DELETE
         // ================================
         [HttpDelete("{id}")]
-        // [Authorize(Policy = Permissions.Coupons.Delete)]
+        [Authorize(Policy = Permissions.Coupons.Update)]
         public async Task<IActionResult> Delete([FromRoute] string id)
         {
             try

@@ -11,7 +11,7 @@ public class CreateProductColorDto
     public string? ColorNameTr { get; set; }
     
     public string? ColorCode { get; set; }
-    public string? Sku { get; set; }
+
 
     public List<string>? ColorImageIds { get; set; }
 }

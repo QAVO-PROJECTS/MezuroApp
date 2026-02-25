@@ -36,6 +36,78 @@ public class CategoriesController : BaseApiController
             return ServerErrorResponse();
         }
     }
+    [Authorize(Policy = Permissions.Categories.Read)]
+    [HttpGet("filtered-activated-status")]
+    public async Task<IActionResult> GetAllFilteredStatus(bool isActive)
+    {
+        try
+        {
+            var data = await _service.GetFilteredCategoriesForActiveStatus(isActive);
+            return OkResponse(data, "CATEGORIES_RETURNED");
+        }
+        catch (GlobalAppException ex)
+        {
+            return BadRequestResponse(ex.Message); // ex.Message lüğətdə açar deyilsə olduğu kimi çıxır
+        }
+        catch (Exception)
+        {
+            return ServerErrorResponse();
+        }
+    }
+    [Authorize(Policy = Permissions.Categories.Read)]
+    [HttpGet("filtered-show-menu")]
+    public async Task<IActionResult> GetAllFilteredShowMenuStatus(bool isShowMenu)
+    {
+        try
+        {
+            var data = await _service.GetFilteredCategoriesForShowMenu(isShowMenu);
+            return OkResponse(data, "CATEGORIES_RETURNED");
+        }
+        catch (GlobalAppException ex)
+        {
+            return BadRequestResponse(ex.Message); // ex.Message lüğətdə açar deyilsə olduğu kimi çıxır
+        }
+        catch (Exception)
+        {
+            return ServerErrorResponse();
+        }
+    }
+    [Authorize(Policy = Permissions.Categories.Read)]
+    [HttpGet("sub-categories-filtered-activated-status")]
+    public async Task<IActionResult> GetAllSubCategoriesForFilteredStatus(string parentId,bool isActive)
+    {
+        try
+        {
+            var data = await _service.GetFilteredSubCategoriesForActiveStatus(parentId,isActive);
+            return OkResponse(data, "CATEGORIES_RETURNED");
+        }
+        catch (GlobalAppException ex)
+        {
+            return BadRequestResponse(ex.Message); // ex.Message lüğətdə açar deyilsə olduğu kimi çıxır
+        }
+        catch (Exception)
+        {
+            return ServerErrorResponse();
+        }
+    }
+    [Authorize(Policy = Permissions.Categories.Read)]
+    [HttpGet("sub-categories-filtered-show-menu-status")]
+    public async Task<IActionResult> GetAllSubCategoriesForFilteredShowMenuStatus(string parentId,bool isShowMenu)
+    {
+        try
+        {
+            var data = await _service.GetFilteredSubCategoriesForShowMenu(parentId,isShowMenu);
+            return OkResponse(data, "CATEGORIES_RETURNED");
+        }
+        catch (GlobalAppException ex)
+        {
+            return BadRequestResponse(ex.Message); // ex.Message lüğətdə açar deyilsə olduğu kimi çıxır
+        }
+        catch (Exception)
+        {
+            return ServerErrorResponse();
+        }
+    }
     // For User
     [HttpGet("active")]
     public async Task<IActionResult> GetAllActive()

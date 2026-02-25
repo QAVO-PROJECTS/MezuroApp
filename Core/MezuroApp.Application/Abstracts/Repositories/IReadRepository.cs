@@ -42,5 +42,6 @@ namespace MezuroApp.Application.Abstracts.Repositories
             int page = 1,
             int pageSize = 10,
             bool enableTracking = false);
+        IQueryable<T> Query();
     }
 }

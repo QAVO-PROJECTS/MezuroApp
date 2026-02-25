@@ -42,7 +42,13 @@ namespace MezuroApp.Persistance.Context
         {
             
             base.OnModelCreating(modelBuilder);
+            modelBuilder
+                .HasDbFunction(typeof(MezuroAppDbContext)
+                    .GetMethod(nameof(Unaccent), new[] { typeof(string) })!)
+                .HasName("unaccent");
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(MezuroAppDbContext).Assembly);
         }
+        
+        public static string Unaccent(string text) => throw new NotSupportedException();
     }
 }

@@ -39,25 +39,80 @@ namespace MezuroApp.Persistance.Concretes.Services
             return _mapper.Map<List<CuponDto>>(cupons);
         }
 
-        public async Task<List<CuponDto>> GetAllActiveCupons()
+        public async Task<List<CuponDto>> GetAllFilterCupons(
+            string? validFrom,
+            string? validUntil,
+            bool? isActive,
+            int pageNumber,
+            int pageSize)
         {
-            var cupons = await _readRepo.GetAllAsync(
-                x => !x.IsDeleted && x.IsActive,
-                q => q.Include(x => x.Admin)
-            );
+            var skip = (pageNumber - 1) * pageSize;
+
+            DateTime? fromDate = null;
+            DateTime? untilDate = null;
+
+            // dd.MM.yyyy parse
+            if (!string.IsNullOrWhiteSpace(validFrom))
+            {
+                if (DateTime.TryParseExact(
+                        validFrom,
+                        "dd.MM.yyyy",
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.None,
+                        out var parsedFrom))
+                {
+                    fromDate = parsedFrom.Date;
+                }
+                else
+                {
+                    throw new GlobalAppException("INVALID_VALID_FROM_DATE_FORMAT");
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(validUntil))
+            {
+                if (DateTime.TryParseExact(
+                        validUntil,
+                        "dd.MM.yyyy",
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.None,
+                        out var parsedUntil))
+                {
+                    // günün sonuna qədər
+                    untilDate = parsedUntil.Date.AddDays(1).AddTicks(-1);
+                }
+                else
+                {
+                    throw new GlobalAppException("INVALID_VALID_UNTIL_DATE_FORMAT");
+                }
+            }
+
+            var query = _readRepo.Query()
+                .Where(x => !x.IsDeleted);
+
+            // IsActive filter (null deyilsə)
+            if (isActive.HasValue)
+                query = query.Where(x => x.IsActive == isActive.Value);
+
+            // ValidFrom filter
+            if (fromDate.HasValue)
+                query = query.Where(x => x.ValidFrom >= fromDate.Value);
+
+            // ValidUntil filter
+            if (untilDate.HasValue)
+                query = query.Where(x => x.ValidUntil <= untilDate.Value);
+
+            var cupons = await query
+                .Include(x => x.Admin)
+                .OrderByDescending(x => x.CreatedDate)
+                .Skip(skip)
+                .Take(pageSize)
+                .ToListAsync();
 
             return _mapper.Map<List<CuponDto>>(cupons);
         }
 
-        public async Task<List<CuponDto>> GetAllInactiveCupons()
-        {
-            var cupons = await _readRepo.GetAllAsync(
-                x => !x.IsDeleted && !x.IsActive,
-                q => q.Include(x => x.Admin)
-            );
-
-            return _mapper.Map<List<CuponDto>>(cupons);
-        }
+      
 
         public async Task<List<CuponDto>> PagedGetAllCupons(int pageNumber, int pageSize)
         {

@@ -88,22 +88,18 @@ public class ProductColorService : IProductColorService
         var product = await _productReadRepo.GetAsync(x => x.Id == pid && !x.IsDeleted)
             ?? throw new GlobalAppException("PRODUCT_NOT_FOUND");
 
-        // 2) SKU: gəlməyibsə auto-generate et; gəlmişsə validate et
-        var incomingSku = string.IsNullOrWhiteSpace(dto.Sku) ? null : dto.Sku!.Trim();
-        if (incomingSku == null)
-        {
-            incomingSku = await GenerateUniqueColorSkuAsync(product, dto);
-        }
-        else
-        {
-            await EnsureColorUniquenessAsync(pid, incomingSku, dto.ColorCode, null);
-        }
+        // 2) SKU həmişə auto-generate
+        var generatedSku = await GenerateUniqueColorSkuAsync(product, dto);
+
+        // 3) Unikallıq (ColorCode) yoxla (SKU artıq unique generator-dan gəlir)
+        await EnsureColorUniquenessAsync(pid, generatedSku, dto.ColorCode, null);
+
 
         // 3) Entity map
         var entity = _mapper.Map<ProductColor>(dto);
         entity.Id = Guid.NewGuid();
         entity.ProductId = pid;
-        entity.Sku = incomingSku;
+        entity.Sku = generatedSku;
         entity.CreatedDate = DateTime.UtcNow;
         entity.LastUpdatedDate = entity.CreatedDate;
         entity.IsDeleted = false;
@@ -166,37 +162,25 @@ public class ProductColorService : IProductColorService
             q => q.Include(pc => pc.ColorImages.Where(ci => !ci.IsDeleted)),
             enableTracking: true
         ) ?? throw new GlobalAppException("PRODUCT_COLOR_NOT_FOUND");
+        var product = await _productReadRepo.GetAsync(x => x.Id == entity.ProductId && !x.IsDeleted)
+                      ?? throw new GlobalAppException("PRODUCT_NOT_FOUND");
 
-        // 2) SKU davranışı:
-        // - dto.Sku == null → SKU-ya toxunma
-        // - dto.Sku == ""  → yenidən auto-generate et
-        // - dto.Sku != ""  → unikallıq yoxla və təyin et
-        if (dto.Sku != null)
+        // SKU həmişə regenerate (update zamanı da)
+        var temp = new CreateProductColorDto
         {
-            var trimmed = dto.Sku.Trim();
-            if (string.IsNullOrWhiteSpace(trimmed))
-            {
-                // regenerate
-                var product = await _productReadRepo.GetAsync(x => x.Id == entity.ProductId && !x.IsDeleted)
-                    ?? throw new GlobalAppException("PRODUCT_NOT_FOUND");
+            ColorCode = entity.ColorCode,
+            ColorNameAz = entity.ColorNameAz,
+            ColorNameEn = entity.ColorNameEn,
+            ColorNameRu = entity.ColorNameRu,
+            ColorNameTr = entity.ColorNameTr
+        };
 
-                entity.Sku = await GenerateUniqueColorSkuAsync(product, new CreateProductColorDto
-                {
-                    // auto generation üçün lazım ola biləcək sahələr
-                    ColorCode = dto.ColorCode ?? entity.ColorCode,
-                    ColorNameEn = dto.ColorNameEn ?? entity.ColorNameEn,
-                    ColorNameAz = dto.ColorNameAz ?? entity.ColorNameAz,
-                    ColorNameTr = dto.ColorNameTr ?? entity.ColorNameTr,
-                    ColorNameRu = dto.ColorNameRu ?? entity.ColorNameRu
-                });
-            }
-            else
-            {
-                await EnsureColorUniquenessAsync(entity.ProductId, trimmed, dto.ColorCode ?? entity.ColorCode, entity.Id);
-                entity.Sku = trimmed;
-            }
-        }
+        var newSku = await GenerateUniqueColorSkuAsync(product, temp);
 
+        // Unikallıq (SKU + ColorCode) (özünü exclude et)
+        await EnsureColorUniquenessAsync(entity.ProductId, newSku, entity.ColorCode, entity.Id);
+
+        entity.Sku = newSku;
         // 3) Unikallıq (ColorCode) – dəyişirsə
         if (dto.ColorCode != null)
         {

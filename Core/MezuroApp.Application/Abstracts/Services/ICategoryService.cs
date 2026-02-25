@@ -10,6 +10,10 @@ public interface ICategoryService
    public Task<List<CategoryDto>> GetAllCategoriesByParentId(string parentId);
    Task<List<CategoryDto>> GetAllMenuCategoriesByParentId(string parentId);
    public Task<CategoryDto?> GetCategoryById(string id);
+   Task<List<CategoryDto>> GetFilteredCategoriesForActiveStatus(bool isActive);
+   Task<List<CategoryDto>> GetFilteredSubCategoriesForActiveStatus(string parentId, bool isActive);
+   Task<List<CategoryDto>> GetFilteredCategoriesForShowMenu(bool isShowMenu);
+   Task<List<CategoryDto>> GetFilteredSubCategoriesForShowMenu(string parentId, bool isShowMenu);
    public Task CreateCategory(CreateCategoryDto categoryDto);
    public Task UpdateCategory(UpdateCategoryDto categoryDto);
    public Task DeleteCategory(string id);

@@ -5,8 +5,9 @@ namespace MezuroApp.Application.Abstracts.Services;
 public interface ICuponService
 {
     Task<List<CuponDto>> GetAllCupons();
-    Task<List<CuponDto>> GetAllActiveCupons();
-    Task<List<CuponDto>> GetAllInactiveCupons();
+
+    Task<List<CuponDto>> GetAllFilterCupons(string? validFrom, string? validUntil, bool? isActive, int pageNumber,
+        int pageSize);
     Task<List<CuponDto>> PagedGetAllCupons(int pageNumber, int pageSize);
     Task<List<CuponDto>> PagedGetAllActiveCupons(int pageNumber, int pageSize);
     Task<List<CuponDto>> PagedGetAllInactiveCupons(int pageNumber, int pageSize);

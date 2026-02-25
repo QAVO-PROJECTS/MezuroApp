@@ -9,7 +9,7 @@ public class UpdateProductColorDto
     public string? ColorNameTr { get; set; }
     
     public string? ColorCode { get; set; }
-    public string? Sku { get; set; }
+ 
 
     public List<string>? NewColorImageIds { get; set; }
     public List<string>? DeletedColorImageIds { get; set; }

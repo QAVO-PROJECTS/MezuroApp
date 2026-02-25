@@ -1,4 +1,5 @@
 using MezuroApp.Application.Dtos.Product;
+using MezuroApp.Application.Dtos.Product.ProductFilter;
 using MezuroApp.Domain.HelperEntities;
 
 public interface IProductService
@@ -8,6 +9,23 @@ public interface IProductService
     Task<PagedResult<ProductDto>> GetAllBestSellerAsync(int page, int pageSize);
     Task<PagedResult<ProductDto>> GetAllNewProductAsync(int page, int pageSize);
     Task<PagedResult<ProductDto>> GetAllOnSaleAsync(int page, int pageSize);
+    Task<PagedResult<ProductDto>> GetAllProductForAdminAsync(int page, int pageSize);
+    Task<PagedResult<ProductDto>> GetAllStatusFilteredProductForAdminAsync(int page, int pageSize, bool status);
+    Task<PagedResult<ProductDto>> AdminSortedAsync(AdminProductSortRequestDto r);
+
+    Task<PagedResult<ProductDto>> AdminSearchAsync(
+        string term,
+        string lang = "az",
+        
+        int page = 1,
+        int pageSize = 20);
+
+    Task<ProductFilterMetaDto> GetFilterMetaAsync(
+        string? categoryId = null,
+        string lang = "az");
+
+    Task<PagedResult<ProductDto>> FilterAsync(ProductFilterRequestDto r);
+    Task<PagedResult<ProductDto>> AdminFilterByPriceAsync(AdminProductFilterRequestDto r);
     Task CreateAsync(CreateProductDto dto);
     Task UpdateAsync(UpdateProductDto dto);
     Task DeleteAsync(string id);

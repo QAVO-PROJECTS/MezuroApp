@@ -27,24 +27,22 @@ public class UpdateProductDto
     public string? ShortDescriptionTr { get; set; }
 
     // Identifiers
-    public string? Sku { get; set; }
+
     public string? Barcode { get; set; }
-    public string? Slug { get; set; }
+
 
     // Pricing
     public decimal? Price { get; set; }
     public decimal? CompareAtPrice { get; set; }
-    public decimal? CostPrice { get; set; }
+
 
     // Inventory
     public int? StockQuantity { get; set; }
-    public int? LowStockThreshold { get; set; }
-    public bool? TrackInventory { get; set; }
-    public bool? AllowBackorder { get; set; }
+
 
     // Status
     public bool? IsActive { get; set; }
-    public bool? IsFeatured { get; set; }
+
     public bool? IsNew { get; set; }
     public bool? IsOnSale { get; set; }
     public bool? IsBestseller { get; set; }
@@ -66,7 +64,7 @@ public class UpdateProductDto
     public string? MetaDescriptionTr { get; set; }
  
     public List<IFormFile>? NewImageFiles { get; set; }
-    public List<IFormFile>? NewThumbnailImageFiles { get; set; }
+
     // JSON olaraq gələcək
     [FromForm(Name = "newImagesJson")]
     public string? NewImagesJson { get; set; } = "[]";

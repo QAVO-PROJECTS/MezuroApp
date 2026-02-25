@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MezuroApp.Application.Abstracts.Services;
 using MezuroApp.Application.Dtos.Product;
+using MezuroApp.Application.Dtos.Product.ProductFilter;
 using MezuroApp.Application.GlobalException;
 using MezuroApp.Domain.HelperEntities;
 using Microsoft.AspNetCore.Authorization;
@@ -17,8 +18,6 @@ public class ProductsController : BaseApiController
         _service = service;
     }
     [Authorize(Policy = Permissions.Products.Read)]
-
-    /// <summary> Bütün məhsulları qaytarır </summary>
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -113,8 +112,104 @@ public class ProductsController : BaseApiController
             return ServerErrorResponse();
         }
     }
+    // ✅ 1) FILTER META (colors + counts, options + values)
+// GET: /api/products/filter-meta?categoryId=... (optional)
+    [HttpGet("filter-meta")]
+    public async Task<IActionResult> GetFilterMeta([FromQuery] string? categoryId = null,[FromQuery] string lang = "az")
+    {
+        try
+        {
+            var result = await _service.GetFilterMetaAsync(categoryId, lang);
+            return OkResponse(result, "PRODUCT_FILTER_META_RETURNED");
+        }
+        catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
+         catch { return ServerErrorResponse(); }
+    }
 
-    // [Authorize(Policy = Permissions.Products.Update)]
+// ✅ 2) FILTER PRODUCTS
+// POST: /api/products/filter
+    [HttpPost("filter")]
+    public async Task<IActionResult> Filter([FromBody] ProductFilterRequestDto request)
+    {
+        try
+        {
+            var result = await _service.FilterAsync(request);
+            return OkResponse(result, "PRODUCTS_FILTERED_RETURNED");
+        }
+        catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
+        catch { return ServerErrorResponse(); }
+    }
+
+    [Authorize(Policy = Permissions.Products.Read)]
+    [HttpGet("admin")]
+    public async Task<IActionResult> GetAllProductForAdmin([FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            var result = await _service.GetAllProductForAdminAsync(page, pageSize);
+            return OkResponse(result, "PRODUCTS_RETURNED");
+        }
+        catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
+        catch { return ServerErrorResponse(); }
+    }
+    [Authorize(Policy = Permissions.Products.Read)]
+    [HttpGet("admin/search")]
+    public async Task<IActionResult> AdminSearch(
+        [FromQuery] string term,
+        [FromQuery] string lang = "az",
+     
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            var result = await _service.AdminSearchAsync(term, lang,  page, pageSize);
+            return OkResponse(result, "PRODUCTS_RETURNED");
+        }
+        catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
+        catch { return ServerErrorResponse(); }
+    }
+    [Authorize(Policy = Permissions.Products.Read)]
+    [HttpGet("admin/filter-status")]
+    public async Task<IActionResult> GetAllStatusFilteredProductForAdmin([FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,[FromQuery]bool status=true)
+    {
+        try
+        {
+            var result = await _service.GetAllStatusFilteredProductForAdminAsync(page, pageSize,status);
+            return OkResponse(result, "PRODUCTS_RETURNED");
+        }
+        catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
+        catch { return ServerErrorResponse(); }
+    }
+    // [Authorize(Policy = Permissions.Products.Read)]
+    [HttpGet("admin/filter-by-price")]
+    public async Task<IActionResult> AdminFilterByPrice([FromQuery] AdminProductFilterRequestDto r)
+    {
+        try
+        {
+            var result = await _service.AdminFilterByPriceAsync(r);
+            return OkResponse(result, "PRODUCTS_RETURNED");
+        }
+        catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
+        catch { return ServerErrorResponse(); }
+    }
+
+    // [Authorize(Policy = Permissions.Products.Read)]
+    [HttpGet("admin/sorted")]
+    public async Task<IActionResult> AdminSorted([FromQuery] AdminProductSortRequestDto r)
+    {
+        try
+        {
+            var result = await _service.AdminSortedAsync(r);
+            return OkResponse(result, "PRODUCTS_RETURNED");
+        }
+        catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
+        catch { return ServerErrorResponse(); }
+    }
+
+    [Authorize(Policy = Permissions.Products.Update)]
     [HttpPost]
     public async Task<IActionResult> Create([FromForm] CreateProductDto dto)
     {
@@ -152,7 +247,7 @@ public class ProductsController : BaseApiController
         }
     }
 
-    [Authorize(Policy = Permissions.Products.Update)]
+     [Authorize(Policy = Permissions.Products.Update)]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete([FromRoute] string id)
     {
@@ -212,7 +307,7 @@ public class ProductsController : BaseApiController
     
     [Authorize(Policy = Permissions.Products.Update)]
 
-    /// <summary> Məhsulun IsFeatured statusunu dəyişir </summary>
+
     [HttpPatch("{id}/featured")]
     public async Task<IActionResult> SetIsFeatured([FromRoute] string id, [FromQuery] bool value)
     {
@@ -234,7 +329,7 @@ public class ProductsController : BaseApiController
     
     [Authorize(Policy = Permissions.Products.Update)]
 
-    /// <summary> Məhsulun IsNew statusunu dəyişir </summary>
+
     [HttpPatch("{id}/new")]
     public async Task<IActionResult> SetIsNew([FromRoute] string id, [FromQuery] bool value)
     {
@@ -254,7 +349,7 @@ public class ProductsController : BaseApiController
     }
 
     [Authorize(Policy = Permissions.Products.Update)]
-    /// <summary> Məhsulun IsOnSale statusunu dəyişir </summary>
+
     [HttpPatch("{id}/onsale")]
     public async Task<IActionResult> SetIsOnSale([FromRoute] string id, [FromQuery] bool value)
     {

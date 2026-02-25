@@ -55,8 +55,8 @@ public class ProductColorsController : BaseApiController
         }
     }
 
-    // [Authorize(Policy = Permissions.ProductColors.Create)]
-    /// <summary> Yeni product color yaradır </summary>
+    [Authorize(Policy = Permissions.Products.Update)]
+  
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateProductColorDto dto)
     {
@@ -74,9 +74,7 @@ public class ProductColorsController : BaseApiController
             return ServerErrorResponse();
         }
     }
-    // [Authorize(Policy = Permissions.ProductColors.Update)]
-
-    /// <summary> Product color yeniləyir </summary>
+    [Authorize(Policy = Permissions.Products.Update)]
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] UpdateProductColorDto dto)
     {
@@ -95,8 +93,7 @@ public class ProductColorsController : BaseApiController
         }
     }
 
-    // [Authorize(Policy = Permissions.ProductColors.Delete)]
-    /// <summary> Product color silir (soft delete) </summary>
+    [Authorize(Policy = Permissions.Products.Update)]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete([FromRoute] string id)
     {

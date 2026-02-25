@@ -174,18 +174,26 @@ public abstract class BaseApiController : ControllerBase
             "Ürün başarıyla güncellendi.",
             "Товар успешно обновлён."
         ),
+        ["PRODUCT_FILTER_META_RETURNED"] = (
+            "Filter məlumatları qaytarıldı.",
+            "Filter metadata returned.",
+            "Filtre verileri döndürüldü.",
+            "Данные фильтра успешно получены."
+        ),
+
+        ["PRODUCTS_FILTERED_RETURNED"] = (
+            "Filter edilmiş məhsullar qaytarıldı.",
+            "Filtered products returned.",
+            "Filtrelenmiş ürünler döndürüldü.",
+            "Отфильтрованные товары возвращены."
+        ),
         ["PRODUCT_DELETED"] = (
             "Məhsul uğurla silindi.",
             "Product has been deleted successfully.",
             "Ürün başarıyla silindi.",
             "Товар успешно удалён."
         ),
-        ["PRODUCT_NOT_FOUND"] = (
-            "Məhsul tapılmadı.",
-            "Product not found.",
-            "Ürün bulunamadı.",
-            "Товар не найден."
-        ),
+   
         ["SKU_ALREADY_EXISTS"] = (
             "Bu SKU artıq mövcuddur.",
             "This SKU already exists.",

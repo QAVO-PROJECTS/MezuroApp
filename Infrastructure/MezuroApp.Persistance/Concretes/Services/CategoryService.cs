@@ -70,6 +70,55 @@ namespace MezuroApp.Persistance.Concretes.Services
 
             return _mapper.Map<List<CategoryDto>>(categories);
         }
+        public async Task<List<CategoryDto>> GetFilteredCategoriesForActiveStatus(bool isActive)
+        {
+            var categories = await _readRepo.GetAllAsync(
+                c => !c.IsDeleted &&  c.ParentId == null && c.IsActive==isActive,
+                q => q
+                    .Include(c => c.Children)
+                    .Include(c => c.ProductCategories)
+                    .ThenInclude(pc => pc.Product)
+            );
+
+            return _mapper.Map<List<CategoryDto>>(categories);
+        }
+        public async Task<List<CategoryDto>> GetFilteredCategoriesForShowMenu(bool isShowMenu)
+        {
+            var categories = await _readRepo.GetAllAsync(
+                c => !c.IsDeleted &&  c.ParentId == null && c.IsActive==isShowMenu,
+                q => q
+                    .Include(c => c.Children)
+                    .Include(c => c.ProductCategories)
+                    .ThenInclude(pc => pc.Product)
+            );
+
+            return _mapper.Map<List<CategoryDto>>(categories);
+        }
+        public async Task<List<CategoryDto>> GetFilteredSubCategoriesForShowMenu(string parentId,bool isShowMenu)
+        {
+            var categories = await _readRepo.GetAllAsync(
+                c => !c.IsDeleted &&  c.ParentId.ToString() == parentId && c.IsActive==isShowMenu,
+                q => q
+                    .Include(c => c.Children)
+                    .Include(c => c.ProductCategories)
+                    .ThenInclude(pc => pc.Product)
+            );
+
+            return _mapper.Map<List<CategoryDto>>(categories);
+        }
+
+        public async Task<List<CategoryDto>> GetFilteredSubCategoriesForActiveStatus(string parentId,bool isActive)
+        {
+            var categories = await _readRepo.GetAllAsync(
+                c => !c.IsDeleted &&  c.ParentId.ToString() == parentId && c.IsActive==isActive,
+                q => q
+                    .Include(c => c.Children)
+                    .Include(c => c.ProductCategories)
+                    .ThenInclude(pc => pc.Product)
+            );
+
+            return _mapper.Map<List<CategoryDto>>(categories);
+        }
 
         public async Task<List<CategoryDto>> GetAllMenuCategories()
         {
