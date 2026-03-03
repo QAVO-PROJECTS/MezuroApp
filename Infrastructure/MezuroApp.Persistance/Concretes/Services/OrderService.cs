@@ -375,6 +375,7 @@ public class OrderService : IOrderService
             // IMPORTANT: eyni DbContext deyilsə, bu commit-lər vacibdir
             await _cuponWrite.CommitAsync();
             await _orderWrite.CommitAsync();
+            await MarkAbandonedCartRecoveredAsync(order.Id, basket.Id, uid, dto.FootprintId);
 
             // 10) Clear basket (soft delete)
             foreach (var bi in basket.BasketItems.Where(x => !x.IsDeleted))
@@ -591,6 +592,33 @@ public class OrderService : IOrderService
         await _orderWrite.UpdateAsync(order);
         await _orderWrite.CommitAsync();
         await _campaignService.CreateAndScheduleOrderStatusCampaignAsync(order);
+    }
+    private async Task MarkAbandonedCartRecoveredAsync(Guid orderId, Guid? basketId, Guid? userId, string? footprintId)
+    {
+        var db = _orderWrite.GetDbContext();
+        var now = DateTime.UtcNow;
+
+        var q = db.Set<AbandonedCart>().Where(a =>
+            !a.IsDeleted &&
+            a.Status != "recovered"&&
+            (
+                (basketId != null && a.BasketId == basketId) ||
+                (basketId == null && userId != null && a.UserId == userId) ||
+                (basketId == null && userId == null && footprintId != null && a.FootprintId == footprintId)
+            )
+        );
+
+        var hit = await q
+            .OrderByDescending(a => a.CreatedDate)
+            .FirstOrDefaultAsync();
+
+        if (hit == null) return;
+
+        hit.Status ="recovered";
+        hit.ConvertedToOrderId = orderId;
+        hit.LastUpdatedDate = now;
+
+        await db.SaveChangesAsync();
     }
     private static string NormalizeStatus(string status)
         => (status ?? "").Trim().ToLowerInvariant();

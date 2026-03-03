@@ -1,4 +1,5 @@
 using MezuroApp.Application.Dtos.Newsletter;
+using MezuroApp.Application.Dtos.Newsletter.Admin;
 
 namespace MezuroApp.Application.Abstracts.Services;
 
@@ -14,4 +15,8 @@ public interface INewsletterService
     Task UnsubscribeAsync(string email, string? reason = null, CancellationToken ct = default);
     Task<NewsletterSubscriberDto> EnsureForCurrentUserAsync(string userId, EnsureSubscriberRequestDto? dto);
     Task<NewsletterSubscriberDto> GetMeAsync(string userId);
+
+    Task<AdminNewsletterSubscribersListResponseDto> GetAsync(AdminNewsletterSubscribersFilterDto f,
+        CancellationToken ct);
+
 }

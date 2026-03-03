@@ -9,6 +9,7 @@ public interface IEmailCampaignService
     Task<EmailCampaignDto> ScheduleAsync(string adminUserId, string campaignId, DateTime scheduledAtUtc);
     Task<EmailCampaignDto> SendNowAsync(string adminUserId, string campaignId);
     Task CancelAsync(string adminUserId, string campaignId);
+    Task<EstimateRecipientsDto> EstimateRecipientsAsync(string targetSegment, CancellationToken ct = default);
 
     Task<List<EmailCampaignDto>> GetAllAsync();
     Task<EmailCampaignDto> GetByIdAsync(string campaignId);

@@ -26,7 +26,11 @@ public class PaymentTransactionConfiguration : IEntityTypeConfiguration<PaymentT
         b.HasOne(x => x.Order)
             .WithMany(o => o.PaymentTransactions)
             .HasForeignKey(x => x.OrderId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
+        b.HasOne(x => x.UserCard)
+            .WithMany(o => o.PaymentTransactions)
+            .HasForeignKey(x => x.UserCardId)
+            .OnDelete(DeleteBehavior.Restrict);
         b.HasIndex(x => x.OrderId);
         b.HasIndex(x => x.TransactionId);
         b.HasIndex(x => x.Status);

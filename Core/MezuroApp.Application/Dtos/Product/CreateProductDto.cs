@@ -31,7 +31,9 @@ public class CreateProductDto
 
 
     // Pricing
+
     public decimal Price { get; set; }
+
     public decimal? CompareAtPrice { get; set; }
 
 

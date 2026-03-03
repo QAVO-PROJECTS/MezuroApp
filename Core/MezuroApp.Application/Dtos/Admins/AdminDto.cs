@@ -11,6 +11,8 @@ public class AdminDto
     public bool IsSuperAdmin { get; set; }
     public IEnumerable<string> Roles { get; set; } = Array.Empty<string>();
     public IEnumerable<string> Permissions { get; set; } = Array.Empty<string>();
-    public DateTime? LastLoginAt { get; set; }
-    public DateTime CreatedAt { get; set; }
+    
+    public bool? IsActive { get; set; }
+    public string? LastLoginAt { get; set; }
+    public string? CreatedAt { get; set; }
 }

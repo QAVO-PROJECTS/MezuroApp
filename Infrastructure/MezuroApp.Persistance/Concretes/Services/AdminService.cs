@@ -43,8 +43,93 @@ namespace MezuroApp.Persistance.Concretes.Services
             _tokenService = tokenService;
             _auditLog     = auditLogService;
         }
+        public async Task<PagedResult<AdminDto>> GetAllAdminsAsync(string id, bool ? isActive, int page = 1, int pageSize = 10)
+        {
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 20;
 
-        public async Task<AdminCreateResponseDto> CreateAsync(AdminCreateRequestDto dto, Guid actorId)
+            // yalnız Admin və SuperAdmin (DB-də role join etmədən, sadə/yüngül yol)
+            // əvvəlcə bütün user-ları çəkib sonra role yoxlama edirik (Identity join-ları qarışdırmırıq)
+            var users = await _userManager.Users
+                .AsNoTracking().Where(x=>x.Id.ToString()!=id && !x.IsDeleted)
+                .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync();
+
+            var list = new List<AdminDto>();
+
+            foreach (var u in users)
+            {
+                var roles = await _userManager.GetRolesAsync(u);
+                if (!roles.Contains(ADMIN_ROLE) && !roles.Contains(SUPERADMIN_ROLE))
+                    continue;
+
+                if (isActive.HasValue && u.IsActive != isActive.Value)
+                    continue;
+
+                var claims = await _userManager.GetClaimsAsync(u);
+
+                list.Add(new AdminDto
+                {
+                    Id = u.Id.ToString(),
+                    Email = u.Email!,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    PhoneNumber = u.PhoneNumber,
+                    Roles = roles,
+                    IsActive = u.IsActive,
+                    IsSuperAdmin = roles.Contains(SUPERADMIN_ROLE) || (u is Admin aa && aa.IsSuperAdmin),
+                    Permissions = claims.Where(c => c.Type == Permissions.ClaimType).Select(c => c.Value).ToList(),
+                    LastLoginAt = u.LastLoginAt?.ToString("dd.MM.yyyy HH:mm"),
+                    CreatedAt = u.CreatedAt.ToString("dd.MM.yyyy HH:mm"),
+                });
+            }
+
+            var total = list.Count;
+
+            var items = list
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return new PagedResult<AdminDto>
+            {
+                Items = items,
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = total
+            };
+        }
+
+        public async Task SetAdminActiveAsync(string adminId, bool value, Guid actorId)
+        {
+            var actor = await _userManager.FindByIdAsync(actorId.ToString())
+                        ?? throw new GlobalAppException("ACTOR_NOT_FOUND");
+
+            if (!await IsSuperAdminAsync(actor))
+                throw new GlobalAppException("ONLY_SUPERADMIN_CAN_UPDATE_ADMIN");
+
+            if (!Guid.TryParse(adminId, out var gid))
+                throw new GlobalAppException("INVALID_ADMIN_ID");
+
+            var target = await _userManager.FindByIdAsync(gid.ToString())
+                         ?? throw new GlobalAppException("TARGET_ADMIN_NOT_FOUND");
+
+            var roles = await _userManager.GetRolesAsync(target);
+            if (!roles.Contains(ADMIN_ROLE) && !roles.Contains(SUPERADMIN_ROLE))
+                throw new GlobalAppException("TARGET_USER_IS_NOT_ADMIN");
+
+            // istəsən: superadmin-i deactivate etməyi qadağan et
+            // if (roles.Contains(SUPERADMIN_ROLE) && value == false)
+            //     throw new GlobalAppException("CANNOT_DEACTIVATE_SUPERADMIN");
+
+            target.IsActive = value;
+            target.UpdatedAt = DateTime.UtcNow;
+
+            var res = await _userManager.UpdateAsync(target);
+            if (!res.Succeeded)
+                throw new GlobalAppException("ADMIN_UPDATE_FAILED");
+        }
+        public async Task<AdminCreateResponseDto> CreateAsync(AdminCreateRequestDto dto, Guid actorId , bool superAdmin)
         {
             // yalnız SuperAdmin yarada bilər
             var actor = await _userManager.FindByIdAsync(actorId.ToString())
@@ -53,13 +138,54 @@ namespace MezuroApp.Persistance.Concretes.Services
             if (!await IsSuperAdminAsync(actor))
                 throw new GlobalAppException("Yalnız SuperAdmin admin yarada bilər.");
 
-            var exists = await _userManager.FindByEmailAsync(dto.Email);
-            if (exists != null)
-                throw new GlobalAppException("Bu e-poçt ilə artıq istifadəçi mövcuddur.");
+            var existingUser = await _userManager.FindByEmailAsync(dto.Email);
+
+            if (existingUser != null)
+            {
+                // artıq admin rolundadırsa xəta at
+                var role = await _userManager.GetRolesAsync(existingUser);
+                if (role.Contains(ADMIN_ROLE) || role.Contains(SUPERADMIN_ROLE))
+                    throw new GlobalAppException("EMAIL_ALREADY_ADMIN");
+
+                // mövcud user-i admin et
+                if (superAdmin)
+                {
+                    await _userManager.AddToRoleAsync(existingUser, SUPERADMIN_ROLE);
+                }
+                else
+                {
+                    await _userManager.AddToRoleAsync(existingUser, ADMIN_ROLE);
+                }
+                if (superAdmin)
+                {
+                    // ✅ superadmin yaradılırsa: hamı permissions
+                    foreach (var p in GetAllPermissions())
+                        await _userManager.AddClaimAsync(existingUser, new Claim(Permissions.ClaimType, p));
+                }
+                else if (dto.InitialPermissions != null && dto.InitialPermissions.Any())
+                {
+                    foreach (var p in dto.InitialPermissions.Distinct())
+                        await _userManager.AddClaimAsync(existingUser, new Claim(Permissions.ClaimType, p));
+                }
+                return new AdminCreateResponseDto
+                {
+                    Id = existingUser.Id.ToString(),
+                    Email = existingUser.Email!,
+                    FirstName = existingUser.FirstName,
+                    LastName = existingUser.LastName,
+                    PhoneNumber = existingUser.PhoneNumber,
+                    EmailConfirmed = existingUser.EmailConfirmed,
+                    Roles = await _userManager.GetRolesAsync(existingUser),
+                    Permissions = new List<string>()
+                };
+            }
 
             // Rollar mövcud deyilsə, yarad
             if (!await _roleManager.RoleExistsAsync(ADMIN_ROLE))
                 await _roleManager.CreateAsync(new IdentityRole<Guid>(ADMIN_ROLE));
+            if (!await _roleManager.RoleExistsAsync(SUPERADMIN_ROLE))
+                await _roleManager.CreateAsync(new IdentityRole<Guid>(SUPERADMIN_ROLE));
+            
 
             // Yeni Admin obyektini yarat
             var admin = _mapper.Map<Admin>(dto);
@@ -70,10 +196,23 @@ namespace MezuroApp.Persistance.Concretes.Services
             if (!createResult.Succeeded)
                 throw new GlobalAppException(string.Join("; ", createResult.Errors.Select(e => e.Description)));
 
-            await _userManager.AddToRoleAsync(admin, ADMIN_ROLE);
+            if (superAdmin)
+            {
+                await _userManager.AddToRoleAsync(admin, SUPERADMIN_ROLE);
+            }
+            else
+            {
+                await _userManager.AddToRoleAsync(admin, ADMIN_ROLE);
+            }
 
             // İlkin permission-lar
-            if (dto.InitialPermissions != null && dto.InitialPermissions.Any())
+            if (superAdmin)
+            {
+                // ✅ superadmin yaradılırsa: hamı permissions
+                foreach (var p in GetAllPermissions())
+                    await _userManager.AddClaimAsync(admin, new Claim(Permissions.ClaimType, p));
+            }
+            else if (dto.InitialPermissions != null && dto.InitialPermissions.Any())
             {
                 foreach (var p in dto.InitialPermissions.Distinct())
                     await _userManager.AddClaimAsync(admin, new Claim(Permissions.ClaimType, p));
@@ -96,6 +235,152 @@ namespace MezuroApp.Persistance.Concretes.Services
             };
         }
 
+        public async Task<AdminUpdateResponseDto> UpdateAdminAsync(AdminUpdateRequestDto dto, Guid actorId)
+{
+    // actor superadmin olmalıdır
+    var actor = await _userManager.FindByIdAsync(actorId.ToString())
+                ?? throw new GlobalAppException("Actor tapılmadı");
+
+    if (!await IsSuperAdminAsync(actor))
+        throw new GlobalAppException("Yalnız SuperAdmin admin update edə bilər.");
+
+    if (!Guid.TryParse(dto.Id, out var targetId))
+        throw new GlobalAppException("INVALID_ADMIN_ID");
+
+    var target = await _userManager.FindByIdAsync(targetId.ToString())
+                 ?? throw new GlobalAppException("Hədəf admin tapılmadı.");
+
+    // target admin/superadmin olmalıdır
+    var targetRoles = await _userManager.GetRolesAsync(target);
+    if (!targetRoles.Contains(ADMIN_ROLE) && !targetRoles.Contains(SUPERADMIN_ROLE))
+        throw new GlobalAppException("Hədəf istifadəçi admin deyil.");
+
+    // ===== basic fields (partial) =====
+    if (!string.IsNullOrWhiteSpace(dto.Email) && dto.Email.Trim() != target.Email)
+    {
+        // email unique
+        var exists = await _userManager.FindByEmailAsync(dto.Email.Trim());
+        if (exists != null && exists.Id != target.Id)
+            throw new GlobalAppException("Bu e-poçt ilə artıq istifadəçi mövcuddur.");
+
+        // Identity üçün düzgün set
+        var setEmailRes = await _userManager.SetEmailAsync(target, dto.Email.Trim());
+        if (!setEmailRes.Succeeded)
+            throw new GlobalAppException(string.Join(", ", setEmailRes.Errors.Select(e => e.Description)));
+
+        target.UserName = dto.Email.Trim(); // əgər username email-dirsə
+        target.NormalizedUserName = dto.Email.Trim().ToUpperInvariant();
+    }
+
+    if (dto.FirstName != null) target.FirstName = dto.FirstName;
+    if (dto.LastName != null) target.LastName = dto.LastName;
+    if (dto.PhoneNumber != null) target.PhoneNumber = dto.PhoneNumber;
+
+    // ===== role switch (Admin <-> SuperAdmin) =====
+    if (dto.MakeSuperAdmin.HasValue)
+    {
+        var make = dto.MakeSuperAdmin.Value;
+
+        // self-demotion qadağası (istəsən saxla)
+        if (target.Id == actor.Id && make == false)
+            throw new GlobalAppException("Öz SuperAdmin rolunu silə bilməzsən.");
+
+        if (make)
+        {
+            if (!targetRoles.Contains(SUPERADMIN_ROLE))
+            {
+                await _userManager.RemoveFromRoleAsync(target, ADMIN_ROLE);
+                await _userManager.AddToRoleAsync(target, SUPERADMIN_ROLE);
+            }
+
+            // entity-də flag varsa
+            if (target is Admin a) a.IsSuperAdmin = true;
+
+            // superadmin oldu → bütün icazələr ver
+            var existingClaims = await _userManager.GetClaimsAsync(target);
+            var existingPerms = existingClaims
+                .Where(c => c.Type == Permissions.ClaimType)
+                .Select(c => c.Value)
+                .ToHashSet();
+
+            foreach (var p in GetAllPermissions())
+                if (!existingPerms.Contains(p))
+                    await _userManager.AddClaimAsync(target, new Claim(Permissions.ClaimType, p));
+        }
+        else
+        {
+            if (!targetRoles.Contains(ADMIN_ROLE))
+            {
+                await _userManager.RemoveFromRoleAsync(target, SUPERADMIN_ROLE);
+                await _userManager.AddToRoleAsync(target, ADMIN_ROLE);
+            }
+
+            if (target is Admin a) a.IsSuperAdmin = false;
+        }
+    }
+
+    // ===== permissions update =====
+    // ReplaceAllPermissions = true → hamısını sil, yenisini yaz
+    if (dto.ReplaceAllPermissions == true)
+    {
+        var existingClaims = (await _userManager.GetClaimsAsync(target))
+            .Where(c => c.Type == Permissions.ClaimType)
+            .ToList();
+
+        foreach (var c in existingClaims)
+            await _userManager.RemoveClaimAsync(target, c);
+
+        foreach (var p in (dto.Permissions ?? new List<string>()).Distinct())
+            await _userManager.AddClaimAsync(target, new Claim(Permissions.ClaimType, p));
+    }
+    else
+    {
+        // Add / Remove (opsional)
+        var existing = await _userManager.GetClaimsAsync(target);
+        var existingPerms = existing.Where(c => c.Type == Permissions.ClaimType).Select(c => c.Value).ToHashSet();
+
+        if (dto.AddPermissions != null)
+        {
+            foreach (var p in dto.AddPermissions.Distinct())
+                if (!existingPerms.Contains(p))
+                    await _userManager.AddClaimAsync(target, new Claim(Permissions.ClaimType, p));
+        }
+
+        if (dto.RemovePermissions != null)
+        {
+            foreach (var p in dto.RemovePermissions.Distinct())
+            {
+                var claim = existing.FirstOrDefault(c => c.Type == Permissions.ClaimType && c.Value == p);
+                if (claim != null)
+                    await _userManager.RemoveClaimAsync(target, claim);
+            }
+        }
+    }
+
+    target.UpdatedAt = DateTime.UtcNow;
+
+    // ✅ ən vacib hissə: DB-yə yaz
+    var updateRes = await _userManager.UpdateAsync(target);
+    if (!updateRes.Succeeded)
+        throw new GlobalAppException(string.Join(", ", updateRes.Errors.Select(e => e.Description)));
+
+    // response
+    var rolesAfter = await _userManager.GetRolesAsync(target);
+    var claimsAfter = await _userManager.GetClaimsAsync(target);
+
+    return new AdminUpdateResponseDto
+    {
+        Id = target.Id.ToString(),
+        Email = target.Email!,
+        FirstName = target.FirstName,
+        LastName = target.LastName,
+        PhoneNumber = target.PhoneNumber,
+        EmailConfirmed = target.EmailConfirmed,
+        IsSuperAdmin = rolesAfter.Contains(SUPERADMIN_ROLE) || (target is Admin aa && aa.IsSuperAdmin),
+        Roles = rolesAfter,
+        Permissions = claimsAfter.Where(c => c.Type == Permissions.ClaimType).Select(c => c.Value).Distinct()
+    };
+}
         public async Task<AdminLoginResponseDto> LoginAsync(AdminLoginRequestDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
@@ -112,12 +397,18 @@ namespace MezuroApp.Persistance.Concretes.Services
 
             if (!user.EmailConfirmed)
                 throw new GlobalAppException("Zəhmət olmasa e-poçtunuzu təsdiq edin.");
+            if (user.IsActive!=true)
+            {
+                throw new GlobalAppException("Yalniz aktiv adminler sisteme daxil ola biler!");
+            }
 
             var accessToken = await _tokenService.GenerateAccessTokenAsync(user);
             var refreshToken = await _tokenService.GenerateRefreshTokenAsync(user);
+            
 
             var claims = await _userManager.GetClaimsAsync(user);
             user.LastLoginAt = DateTime.UtcNow;
+            await _userManager.UpdateAsync(user);
 
             return new AdminLoginResponseDto
             {
@@ -134,8 +425,8 @@ namespace MezuroApp.Persistance.Concretes.Services
                     Roles = roles,
                     PhoneNumber = user.PhoneNumber,
                     Permissions = claims.Where(c => c.Type == Permissions.ClaimType).Select(c => c.Value),
-                    LastLoginAt = user.LastLoginAt,
-                    CreatedAt = user.CreatedAt
+                    LastLoginAt = user.LastLoginAt?.ToString("dd-MMM-yyyy HH:mm"),
+                    CreatedAt = user.CreatedAt.ToString("dd-MMM-yyyy HH:mm"),
                 }
             };
         }
@@ -314,40 +605,22 @@ namespace MezuroApp.Persistance.Concretes.Services
 
             return dto;
         }
-
-        public async Task<List<AdminDto>> GetAllAsync()
+        public async Task<AdminDto> GetByEmailAsync(string email)
         {
-            // 1) Users-u tam materializə et ki, sonrakı sorğular stream zamanı üst-üstə düşməsin
-            var users = await _userManager.Users
-                .AsNoTracking()
-                .ToListAsync();
+            var user = await _userManager.FindByEmailAsync(email)
+                       ?? throw new GlobalAppException("İstifadəçi tapılmadı.");
 
-            var result = new List<AdminDto>();
+            var roles = await _userManager.GetRolesAsync(user);
+            var claims = await _userManager.GetClaimsAsync(user);
 
-            // 2) Qətiyyən Task.WhenAll İSTİFADƏ ETMƏ!
-            foreach (var user in users)
-            {
-                var roles = await _userManager.GetRolesAsync(user);
+            var dto = _mapper.Map<AdminDto>(user);
+            dto.Roles = roles;
+            dto.Permissions = claims.Where(c => c.Type == Permissions.ClaimType).Select(c => c.Value);
 
-                // Yalnız Admin və SuperAdmin
-                if (!roles.Contains("Admin"))
-                    continue;
-
-                var claims = await _userManager.GetClaimsAsync(user);
-
-                var dto = _mapper.Map<AdminDto>(user);
-                dto.Roles = roles.ToList();
-                dto.IsSuperAdmin = roles.Contains("SuperAdmin");
-                dto.Permissions = claims
-                    .Where(c => c.Type == Permissions.ClaimType)
-                    .Select(c => c.Value)
-                    .ToList();
-
-                result.Add(dto);
-            }
-
-            return result;
+            return dto;
         }
+
+  
 
         public async Task<IEnumerable<string>> GetPermissionsAsync(Guid adminId)
         {
@@ -381,6 +654,101 @@ namespace MezuroApp.Persistance.Concretes.Services
             // və ya xüsusi claim
             var claims = await _userManager.GetClaimsAsync(user);
             return claims.Any(c => c.Type == "role" && c.Value == SUPERADMIN_ROLE);
+        }
+        
+   public async Task DeleteOrRevokeAdminAsync(string adminId, Guid actorId)
+{
+    var actor = await _userManager.FindByIdAsync(actorId.ToString())
+                ?? throw new GlobalAppException("ACTOR_NOT_FOUND");
+
+    if (!await IsSuperAdminAsync(actor))
+        throw new GlobalAppException("ONLY_SUPERADMIN_CAN_DELETE_ADMIN");
+
+    if (!Guid.TryParse(adminId, out var gid))
+        throw new GlobalAppException("INVALID_ADMIN_ID");
+
+    var target = await _userManager.FindByIdAsync(gid.ToString())
+                 ?? throw new GlobalAppException("TARGET_ADMIN_NOT_FOUND");
+
+    var roles = await _userManager.GetRolesAsync(target);
+
+    if (!roles.Contains(ADMIN_ROLE) && !roles.Contains(SUPERADMIN_ROLE))
+        throw new GlobalAppException("TARGET_USER_IS_NOT_ADMIN");
+
+    // özünü silməsin
+    if (target.Id == actor.Id)
+        throw new GlobalAppException("CANNOT_DELETE_YOURSELF");
+
+    // ===== USER-DIRMI? (admin rolundan başqa role var?) =====
+    var hasOtherRoles = roles.Any(r => r != ADMIN_ROLE && r != SUPERADMIN_ROLE);
+
+    if (hasOtherRoles)
+    {
+        // 🔹 Sadəcə admin rolu və permission-lar silinir
+
+        if (roles.Contains(ADMIN_ROLE))
+            await _userManager.RemoveFromRoleAsync(target, ADMIN_ROLE);
+
+        if (roles.Contains(SUPERADMIN_ROLE))
+            await _userManager.RemoveFromRoleAsync(target, SUPERADMIN_ROLE);
+
+        var claims = await _userManager.GetClaimsAsync(target);
+        var adminClaims = claims
+            .Where(c => c.Type == Permissions.ClaimType)
+            .ToList();
+
+        foreach (var c in adminClaims)
+            await _userManager.RemoveClaimAsync(target, c);
+
+        target.IsActive = false;
+        target.UpdatedAt = DateTime.UtcNow;
+
+        var update = await _userManager.UpdateAsync(target);
+        if (!update.Succeeded)
+            throw new GlobalAppException("ADMIN_UPDATE_FAILED");
+    }
+    else
+    {
+        // 🔴 Yalnız Admin-dirsə → Soft Delete
+
+        target.IsDeleted = true;
+        target.IsActive = false;
+        target.DeletedDate = DateTime.UtcNow;
+        target.UpdatedAt = DateTime.UtcNow;
+
+        // E-mail və username dəyişdir ki conflict olmasın
+        var uniqueSuffix = $"_deleted_{Guid.NewGuid().ToString("N")[..6]}";
+
+        target.Email = target.Email + uniqueSuffix;
+        target.UserName = target.UserName + uniqueSuffix;
+        target.NormalizedEmail = target.Email.ToUpperInvariant();
+        target.NormalizedUserName = target.UserName.ToUpperInvariant();
+
+        var update = await _userManager.UpdateAsync(target);
+        if (!update.Succeeded)
+            throw new GlobalAppException("ADMIN_DELETE_FAILED");
+    }
+}
+        private static IEnumerable<string> GetAllPermissions()
+        {
+            // Permissions.Products.Read kimi nested class-lar varsa, hamısını yığır
+            var type = typeof(Permissions);
+
+            static IEnumerable<string> Collect(Type t)
+            {
+                var fields = t.GetFields(System.Reflection.BindingFlags.Public |
+                                         System.Reflection.BindingFlags.Static |
+                                         System.Reflection.BindingFlags.FlattenHierarchy)
+                    .Where(f => f.FieldType == typeof(string))
+                    .Select(f => (string)f.GetValue(null)!);
+
+                var nested = t.GetNestedTypes(System.Reflection.BindingFlags.Public)
+                    .SelectMany(Collect);
+
+                return fields.Concat(nested);
+            }
+
+            return Collect(type).Distinct();
         }
     }
 }

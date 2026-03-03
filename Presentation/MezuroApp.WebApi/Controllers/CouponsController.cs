@@ -59,7 +59,21 @@ namespace MezuroApp.WebApi.Controllers
             }
         }
 
-  
+        [HttpGet("search")]
+        [Authorize(Policy = Permissions.Coupons.Read)]
+        public async Task<IActionResult> SearchByCode(
+            [FromQuery] string? q,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
+        {
+            try
+            {
+                var result = await _service.SearchByCodeAsync(q, page, pageSize);
+                return OkResponse(result, "COUPONS_RETURNED");
+            }
+            catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
+            catch { return ServerErrorResponse(); }
+        }
 
         [HttpGet("paged")]
         [Authorize(Policy = Permissions.Coupons.Read)]

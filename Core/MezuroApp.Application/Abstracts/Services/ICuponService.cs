@@ -1,4 +1,5 @@
 using MezuroApp.Application.Dtos.Cupon;
+using MezuroApp.Domain.HelperEntities;
 
 namespace MezuroApp.Application.Abstracts.Services;
 
@@ -11,6 +12,7 @@ public interface ICuponService
     Task<List<CuponDto>> PagedGetAllCupons(int pageNumber, int pageSize);
     Task<List<CuponDto>> PagedGetAllActiveCupons(int pageNumber, int pageSize);
     Task<List<CuponDto>> PagedGetAllInactiveCupons(int pageNumber, int pageSize);
+    Task<PagedResult<CuponDto>> SearchByCodeAsync(string? query, int pageNumber, int pageSize);
     Task  CreateCupon(string adminId,CreateCuponDto createCuponDto);
     Task  UpdateCupon(UpdateCuponDto updateCuponDto);
     Task<CuponDto?> GetCuponById(string cuponId);

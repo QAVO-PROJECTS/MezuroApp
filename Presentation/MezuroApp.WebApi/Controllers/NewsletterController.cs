@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MezuroApp.Application.Abstracts.Services;
 using MezuroApp.Application.Dtos.Newsletter;
+using MezuroApp.Application.Dtos.Newsletter.Admin;
 using MezuroApp.Application.GlobalException;
+using MezuroApp.Domain.HelperEntities;
 
 namespace MezuroApp.WebApi.Controllers;
 
@@ -44,6 +46,18 @@ public class NewsletterController : BaseApiController
         catch { return ServerErrorResponse(); }
     }
 
+    [HttpGet]
+    [Authorize(Permissions.EmailCampaigns.Read)]
+    public async Task<IActionResult> Get([FromQuery] AdminNewsletterSubscribersFilterDto f, CancellationToken ct)
+    {
+        try
+        {
+            var data = await _service.GetAsync(f, ct);
+            return OkResponse(data, "NEWSLETTER_SUBSCRIBERS_RETURNED");
+        }
+        catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
+        catch { return ServerErrorResponse(); }
+    }
     // 🔐 Get current user's subscriber
     [Authorize(Roles = "Customer")]
     [HttpGet("me")]

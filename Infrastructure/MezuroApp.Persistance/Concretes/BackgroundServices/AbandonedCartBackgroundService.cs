@@ -6,7 +6,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MezuroApp.Application.Abstracts.Repositories.AbandonedCarts;
 using MezuroApp.Application.Abstracts.Repositories.Baskets;
+using MezuroApp.Application.Abstracts.Services;
 using MezuroApp.Domain.Entities;
+using MezuroApp.Domain.HelperEntities;
 
 namespace MezuroApp.Persistance.Concretes.BackgroundServices;
 
@@ -41,6 +43,8 @@ public sealed class AbandonedCartBackgroundService : BackgroundService
             try
             {
                 await ScanAndSnapshotAsync(stoppingToken);
+                await SendRecoveryEmailsAsync(stoppingToken);
+
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -54,123 +58,192 @@ public sealed class AbandonedCartBackgroundService : BackgroundService
             await Task.Delay(_checkEvery, stoppingToken);
         }
     }
-
-    private async Task ScanAndSnapshotAsync(CancellationToken ct)
+    private async Task SendRecoveryEmailsAsync(CancellationToken ct)
     {
         using var scope = _sp.CreateScope();
 
-        var basketRead = scope.ServiceProvider.GetRequiredService<IBasketReadRepository>();
         var abandonedRead = scope.ServiceProvider.GetRequiredService<IAbandonedCartReadRepository>();
         var abandonedWrite = scope.ServiceProvider.GetRequiredService<IAbandonedCartWriteRepository>();
+        var emailService = scope.ServiceProvider.GetRequiredService<IMailService>(); // səndə hansıdırsa
 
         var now = DateTime.UtcNow;
-        var cutoffUtc = now - _inactiveAfter;
 
-        // 1) “tərk edilmiş” basketləri tapırıq:
-        // - silinməyib
-        // - lastUpdated cutoff-dan köhnədir
-        // - içində ən az 1 aktiv item var
-        var baskets = await basketRead.GetAllAsync(
-            b => !b.IsDeleted
-                 && b.LastUpdatedDate <= cutoffUtc
-                 && b.BasketItems.Any(i => !i.IsDeleted),
-            include: q => q
-                .Include(b => b.BasketItems.Where(i => !i.IsDeleted))
-                    .ThenInclude(i => i.Product)
-                .Include(b => b.BasketItems.Where(i => !i.IsDeleted))
-                    .ThenInclude(i => i.ProductVariant)
-                .AsSplitQuery(),
-            enableTracking: false
+        var carts = await abandonedRead.GetAllAsync(
+            x => !x.IsDeleted
+                 && x.Status == "created"
+                 && !x.RecoveryEmailSent
+                 && x.Email != null
+                 && (x.ExpiresAt == null || x.ExpiresAt > now),
+            enableTracking: true
         );
 
-        if (baskets.Count == 0)
-        {
-            _log.LogInformation("AbandonedCart scan: no candidates. cutoffUtc={CutoffUtc}", cutoffUtc);
+        if (carts.Count == 0)
             return;
-        }
 
-        _log.LogInformation("AbandonedCart scan: candidates={Count}, cutoffUtc={CutoffUtc}", baskets.Count, cutoffUtc);
-
-        int created = 0;
-
-        foreach (var basket in baskets)
+        foreach (var cart in carts)
         {
             ct.ThrowIfCancellationRequested();
 
-            // 2) Təkrarlanmasın deyə yoxlayırıq:
-            // EYNİ basket üçün, EYNİ lastUpdatedDate ilə snapshot artıq varsa -> skip
-            var exists = await abandonedRead.GetAsync(a =>
-                !a.IsDeleted
-                && a.BasketId == basket.Id
-                && a.BasketLastUpdatedSnapshotUtc == basket.LastUpdatedDate
-            );
-
-            if (exists != null)
-                continue;
-
-            // 3) Snapshot items
-            var items = (basket.BasketItems ?? new List<BasketItem>())
-                .Where(i => !i.IsDeleted)
-                .Select(i =>
-                {
-                    var productPrice = i.Product?.Price ?? 0m;
-                    var modifier = (i.ProductVariantId != null && i.ProductVariant != null)
-                        ? (i.ProductVariant.PriceModifier)
-                        : 0m;
-
-                    var unitPrice = productPrice + modifier;
-
-                    return new AbandonedCartItemSnapshot
-                    {
-                        ProductId = i.ProductId,
-                        ProductVariantId = i.ProductVariantId,
-                        Quantity = i.Quantity,
-                        UnitPrice = unitPrice
-                    };
-                })
-                .ToList();
-
-            if (items.Count == 0)
-                continue;
-
-            var total = items.Sum(x => x.UnitPrice * x.Quantity);
-
-            // 4) AbandonedCart yazırıq (email lazım deyil — analitika üçün)
-            var snapshot = new AbandonedCart
+            try
             {
-                Id = Guid.NewGuid(),
+                // 🔹 Recovery link (sənin frontend URL-inə görə dəyiş)
+                var recoveryLink = $"https://mezuro.az/recover-cart/{cart.Id}";
 
-                UserId = basket.UserId,
-                FootprintId = basket.FootprintId,
+                var subject = "Səbətiniz sizi gözləyir 🛒";
+                var body = $@"
+                Salam,
 
-                BasketId = basket.Id,
+                Seçdiyiniz məhsullar səbətinizdə qalır.
+                Sifarişi tamamlamaq üçün linkə daxil olun:
 
-                Email = null,
+                {recoveryLink}
 
-                CartItemsJson = JsonSerializer.Serialize(items),
-                TotalAmount = total,
+                Hörmətlə,
+                Mezuro
+            ";
 
-                BasketLastUpdatedSnapshotUtc = basket.LastUpdatedDate,
+                MailRequest mailRequest = new MailRequest()
+                {
 
-                RecoveryEmailSent = false,
-                RecoveryEmailSentAt = null,
+                    Body = body,
+                    Subject = subject,
+                    ToEmail =  cart.Email,
+                };
+                await emailService.SendEmailAsync(mailRequest);
 
-                ExpiresAt = now.AddDays(_expireDays),
+                // ✅ STATUS UPDATE
+                cart.Status ="sent";
+                cart.RecoveryEmailSent = true;
+                cart.RecoveryEmailSentAt = now;
+                cart.LastUpdatedDate = now;
 
-                CreatedDate = now,
-                LastUpdatedDate = now,
-                IsDeleted = false
-            };
-
-            await abandonedWrite.AddAsync(snapshot);
-            created++;
+                await abandonedWrite.UpdateAsync(cart);
+            }
+            catch (Exception ex)
+            {
+                _log.LogError(ex, "Recovery email sending failed for cart {CartId}", cart.Id);
+            }
         }
 
-        if (created > 0)
-            await abandonedWrite.CommitAsync();
-
-        _log.LogInformation("AbandonedCart scan done. created={Created}", created);
+        await abandonedWrite.CommitAsync();
     }
+
+private async Task ScanAndSnapshotAsync(CancellationToken ct)
+{
+    using var scope = _sp.CreateScope();
+
+    var basketRead = scope.ServiceProvider.GetRequiredService<IBasketReadRepository>();
+    var abandonedRead = scope.ServiceProvider.GetRequiredService<IAbandonedCartReadRepository>();
+    var abandonedWrite = scope.ServiceProvider.GetRequiredService<IAbandonedCartWriteRepository>();
+
+    var now = DateTime.UtcNow;
+    var cutoffUtc = now - _inactiveAfter;
+
+    // 0) Expire olanları soft-delete (opsional amma yaxşıdır)
+    var expired = await abandonedRead.GetAllAsync(a =>
+        !a.IsDeleted && a.ExpiresAt != null && a.ExpiresAt <= now
+    );
+    foreach (var x in expired)
+    {
+        x.IsDeleted = true;
+        x.DeletedDate = now;
+        x.LastUpdatedDate = now;
+        await abandonedWrite.UpdateAsync(x);
+    }
+    if (expired.Count > 0) await abandonedWrite.CommitAsync();
+
+    // 1) 24 saat inactive olan basketlər
+    var baskets = await basketRead.GetAllAsync(
+        b => !b.IsDeleted
+             && b.LastUpdatedDate <= cutoffUtc
+             && b.BasketItems.Any(i => !i.IsDeleted),
+        include: q => q
+            .Include(b => b.BasketItems.Where(i => !i.IsDeleted))
+                .ThenInclude(i => i.Product)
+            .Include(b => b.BasketItems.Where(i => !i.IsDeleted))
+                .ThenInclude(i => i.ProductVariant)
+            .AsSplitQuery(),
+        enableTracking: false
+    );
+
+    if (baskets.Count == 0) return;
+
+    int created = 0;
+
+    foreach (var basket in baskets)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        // basket artıq boşalıbsa skip
+        if (basket.BasketItems == null || basket.BasketItems.All(i => i.IsDeleted))
+            continue;
+
+        // 2) Eyni basket+same lastUpdated snapshot varsa skip
+        var exists = await abandonedRead.GetAsync(a =>
+            !a.IsDeleted
+            && a.BasketId == basket.Id
+            && a.BasketLastUpdatedSnapshotUtc == basket.LastUpdatedDate
+        );
+
+        if (exists != null) continue;
+
+        // 3) Snapshot
+        var items = basket.BasketItems
+            .Where(i => !i.IsDeleted)
+            .Select(i =>
+            {
+                var productPrice = i.Product?.Price ?? 0m;
+                var modifier = i.ProductVariantId != null && i.ProductVariant != null
+                    ? i.ProductVariant.PriceModifier
+                    : 0m;
+
+                return new AbandonedCartItemSnapshot
+                {
+                    ProductId = i.ProductId,
+                    ProductVariantId = i.ProductVariantId,
+                    Quantity = i.Quantity,
+                    UnitPrice = productPrice + modifier
+                };
+            })
+            .Where(x => x.Quantity > 0)
+            .ToList();
+
+        if (items.Count == 0) continue;
+
+        var total = items.Sum(x => x.UnitPrice * x.Quantity);
+
+        var snapshot = new AbandonedCart
+        {
+            Id = Guid.NewGuid(),
+            UserId = basket.UserId,
+            FootprintId = basket.FootprintId,
+            BasketId = basket.Id,
+
+            Email = null,
+
+            CartItemsJson = JsonSerializer.Serialize(items),
+            TotalAmount = total,
+
+            BasketLastUpdatedSnapshotUtc = basket.LastUpdatedDate,
+
+            Status = "created",
+            RecoveryEmailSent = false,
+            RecoveryEmailSentAt = null,
+
+            ExpiresAt = now.AddDays(_expireDays),
+
+            CreatedDate = now,
+            LastUpdatedDate = now,
+            IsDeleted = false
+        };
+
+        await abandonedWrite.AddAsync(snapshot);
+        created++;
+    }
+
+    if (created > 0)
+        await abandonedWrite.CommitAsync();
+}
 
     private sealed class AbandonedCartItemSnapshot
     {

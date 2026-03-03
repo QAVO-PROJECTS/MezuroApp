@@ -23,6 +23,7 @@ public sealed class AbandonedCartConfiguration
 
         builder.Property(x => x.RecoveryEmailSent)
             .HasDefaultValue(false);
+        builder.Property(x => x.Status).HasDefaultValue("created");
 
         builder.HasOne(x => x.User)
             .WithMany(x=>x.AbandonedCarts)

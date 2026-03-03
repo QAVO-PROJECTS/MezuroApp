@@ -22,7 +22,9 @@ public class ProductProfile : Profile
             .ForMember(d => d.ProductCategories, opt => opt.Ignore())
             .ForMember(d => d.Variants, opt => opt.Ignore())
             .ForMember(d => d.ProductColors, opt => opt.Ignore())
-            .ForAllMembers(o => o.Condition((src, dest, val) => val != null));
+            .ForMember(d => d.Price, opt => opt.Condition(s => s.Price.HasValue))
+            .ForMember(d => d.CompareAtPrice, opt => opt.Condition(s => s.CompareAtPrice.HasValue)).
+            ForAllMembers(o => o.Condition((src, dest, val) => val != null));
 
         CreateMap<Product, ProductDto>()
             .ForMember(d => d.Id, o => o.MapFrom(s => s.Id.ToString()))

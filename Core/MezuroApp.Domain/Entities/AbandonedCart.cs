@@ -23,6 +23,7 @@ public sealed class AbandonedCart : BaseEntity
     // məsələn: [{ "productId":"...", "productVariantId":"...", "quantity":2, "unitPrice":316 }, ...]
     public string CartItemsJson { get; set; } = default!;
 
+    public string Status { get; set; }
     public decimal? TotalAmount { get; set; }
 
     // Recovery email flow

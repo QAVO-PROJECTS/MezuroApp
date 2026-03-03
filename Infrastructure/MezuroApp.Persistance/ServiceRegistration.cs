@@ -23,6 +23,7 @@ using MezuroApp.Application.Abstracts.Repositories.Products;
 using MezuroApp.Application.Abstracts.Repositories.ProductVariantOptionValues;
 using MezuroApp.Application.Abstracts.Repositories.ProductVariants;
 using MezuroApp.Application.Abstracts.Repositories.Reviews;
+using MezuroApp.Application.Abstracts.Repositories.UserCards;
 using MezuroApp.Application.Abstracts.Repositories.WishlistItems;
 using MezuroApp.Application.Abstracts.Repositories.Wishlists;
 using MezuroApp.Application.Abstracts.Services;
@@ -52,6 +53,7 @@ using MezuroApp.Persistance.Concretes.Repositories.Products;
 using MezuroApp.Persistance.Concretes.Repositories.ProductVariantOptionValues;
 using MezuroApp.Persistance.Concretes.Repositories.ProductVariants;
 using MezuroApp.Persistance.Concretes.Repositories.Reviews;
+using MezuroApp.Persistance.Concretes.Repositories.UserCards;
 using MezuroApp.Persistance.Concretes.Repositories.WishlistItems;
 using MezuroApp.Persistance.Concretes.Repositories.Wishlists;
 using MezuroApp.Persistance.Concretes.Services;
@@ -149,6 +151,9 @@ namespace MezuroApp.Persistance;
             //EmailCampaign
             services.AddScoped<IEmailCampaignLogReadRepository, EmailCampaignLogReadRepository>();
             services.AddScoped<IEmailCampaignLogWriteRepository, EmailCampaignLogWriteRepository>();
+            //UserCard
+            services.AddScoped<IUserCardReadRepository, UserCardReadRepository>();
+            services.AddScoped<IUserCardWriteRepository, UserCardWriteRepository>();
             
             
             // Services
@@ -173,9 +178,20 @@ namespace MezuroApp.Persistance;
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<INewsletterService, NewsletterService>();
             services.AddScoped<IEmailCampaignService, EmailCampaignService>();
+            services.AddScoped<IAbandonedCartAdminService, AbandonedCartAdminService>();
+            services.AddScoped<IUserAdminService, UserAdminService>();
+            services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IUserCardService, UserCardService>(); 
+            services.AddScoped<IAdminOrderService, AdminOrderService>();
+            services.AddScoped<IAdminRefundService, AdminRefundService>();
+            services.AddScoped<IAdminTransactionService, AdminTransactionService>();
+            services.AddScoped<AdminAuditLogService>();
+            
             //Background Services
             services.AddHostedService<AbandonedCartBackgroundService>();
             services.AddHostedService<EmailCampaignSenderBackgroundService>();
+            services.AddHttpContextAccessor();
+       
 
 
 

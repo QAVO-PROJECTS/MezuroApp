@@ -221,6 +221,8 @@ namespace MezuroApp.Persistance.Concretes.Services
             await _newsletterService.EnsureForCurrentUserAsync(user.Id.ToString(), null);
             // 3. İstifadəçi tapılıb və şifrə düzgün daxil edilib
             // Access Token və Refresh Token yaradırıq
+            user.LastLoginAt = DateTime.UtcNow;
+           await _userManager.UpdateAsync(user);
             var accessToken = await _tokenService.GenerateAccessTokenAsync(user);
             var refreshToken = await _tokenService.GenerateRefreshTokenAsync(user);
 

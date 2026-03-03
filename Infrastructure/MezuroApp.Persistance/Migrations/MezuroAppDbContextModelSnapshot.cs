@@ -71,6 +71,12 @@ namespace MezuroApp.Persistance.Migrations
                     b.Property<DateTime?>("RecoveryEmailSentAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("created");
+
                     b.Property<decimal?>("TotalAmount")
                         .HasColumnType("decimal(10,2)");
 
@@ -1064,6 +1070,9 @@ namespace MezuroApp.Persistance.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
 
+                    b.Property<string>("CardUid")
+                        .HasColumnType("text");
+
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1119,6 +1128,12 @@ namespace MezuroApp.Persistance.Migrations
                     b.Property<string>("RedirectUrl")
                         .HasColumnType("text");
 
+                    b.Property<decimal>("RefundedAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<bool>("SaveCardRequested")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -1137,6 +1152,9 @@ namespace MezuroApp.Persistance.Migrations
                     b.Property<string>("UserAgent")
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("UserCardId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
@@ -1144,6 +1162,8 @@ namespace MezuroApp.Persistance.Migrations
                     b.HasIndex("Status");
 
                     b.HasIndex("TransactionId");
+
+                    b.HasIndex("UserCardId");
 
                     b.ToTable("payment_transactions", (string)null);
                 });
@@ -1945,6 +1965,9 @@ namespace MezuroApp.Persistance.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("DeletedDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -1964,6 +1987,11 @@ namespace MezuroApp.Persistance.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<bool?>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -2146,6 +2174,70 @@ namespace MezuroApp.Persistance.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserAddresses");
+                });
+
+            modelBuilder.Entity("MezuroApp.Domain.Entities.UserCard", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BankResponse")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BankTransaction")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CardExpiry")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("CardMask")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("CardName")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("CardUid")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DeletedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastUpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("OperationCode")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("Rrn")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "IsDefault");
+
+                    b.ToTable("UserCard");
                 });
 
             modelBuilder.Entity("MezuroApp.Domain.Entities.Wishlist", b =>
@@ -2514,10 +2606,17 @@ namespace MezuroApp.Persistance.Migrations
                     b.HasOne("MezuroApp.Domain.Entities.Order", "Order")
                         .WithMany("PaymentTransactions")
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("MezuroApp.Domain.Entities.UserCard", "UserCard")
+                        .WithMany("PaymentTransactions")
+                        .HasForeignKey("UserCardId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Order");
+
+                    b.Navigation("UserCard");
                 });
 
             modelBuilder.Entity("MezuroApp.Domain.Entities.ProductCategory", b =>
@@ -2679,6 +2778,17 @@ namespace MezuroApp.Persistance.Migrations
                 {
                     b.HasOne("MezuroApp.Domain.Entities.User", "User")
                         .WithMany("UserAddresses")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MezuroApp.Domain.Entities.UserCard", b =>
+                {
+                    b.HasOne("MezuroApp.Domain.Entities.User", "User")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2865,6 +2975,11 @@ namespace MezuroApp.Persistance.Migrations
                     b.Navigation("Reviews");
 
                     b.Navigation("UserAddresses");
+                });
+
+            modelBuilder.Entity("MezuroApp.Domain.Entities.UserCard", b =>
+                {
+                    b.Navigation("PaymentTransactions");
                 });
 
             modelBuilder.Entity("MezuroApp.Domain.Entities.Wishlist", b =>

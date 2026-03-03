@@ -7,26 +7,26 @@ public class AuditLog
     [BsonRepresentation(BsonType.ObjectId)]
     public string Id { get; set; }
 
-    // User info
-    [BsonRepresentation(BsonType.String)]
+    // Admin info
     public string? UserId { get; set; }
+    public string? AdminName { get; set; }
+    public string? SearchText { get; set; } // lower-case, orderNumber/couponCode/entityType/adminName vs
+
+    // Module info
+    public string Module { get; set; } = default!;      // Orders, Products...
+    public string ActionType { get; set; } = default!;  // Update, StatusChange...
 
     // Entity info
-    public string EntityType { get; set; }   // Product, Order, User və s.
-    
     [BsonRepresentation(BsonType.String)]
     public Guid? EntityId { get; set; }
 
-    // Action
-    public string Action { get; set; }        // CREATE, UPDATE, DELETE, LOGIN...
-
     // Changes
-    public Dictionary<string, object> OldValues { get; set; }
-    public Dictionary<string, object> NewValues { get; set; }
+    public Dictionary<string, object>? OldValuesJson { get; set; }
+    public Dictionary<string, object>? NewValuesJson { get; set; }
 
     // Request info
-    public string IpAddress { get; set; }
-    public string UserAgent { get; set; }
+    public string? IpAddress { get; set; }
+    public string? UserAgent { get; set; }
 
     // Timestamp
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

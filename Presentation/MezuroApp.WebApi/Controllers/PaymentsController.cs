@@ -38,12 +38,27 @@ public class PaymentsController : BaseApiController
         }
         catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
         catch { return ServerErrorResponse(); }
+    
     }
+// PaymentsController.cs (əlavə et)
 
+    [HttpPost("epoint/reverse")]
+    [Authorize(Roles = "Customer")]
+    public async Task<IActionResult> Reverse([FromBody] ReverseEpointDto dto, CancellationToken ct)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+            await _service.ReverseEpointAsync(userId!, dto, ct);
+            return OkResponse(true, "PAYMENT_REVERSED");
+        }
+        catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
+        catch { return ServerErrorResponse(); }
+    }
     // CALLBACK (Epoint buranı vuracaq)
     [HttpPost("epoint/callback")]
     [AllowAnonymous]
-    public async Task<IActionResult> Callback([FromForm] EpointCallbackDto dto, CancellationToken ct)
+    public async Task<IActionResult> Callback([FromBody]EpointCallbackDto dto, CancellationToken ct)
     {
         try
         {
@@ -54,6 +69,22 @@ public class PaymentsController : BaseApiController
         catch { return ServerErrorResponse(); }
     }
 
+    [HttpPost("epoint/pay-saved")]
+    [Authorize(Roles="Customer")] 
+    public async Task<IActionResult> PaySaved([FromBody] PayWithSavedCardDto dto, CancellationToken ct)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+            var ua = Request.Headers.UserAgent.ToString();
+
+            var res = await _service.PayWithSavedCardAsync(userId!, dto, ip, ua, ct);
+            return OkResponse(res, "PAYMENT_COMPLETED");
+        }
+        catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
+        catch { return ServerErrorResponse(); }
+    }
     // STATUS (login user üçün footprint lazım deyil, guest üçün mütləqdir)
     [HttpGet("status/{orderId}")]
     [AllowAnonymous]

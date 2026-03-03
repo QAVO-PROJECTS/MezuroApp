@@ -15,5 +15,11 @@ public sealed class CreateEmailCampaignDto
     public string ContentTr { get; set; } = default!;
 
     public string CampaignType { get; set; } = default!; // new_products, promotion...
-    public string? TargetSegment { get; set; } // json string (optional)
+    // ✅ UI üçün sabit
+    // all_active_subscribers | verified_users
+    public string TargetSegment { get; set; } = "all_active_subscribers";
+
+    // draft/schedule toggle üçün
+    public bool ScheduleForLater { get; set; }
+    public string? ScheduledAtUtc { get; set; } // UI göndərəndə UTC göndər
 }

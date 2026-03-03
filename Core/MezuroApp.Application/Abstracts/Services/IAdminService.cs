@@ -1,11 +1,12 @@
 using MezuroApp.Application.Dtos.Admins;
+using MezuroApp.Domain.HelperEntities;
 
 namespace MezuroApp.Application.Abstracts.Services
 {
     public interface IAdminService
     {
         // SuperAdmin → Admin yaratmaq
-        Task<AdminCreateResponseDto> CreateAsync(AdminCreateRequestDto dto, Guid actorId);
+        Task<AdminCreateResponseDto> CreateAsync(AdminCreateRequestDto dto, Guid actorId, bool superAdmin);
 
         // Admin / SuperAdmin portal login
         Task<AdminLoginResponseDto> LoginAsync(AdminLoginRequestDto dto);
@@ -28,7 +29,12 @@ namespace MezuroApp.Application.Abstracts.Services
 
         // Baxış
         Task<AdminDto> GetByIdAsync(Guid adminId);
-        Task<List<AdminDto>> GetAllAsync();
+        Task<AdminDto> GetByEmailAsync(string email);
+        Task<AdminUpdateResponseDto> UpdateAdminAsync(AdminUpdateRequestDto dto, Guid actorId);
+ 
         Task<IEnumerable<string>> GetPermissionsAsync(Guid adminId);
+        Task<PagedResult<AdminDto>> GetAllAdminsAsync(string id,bool? isActive, int page = 1, int pageSize = 10);
+        Task SetAdminActiveAsync(string adminId, bool value, Guid actorId);
+        Task DeleteOrRevokeAdminAsync(string adminId, Guid actorId);
     }
 }

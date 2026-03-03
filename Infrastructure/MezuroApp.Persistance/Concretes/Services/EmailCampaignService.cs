@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
@@ -63,6 +64,12 @@ public sealed class EmailCampaignService : IEmailCampaignService
         if (!Guid.TryParse(adminUserId, out var adminId))
             throw new GlobalAppException("INVALID_USER_ID");
 
+        var seg = (dto.TargetSegment ?? "").Trim().ToLowerInvariant();
+        if (seg is not ("all_active_subscribers" or "verified_users"))
+            throw new GlobalAppException("INVALID_TARGET_SEGMENT");
+        var scheduledUtc = dto.ScheduleForLater
+            ? ParseDdMmYyyyHmToUtcOrThrow(dto.ScheduledAtUtc, "INVALID_SCHEDULED_AT")
+            : (DateTime?)null;
         var campaign = new EmailCampaign
         {
             Id = Guid.NewGuid(),
@@ -78,23 +85,59 @@ public sealed class EmailCampaignService : IEmailCampaignService
             ContentEn = dto.ContentEn,
             ContentTr = dto.ContentTr,
 
-            CampaignType = dto.CampaignType,
-            TargetSegment = dto.TargetSegment,
-            ScheduledAt = DateTime.UtcNow,
-      
+            CampaignType = "newsletter", // və ya sənin istədiyin
+            TargetSegment = seg,
 
-            Status = "scheduled",
+            Status = dto.ScheduleForLater ? "scheduled" : "draft",
+            ScheduledAt = scheduledUtc,
+
             CreatedById = adminId,
-
-            CreatedDate = DateTime.UtcNow.AddMinutes(2),
+            CreatedDate = DateTime.UtcNow,
             LastUpdatedDate = DateTime.UtcNow,
             IsDeleted = false
         };
-    
+
         await _campaignWrite.AddAsync(campaign);
         await _campaignWrite.CommitAsync();
 
         return Map(campaign);
+    }  
+
+
+    private static DateTime ParseDdMmYyyyHmToUtcOrThrow(string? value, string errorCode, int utcOffsetHours = 4)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            throw new GlobalAppException(errorCode);
+
+        // UI format: dd.MM.yyyy HH:mm
+        if (!DateTime.TryParseExact(
+                value.Trim(),
+                "dd.MM.yyyy HH:mm",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var localUnspecified))
+            throw new GlobalAppException(errorCode);
+
+        // localUnspecified Kind=Unspecified olur.
+        // AZ vaxtını (UTC+4) UTC-yə çeviririk:
+        var utc = DateTime.SpecifyKind(localUnspecified.AddHours(-utcOffsetHours), DateTimeKind.Utc);
+
+        return utc;
+    }
+    public async Task<EstimateRecipientsDto> EstimateRecipientsAsync(string targetSegment, CancellationToken ct = default)
+    {
+        var seg = (targetSegment ?? "").Trim().ToLowerInvariant();
+
+        var q = _subsRead.Query().AsNoTracking().Where(s => !s.IsDeleted);
+
+        q = seg switch
+        {
+            "verified_users" => q.Where(s => s.User.IsActive == true && s.User.EmailConfirmed),
+            _ => q.Where(s => s.User.IsActive == true).Include(x=>x.User) // default all_active_subscribers
+        };
+
+        var count = await q.CountAsync(ct);
+        return new EstimateRecipientsDto(count);
     }
 public async Task SendCampaignInternalAsync(Guid campaignId, CancellationToken ct = default)
     
@@ -571,18 +614,7 @@ public async Task SendCampaignInternalAsync(Guid campaignId, CancellationToken c
     // =========================
 
 
-    private static (string subject, string content) PickLocalizedContent(EmailCampaign c, string? lang)
-    {
-        lang = (lang ?? "az").Trim().ToLowerInvariant();
 
-        return lang switch
-        {
-            "en" => (c.SubjectEn, c.ContentEn),
-            "ru" => (c.SubjectRu, c.ContentRu),
-            "tr" => (c.SubjectTr, c.ContentTr),
-            _ => (c.SubjectAz, c.ContentAz)
-        };
-    }
 
     private async Task<EmailCampaign> GetCampaignTracked(string id)
         => await _campaignRead.GetAsync(x => x.Id == Guid.Parse(id) && !x.IsDeleted, enableTracking: true)

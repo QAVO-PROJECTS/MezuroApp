@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using FluentValidation.AspNetCore;
 using MezuroApp.Application.Mappings;
@@ -15,6 +16,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 using MezuroApp.WebApi.Seed;
+using Microsoft.AspNetCore.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -132,8 +134,23 @@ builder.Services.AddSwaggerGen(opt =>
         }
     });
 });
+builder.Services.AddHttpClient("epoint", c =>
+{
+    c.BaseAddress = new Uri("https://epoint.az/");
+    c.Timeout = TimeSpan.FromSeconds(60);
+});
 
 var app = builder.Build();
+var supportedCultures = new[] { new CultureInfo("en-US") };
+
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("en-US"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+});
+
+builder.WebHost.UseUrls("http://0.0.0.0:5093");
 
 // 👇 SUPERADMIN SEED
 using (var scope = app.Services.CreateScope())
@@ -149,11 +166,11 @@ using (var scope = app.Services.CreateScope())
 // }
 
 app.UseHttpsRedirection();
-
+app.UseMiddleware<IpAllowListMiddleware>();
 app.UseAuthentication();  // VERY IMPORTANT
 app.UseAuthorization();
 
-app.UseAuditLogMiddleware();
+
 
 // CORS
 app.UseCors("corsapp");

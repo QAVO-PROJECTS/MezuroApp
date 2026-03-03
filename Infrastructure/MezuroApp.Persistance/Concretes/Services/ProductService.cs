@@ -970,6 +970,15 @@ public async Task<PagedResult<ProductDto>> AdminSearchAsync(
         // 3) Property-lərin update olunması
         // ======================================
         var currentImages = entity.Images; // referansı saxla
+        if (dto.Price == null)
+        {
+            dto.Price = entity.Price;
+        }
+
+        if (dto.CompareAtPrice == null)
+        {
+            dto.CompareAtPrice = entity.CompareAtPrice;
+        }
         _mapper.Map(dto, entity);
         entity.Images = currentImages ?? new List<ProductImage>();
         var baseName = FirstNonEmpty(entity.NameEn, entity.NameAz, entity.NameTr, entity.NameRu)
@@ -988,6 +997,7 @@ public async Task<PagedResult<ProductDto>> AdminSearchAsync(
 
 
         await EnsureSkuSlugUniqueAsync(entity.Sku, entity.Slug, entity.Id);
+      
 
 
         entity.LastUpdatedDate = DateTime.UtcNow;

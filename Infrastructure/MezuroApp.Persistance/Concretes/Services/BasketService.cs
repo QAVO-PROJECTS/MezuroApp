@@ -266,6 +266,7 @@ public class BasketService : IBasketService
 
         await _basketItemWrite.UpdateAsync(item);
         await _basketWrite.CommitAsync();
+        await DeleteAbandonedCartsIfBasketEmptyAsync(basket);
     }
 
     // ======================================================
@@ -300,6 +301,7 @@ public class BasketService : IBasketService
 
         await _basketItemWrite.UpdateAsync(item);
         await _basketWrite.CommitAsync();
+        await DeleteAbandonedCartsIfBasketEmptyAsync(basket);
     }
 
     // ======================================================
@@ -331,6 +333,7 @@ public class BasketService : IBasketService
         await _basketWrite.UpdateAsync(basket);
 
         await _basketWrite.CommitAsync();
+        await DeleteAbandonedCartsIfBasketEmptyAsync(basket);
     }
 
     // ======================================================
@@ -362,6 +365,7 @@ public class BasketService : IBasketService
         {
             item.IsDeleted = true;
             item.DeletedDate = DateTime.UtcNow;
+            await DeleteAbandonedCartsIfBasketEmptyAsync(basket);
         }
         else
         {
@@ -541,6 +545,31 @@ public class BasketService : IBasketService
     // ======================================================
     //               HELPERS
     // ======================================================
+    private async Task DeleteAbandonedCartsIfBasketEmptyAsync(Basket basket)
+    {
+        // basketdə aktiv item qalmayıbsa
+        var hasActive = basket.BasketItems?.Any(x => !x.IsDeleted) == true;
+        if (hasActive) return;
+
+        // AbandonedCart-ları soft delete et
+        var db = _basketWrite.GetDbContext(); // səndə repo-da varsa
+        var now = DateTime.UtcNow;
+
+        var carts = await db.Set<AbandonedCart>()
+            .Where(a => !a.IsDeleted && a.BasketId == basket.Id)
+            .ToListAsync();
+
+        if (carts.Count == 0) return;
+
+        foreach (var a in carts)
+        {
+            a.IsDeleted = true;
+            a.DeletedDate = now;
+            a.LastUpdatedDate = now;
+        }
+
+        await db.SaveChangesAsync();
+    }
 
     private static Dictionary<(Guid productId, Guid? variantId), int> NormalizeIncomingItems(IEnumerable<CreateBasketItemDto> items)
     {

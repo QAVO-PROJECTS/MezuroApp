@@ -17,6 +17,7 @@ public class OptionsController : BaseApiController
         _service = service;
     }
 
+    [Authorize(Policy = Permissions.Options.Read)]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById([FromRoute] string id)
     {
@@ -29,7 +30,25 @@ public class OptionsController : BaseApiController
         catch { return ServerErrorResponse(); }
     }
 
+    [HttpGet("search")]
+    [Authorize(Policy = Permissions.Options.Read)]
+    public async Task<IActionResult> Search(
+        [FromQuery] string? q,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            var result = await _service.SearchAsync(q, page, pageSize);
+            return OkResponse(result, "OPTION_RETURNED");
+        }
+        catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
+        catch { return ServerErrorResponse(); }
+    }
+
+    
     [HttpGet]
+    [Authorize(Policy = Permissions.Options.Read)]
     public async Task<IActionResult> GetAll()
     {
         try
@@ -42,7 +61,7 @@ public class OptionsController : BaseApiController
     }
 
 
-    // [Authorize(Policy = Permissions.Options.Create)]
+    [Authorize(Policy = Permissions.Options.Update)]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateOptionDto dto)
     {
@@ -55,7 +74,7 @@ public class OptionsController : BaseApiController
         catch { return ServerErrorResponse(); }
     }
 
-    // [Authorize(Policy = Permissions.Options.Update)]
+    [Authorize(Policy = Permissions.Options.Update)]
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] UpdateOptionDto dto)
     {
@@ -68,7 +87,7 @@ public class OptionsController : BaseApiController
         catch { return ServerErrorResponse(); }
     }
 
-    // [Authorize(Policy = Permissions.Options.Delete)]
+    [Authorize(Policy = Permissions.Options.Update)]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete([FromRoute] string id)
     {

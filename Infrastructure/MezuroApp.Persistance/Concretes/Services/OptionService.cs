@@ -1,8 +1,12 @@
+using System.Globalization;
+using System.Text;
 using AutoMapper;
 using MezuroApp.Application.Abstracts.Repositories.Options;
 using MezuroApp.Application.Dtos.Option;
 using MezuroApp.Application.GlobalException;
 using MezuroApp.Domain.Entities;
+using MezuroApp.Domain.HelperEntities;
+using Microsoft.EntityFrameworkCore;
 
 public class OptionService : IOptionService
 {
@@ -85,6 +89,86 @@ public class OptionService : IOptionService
         entity.LastUpdatedDate = DateTime.UtcNow;
 
         await _writeRepo.CommitAsync();
+    }
+    public async Task<PagedResult<OptionDto>> SearchAsync(string? query, int pageNumber, int pageSize)
+    {
+        if (pageNumber <= 0) pageNumber = 1;
+        if (pageSize <= 0) pageSize = 20;
+
+        var normalizedQ = NormalizeSearch(query);
+
+        var baseList = await _readRepo.Query()
+            .AsNoTracking()
+            .Where(x => !x.IsDeleted)
+            .Select(x => new
+            {
+                Entity = x,
+                NameAz = x.NameAz,
+                NameEn = x.NameEn,
+                NameRu = x.NameRu,
+                NameTr = x.NameTr
+            })
+            .ToListAsync();
+
+        var filtered = string.IsNullOrWhiteSpace(normalizedQ)
+            ? baseList
+            : baseList.Where(x =>
+                NormalizeSearch(x.NameAz).Contains(normalizedQ) ||
+                NormalizeSearch(x.NameEn).Contains(normalizedQ) ||
+                NormalizeSearch(x.NameRu).Contains(normalizedQ) ||
+                NormalizeSearch(x.NameTr).Contains(normalizedQ)
+            ).ToList();
+
+        var total = filtered.Count;
+
+        var items = filtered
+            .OrderByDescending(x => x.Entity.CreatedDate)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Select(x => x.Entity)
+            .ToList();
+
+        return new PagedResult<OptionDto>
+        {
+            Items = _mapper.Map<List<OptionDto>>(items),
+            Page = pageNumber,
+            PageSize = pageSize,
+            TotalCount = total
+        };
+    }
+    private static string NormalizeSearch(string? input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return "";
+
+        input = input.Trim().ToLowerInvariant();
+
+        // diacritics remove (ə,ö,ü,ğ,ç,ş və s.)
+        var normalized = input.Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder();
+        foreach (var c in normalized)
+        {
+            var uc = CharUnicodeInfo.GetUnicodeCategory(c);
+            if (uc != UnicodeCategory.NonSpacingMark)
+                sb.Append(c);
+        }
+
+        var res = sb.ToString().Normalize(NormalizationForm.FormC);
+
+        // AZ xüsusi hərfləri əlavə xəritələ (ə -> e kimi istəsən)
+        res = res
+            .Replace('ə', 'e')
+            .Replace('ı', 'i')
+            .Replace('ö', 'o')
+            .Replace('ü', 'u')
+            .Replace('ğ', 'g')
+            .Replace('ş', 's')
+            .Replace('ç', 'c');
+
+        // boşluq/tire/altxətt standart
+        res = res.Replace("-", " ").Replace("_", " ");
+        while (res.Contains("  ")) res = res.Replace("  ", " ");
+
+        return res;
     }
 
     public async Task DeleteAsync(string id)

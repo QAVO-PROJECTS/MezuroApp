@@ -28,6 +28,8 @@ public class User:IdentityUser<Guid>
     public DateTime? DeletedAt { get; set; }
     public string? NewsletterPreferences { get; set; } 
     public List<Review>? Reviews { get; set; }
+    public bool? IsActive { get; set; }
+    public DateTime? DeletedDate { get; set; }
     public List<UserAddress>? UserAddresses { get; set; }
     public List<RefreshToken>? RefreshTokens { get; set; }
     public Wishlist? Wishlist { get; set; }

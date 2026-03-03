@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
 using MezuroApp.Application.Abstracts.Repositories.Categories;
@@ -10,6 +11,8 @@ using MezuroApp.Application.Abstracts.Services;
 using MezuroApp.Application.Dtos.Category;
 using MezuroApp.Application.GlobalException;
 using MezuroApp.Domain.Entities;
+using MezuroApp.Domain.HelperEntities;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace MezuroApp.Persistance.Concretes.Services
@@ -25,6 +28,8 @@ namespace MezuroApp.Persistance.Concretes.Services
         private readonly IProductCategoryReadRepository _productCategoryReadRepo;
         private readonly IFileService _fileService;
         private readonly IMapper _mapper;
+        private readonly IAuditLogService _audit;
+        private readonly IHttpContextAccessor _http;
 
         public CategoryService(
             ICategoryReadRepository readRepo,
@@ -33,7 +38,9 @@ namespace MezuroApp.Persistance.Concretes.Services
             IProductCategoryWriteRepository productCategoryWriteRepo,
             IProductCategoryReadRepository productCategoryReadRepo,
             IFileService fileService,
-            IMapper mapper)
+            IMapper mapper,
+            IAuditLogService audit,
+            IHttpContextAccessor http)
         {
             _readRepo = readRepo;
             _writeRepo = writeRepo;
@@ -42,6 +49,8 @@ namespace MezuroApp.Persistance.Concretes.Services
             _productCategoryReadRepo = productCategoryReadRepo;
             _fileService = fileService;
             _mapper = mapper;
+            _audit = audit;
+            _http = http;
         }
 
         #region Queries
@@ -214,6 +223,13 @@ namespace MezuroApp.Persistance.Concretes.Services
 
             await _writeRepo.AddAsync(entity);
             await _writeRepo.CommitAsync();
+            await WriteAuditAsync(
+                action: "CREATE",
+                entityType: "Categories",
+                entityId: entity.Id,
+                oldValues: null,
+                newValues: CatSnap(entity)
+            );
         }
 
         public async Task UpdateCategory(UpdateCategoryDto dto)
@@ -224,6 +240,7 @@ namespace MezuroApp.Persistance.Concretes.Services
                 x => x.Id == gid && !x.IsDeleted,
                 q => q.Include(c => c.ProductCategories)
             ) ?? throw new GlobalAppException("Kateqoriya tapılmadı!");
+            var oldSnap = CatSnap(entity);
 
             Guid? newParentId = null;
             Category? parent = null;
@@ -268,6 +285,13 @@ namespace MezuroApp.Persistance.Concretes.Services
 
             await _writeRepo.UpdateAsync(entity);
             await _writeRepo.CommitAsync();
+            await WriteAuditAsync(
+                action: "UPDATE",
+                entityType: "Categories",
+                entityId: entity.Id,
+                oldValues: oldSnap,
+                newValues: CatSnap(entity)
+            );
         }
         
 
@@ -278,9 +302,20 @@ namespace MezuroApp.Persistance.Concretes.Services
                 x => x.Id == gid && !x.IsDeleted,
                 q => q.Include(c => c.Children)
             ) ?? throw new GlobalAppException("Kateqoriya tapılmadı!");
+            var oldSnap = CatSnap(category);
 
             await SoftDeleteCategoryTreeAsync(category);
             await _writeRepo.CommitAsync();
+            // delete edəndən sonra entity-nin özü artıq deleted olacaq
+            var newSnap = CatSnap(category);
+
+            await WriteAuditAsync(
+                action: "DELETE",
+                entityType: "Categories",
+                entityId: category.Id,
+                oldValues: oldSnap,
+                newValues: newSnap
+            );
         }
 
         public async Task DeleteAllCategoriesByParentId(string parentId)
@@ -304,6 +339,72 @@ namespace MezuroApp.Persistance.Concretes.Services
         #endregion
 
         #region Helpers
+        private bool IsAdminRequest()
+        {
+            var user = _http.HttpContext?.User;
+            if (user == null) return false;
+
+            // Role-larını öz sisteminə görə düzəlt
+            if (user.IsInRole("SuperAdmin") || user.IsInRole("Owner") || user.IsInRole("Admin"))
+                return true;
+
+            // və ya permission claim varsa:
+            // məsələn Categories.Update, Categories.Read və s.
+            return user.Claims.Any(c => c.Type == Permissions.ClaimType);
+        }
+
+        private string GetUserId()
+        {
+            var user = _http.HttpContext?.User;
+            return user?.FindFirstValue(ClaimTypes.NameIdentifier)
+                   ?? user?.FindFirst("sub")?.Value
+                   ?? "Anonymous";
+        }
+        private async Task WriteAuditAsync(
+            string action,               // "CREATE" | "UPDATE" | "DELETE"
+            string entityType,           // "Categories"
+            Guid? entityId,
+            Dictionary<string, object>? oldValues,
+            Dictionary<string, object>? newValues)
+        {
+            if (!IsAdminRequest()) return;
+
+            var (ip, ua) = GetRequestInfo();
+
+            await _audit.LogAsync(new AuditLog
+            {
+                UserId = GetUserId(),
+                Module = entityType,
+                EntityId = entityId,
+                ActionType = action,
+                OldValuesJson  = oldValues ?? new Dictionary<string, object>(),
+                NewValuesJson = newValues ?? new Dictionary<string, object>(),
+                IpAddress = ip,
+                UserAgent = ua,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+        private static Dictionary<string, object> CatSnap(Category c) => new()
+        {
+            ["id"] = c.Id.ToString(),
+            ["parentId"] = c.ParentId?.ToString(),
+            ["nameAz"] = c.NameAz,
+            ["nameEn"] = c.NameEn,
+            ["slug"] = c.Slug,
+            ["isActive"] = c.IsActive,
+            ["showInMenu"] = c.ShowInMenu,
+            ["level"] = c.Level,
+            ["imageUrl"] = c.ImageUrl,
+            ["isDeleted"] = c.IsDeleted
+        };
+
+        private (string ip, string ua) GetRequestInfo()
+        {
+            var ctx = _http.HttpContext;
+            var ip = ctx?.Connection.RemoteIpAddress?.ToString() ?? "";
+            var ua = ctx?.Request.Headers["User-Agent"].ToString() ?? "";
+            return (ip, ua);
+        }
 
         private static Guid ParseGuidOrThrow(string id, string field)
         {
@@ -323,12 +424,20 @@ namespace MezuroApp.Persistance.Concretes.Services
 
             var entity = await _readRepo.GetAsync(x => x.Id == gid && !x.IsDeleted)
                          ?? throw new GlobalAppException("Category not found!");
+            var oldSnap = CatSnap(entity);
 
             update(entity);
             entity.LastUpdatedDate = DateTime.UtcNow;
 
             await _writeRepo.UpdateAsync(entity);
             await _writeRepo.CommitAsync();
+            await WriteAuditAsync(
+                action: "UPDATE",
+                entityType: "Categories",
+                entityId: entity.Id,
+                oldValues: oldSnap,
+                newValues: CatSnap(entity)
+            );
         }
         private static DateTime UtcNow() => DateTime.UtcNow;
 

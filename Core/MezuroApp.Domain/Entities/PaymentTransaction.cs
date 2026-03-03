@@ -7,6 +7,11 @@ public class PaymentTransaction : BaseEntity
     // FK
     public Guid OrderId { get; set; }
     public Order Order { get; set; } = default!;
+    public Guid? UserCardId { get; set; } // NEW
+    public UserCard? UserCard { get; set; } // optional
+    public string? CardUid { get; set; }
+    public bool SaveCardRequested { get; set; } 
+    public decimal RefundedAmount { get; set; } = 0m;
 
     // Provider / Gateway
     public string PaymentMethod { get; set; } = "epoint"; // hələlik

@@ -1,11 +1,15 @@
 using System.Globalization;
+using System.Text;
 using AutoMapper;
 using MezuroApp.Application.Abstracts.Repositories.Cupons;
 using MezuroApp.Application.Abstracts.Services;
 using MezuroApp.Application.Dtos.Cupon;
 using MezuroApp.Application.GlobalException;
 using MezuroApp.Domain.Entities;
+using MezuroApp.Domain.HelperEntities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace MezuroApp.Persistance.Concretes.Services
 {
@@ -14,15 +18,22 @@ namespace MezuroApp.Persistance.Concretes.Services
         private readonly ICuponReadRepository _readRepo;
         private readonly ICuponWriteRepository _writeRepo;
         private readonly IMapper _mapper;
+        private readonly IAuditLogService _audit;
+        private readonly IHttpContextAccessor _http;
+        
 
         public CuponService(
             ICuponReadRepository readRepo,
             ICuponWriteRepository writeRepo,
-            IMapper mapper)
+            IMapper mapper,
+            IAuditLogService audit,
+            IHttpContextAccessor http)
         {
             _readRepo = readRepo;
             _writeRepo = writeRepo;
             _mapper = mapper;
+            _audit = audit;
+            _http = http;
         }
 
         // ====================================================================
@@ -112,7 +123,82 @@ namespace MezuroApp.Persistance.Concretes.Services
             return _mapper.Map<List<CuponDto>>(cupons);
         }
 
-      
+      public async Task<PagedResult<CuponDto>> SearchByCodeAsync(string? query, int pageNumber, int pageSize)
+{
+    if (pageNumber <= 0) pageNumber = 1;
+    if (pageSize <= 0) pageSize = 20;
+
+    var normalizedQ = NormalizeSearch(query);
+
+    // DB-dən minimal götür (performans üçün)
+    var baseList = await _readRepo.Query()
+        .AsNoTracking()
+        .Where(x => !x.IsDeleted)
+        .Include(x => x.Admin)
+        .Select(x => new
+        {
+            Entity = x,
+            Code = x.Code
+        })
+        .ToListAsync();
+
+    // Memory-də fuzzy filter
+    var filtered = string.IsNullOrWhiteSpace(normalizedQ)
+        ? baseList
+        : baseList.Where(x => NormalizeSearch(x.Code).Contains(normalizedQ)).ToList();
+
+    var total = filtered.Count;
+
+    var items = filtered
+        .OrderByDescending(x => x.Entity.CreatedDate)
+        .Skip((pageNumber - 1) * pageSize)
+        .Take(pageSize)
+        .Select(x => x.Entity)
+        .ToList();
+
+    return new PagedResult<CuponDto>
+    {
+        Items = _mapper.Map<List<CuponDto>>(items),
+        Page = pageNumber,
+        PageSize = pageSize,
+        TotalCount = total
+    };
+}
+
+private static string NormalizeSearch(string? input)
+{
+    if (string.IsNullOrWhiteSpace(input)) return "";
+
+    input = input.Trim().ToLowerInvariant();
+
+    // diacritics remove (ə,ö,ü,ğ,ç,ş və s.)
+    var normalized = input.Normalize(NormalizationForm.FormD);
+    var sb = new StringBuilder();
+    foreach (var c in normalized)
+    {
+        var uc = CharUnicodeInfo.GetUnicodeCategory(c);
+        if (uc != UnicodeCategory.NonSpacingMark)
+            sb.Append(c);
+    }
+
+    var res = sb.ToString().Normalize(NormalizationForm.FormC);
+
+    // AZ xüsusi hərfləri əlavə xəritələ (ə -> e kimi istəsən)
+    res = res
+        .Replace('ə', 'e')
+        .Replace('ı', 'i')
+        .Replace('ö', 'o')
+        .Replace('ü', 'u')
+        .Replace('ğ', 'g')
+        .Replace('ş', 's')
+        .Replace('ç', 'c');
+
+    // boşluq/tire/altxətt standart
+    res = res.Replace("-", " ").Replace("_", " ");
+    while (res.Contains("  ")) res = res.Replace("  ", " ");
+
+    return res;
+}
 
         public async Task<List<CuponDto>> PagedGetAllCupons(int pageNumber, int pageSize)
         {
@@ -229,6 +315,12 @@ namespace MezuroApp.Persistance.Concretes.Services
 
             await _writeRepo.AddAsync(entity);
             await _writeRepo.CommitAsync();
+            await WriteAuditAsync(
+                action: "CREATE",
+                entityId: entity.Id,
+                oldValues: null,
+                newValues: CuponSnap(entity)
+            );
         }
 
   public async Task UpdateCupon(UpdateCuponDto dto)
@@ -240,6 +332,7 @@ namespace MezuroApp.Persistance.Concretes.Services
         q => q.Include(x => x.Admin),
         enableTracking: true
     ) ?? throw new GlobalAppException("NOT_FOUND_CUPON");
+    var oldSnap = CuponSnap(entity);
 
     // Code unique check (yalnız Code göndərilibsə)
     if (!string.IsNullOrWhiteSpace(dto.Code))
@@ -299,6 +392,15 @@ namespace MezuroApp.Persistance.Concretes.Services
 
     await _writeRepo.UpdateAsync(entity);
     await _writeRepo.CommitAsync();
+    await _writeRepo.UpdateAsync(entity);
+    await _writeRepo.CommitAsync();
+
+    await WriteAuditAsync(
+        action: "UPDATE",
+        entityId: entity.Id,
+        oldValues: oldSnap,
+        newValues: CuponSnap(entity)
+    );
 }
 
 
@@ -310,12 +412,20 @@ namespace MezuroApp.Persistance.Concretes.Services
             var entity = await _readRepo.GetAsync(
                 x => x.Id == gid && !x.IsDeleted
             ) ?? throw new GlobalAppException("NOT_FOUND_CUPON");
+            var oldSnap = CuponSnap(entity);
 
             entity.IsDeleted = true;
             entity.DeletedDate = DateTime.UtcNow;
 
             await _writeRepo.UpdateAsync(entity);
             await _writeRepo.CommitAsync();
+
+            await WriteAuditAsync(
+                action: "DELETE",
+                entityId: entity.Id,
+                oldValues: oldSnap,
+                newValues: CuponSnap(entity)
+            );
         }
 
         public async Task SetActiveCupon(string cuponId, bool value)
@@ -324,17 +434,25 @@ namespace MezuroApp.Persistance.Concretes.Services
 
             var cupon = await _readRepo.GetAsync(
                 x => x.Id == gid && !x.IsDeleted
+                
              
             );
             if (cupon == null)
             {
                 throw new GlobalAppException("NOT_FOUND_CUPON");
             }
+            var oldSnap = CuponSnap(cupon);
             cupon.IsActive =value;
             cupon.LastUpdatedDate = DateTime.UtcNow;
             await _writeRepo.UpdateAsync(cupon);
-    
             await _writeRepo.CommitAsync();
+
+            await WriteAuditAsync(
+                action: "UPDATE",
+                entityId: cupon.Id,
+                oldValues: oldSnap,
+                newValues: CuponSnap(cupon)
+            );
             
         }
 
@@ -347,6 +465,74 @@ namespace MezuroApp.Persistance.Concretes.Services
             if (!Guid.TryParse(id, out var gid))
                 throw new GlobalAppException("INVALID_CUPON_ID");
             return gid;
+        }
+        private bool IsAdminRequest()
+        {
+            var user = _http.HttpContext?.User;
+            if (user == null) return false;
+
+            // role-larını öz sisteminə görə
+            if (user.IsInRole("SuperAdmin") || user.IsInRole("Owner") || user.IsInRole("Admin"))
+                return true;
+
+            // permission claim varsa (səndə var)
+            return user.Claims.Any(c => c.Type == Permissions.ClaimType);
+        }
+
+        private string GetUserId()
+        {
+            var user = _http.HttpContext?.User;
+            return user?.FindFirstValue(ClaimTypes.NameIdentifier)
+                   ?? user?.FindFirst("sub")?.Value
+                   ?? "Anonymous";
+        }
+
+        private (string ip, string ua) GetReqInfo()
+        {
+            var ctx = _http.HttpContext;
+            var ip = ctx?.Connection.RemoteIpAddress?.ToString() ?? "";
+            var ua = ctx?.Request.Headers["User-Agent"].ToString() ?? "";
+            return (ip, ua);
+        }
+
+        private static Dictionary<string, object> CuponSnap(Cupon c) => new()
+        {
+            ["id"] = c.Id.ToString(),
+            ["code"] = c.Code,
+            ["discountType"] = c.DiscountType,
+            ["discountValue"] = c.DiscountValue,
+            ["minimumPurchaseAmount"] = c.MinimumPurchaseAmount,
+            ["maxUses"] = c.MaxUses,
+            ["maxUsesPerUser"] = c.MaxUsesPerUser,
+            ["validFrom"] = c.ValidFrom,
+            ["validUntil"] = c.ValidUntil,
+            ["isActive"] = c.IsActive,
+            ["isDeleted"] = c.IsDeleted,
+            ["adminId"] = c.AdminId
+        };
+
+        private async Task WriteAuditAsync(
+            string action, // "CREATE" | "UPDATE" | "DELETE"
+            Guid? entityId,
+            Dictionary<string, object>? oldValues,
+            Dictionary<string, object>? newValues)
+        {
+            if (!IsAdminRequest()) return;
+
+            var (ip, ua) = GetReqInfo();
+
+            await _audit.LogAsync(new AuditLog
+            {
+                UserId = GetUserId(),
+                Module = "Coupons",
+                EntityId = entityId,
+                ActionType = action,
+                OldValuesJson = oldValues ?? new Dictionary<string, object>(),
+                NewValuesJson = newValues ?? new Dictionary<string, object>(),
+                IpAddress = ip,
+                UserAgent = ua,
+                CreatedAt = DateTime.UtcNow
+            });
         }
     }
 }

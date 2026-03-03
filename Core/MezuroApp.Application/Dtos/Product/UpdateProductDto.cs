@@ -32,7 +32,9 @@ public class UpdateProductDto
 
 
     // Pricing
+
     public decimal? Price { get; set; }
+
     public decimal? CompareAtPrice { get; set; }
 
 

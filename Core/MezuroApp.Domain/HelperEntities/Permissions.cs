@@ -31,6 +31,12 @@ namespace MezuroApp.Domain.HelperEntities
             public const string Read   = "Categories.Read";
         }
 
+        public static class Transactions
+        {
+            public const string Update = "Transactions.Update";
+            public const string Read     = "Transactions.Read";
+        }
+
     
         public static class Options
         {
@@ -45,6 +51,38 @@ namespace MezuroApp.Domain.HelperEntities
             public const string Update      = "Reviews.Update";
     
         }
+
+        public static class EmailCampaigns
+        {
+            public const string Update = "EmailCampaigns.Update";
+            public const string Read      = "EmailCampaigns.Read";
+        }
+        public static class Orders
+        {
+            public const string Read      = "Orders.Read";
+            public const string Update      = "Orders.Update";
+    
+        }
+
+        public static class AbandonedCarts
+        {
+            public const string Update = "AbandonedCarts.Update";
+            public const string Read      = "AbandonedCarts.Read";
+        }
+
+        public static class Users
+        {
+            public const string Read     = "Users.Read";
+         
+        }
+
+        public static class Dashboard
+        {
+            public const string Read     = "Dashboard.Read";
+       
+        }
+        
+
 
 
         public static IEnumerable<string> All()
@@ -79,6 +117,27 @@ namespace MezuroApp.Domain.HelperEntities
             yield return Reviews.Update;
      
             yield return Reviews.Read;
+            //Orders
+            yield return Orders.Update;
+            yield return Orders.Read;
+            
+            //Email Campaigns
+            yield return EmailCampaigns.Update;
+            yield return EmailCampaigns.Read;
+            
+            //Abandoned Carts
+            yield return AbandonedCarts.Update;
+            yield return AbandonedCarts.Read;
+            //Users
+
+            yield return Users.Read;
+            //Dashboard
+            yield return Dashboard.Read;
+            //Transactions
+            yield return Transactions.Update;
+            yield return Transactions.Read;
+            
+            
         }
     }
 }

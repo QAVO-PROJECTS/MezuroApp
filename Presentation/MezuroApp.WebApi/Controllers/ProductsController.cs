@@ -229,6 +229,7 @@ public class ProductsController : BaseApiController
     }
 
     [Authorize(Policy = Permissions.Products.Update)]
+    [Consumes("multipart/form-data")]
     [HttpPut]
     public async Task<IActionResult> Update([FromForm] UpdateProductDto dto)
     {

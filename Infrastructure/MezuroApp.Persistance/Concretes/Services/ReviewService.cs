@@ -5,6 +5,7 @@ using MezuroApp.Application.Abstracts.Services;
 using MezuroApp.Application.Dtos.Review;
 using MezuroApp.Application.GlobalException;
 using MezuroApp.Domain.Entities;
+using MezuroApp.Domain.HelperEntities;
 using Microsoft.AspNetCore.Identity;
 
 namespace MezuroApp.Persistance.Concretes.Services;
@@ -30,39 +31,330 @@ public class ReviewService : IReviewService
         var gid = ParseGuidOrThrow(id);
 
         var entity = await _readRepo.GetAsync(
-            x => x.Id == gid && !x.IsDeleted,
-            q => q.Include(r => r.User),
+            x => x.Id == gid && !x.IsDeleted && x.Status==true,
+            q => q.Include(r => r.User).Include(q=>q.Product)
+                .ThenInclude(p=>p.Images),
             enableTracking: false
         ) ?? throw new GlobalAppException("REVIEW_NOT_FOUND");
 
         return _mapper.Map<ReviewDto>(entity);
     }
 
-    public async Task<List<ReviewDto>> GetAllAsync(string productId)
+  
+
+    public async Task<PagedResult<ReviewDto>> GetAllByProductAsync(string productId, int page = 1, int pageSize = 10)
     {
         var pid = ParseGuidOrThrow(productId);
 
-        var entities = await _readRepo.GetAllAsync(
-            x => x.ProductId == pid && !x.IsDeleted,
-            q => q.Include(r => r.User)
-                  .OrderByDescending(r => r.CreatedDate)
-        );
+        if (page <= 0) page = 1;
+        if (pageSize <= 0) pageSize = 10;
 
-        return _mapper.Map<List<ReviewDto>>(entities);
+        var query = _readRepo.Query()
+            .AsNoTracking()
+            .Where(x => !x.IsDeleted && x.Status == true && x.ProductId == pid);
+
+        var totalCount = await query.CountAsync();
+
+        var entities = await query
+            .Include(r => r.User).Include(q=>q.Product)
+            .ThenInclude(p=>p.Images)
+            .OrderByDescending(r => r.CreatedDate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResult<ReviewDto>
+        {
+            Items = _mapper.Map<List<ReviewDto>>(entities),
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
     }
+    public async Task<PagedResult<ReviewDto>> GetAllInActiveAsync(int page = 1, int pageSize = 10)
+    {
+        if (page <= 0) page = 1;
+        if (pageSize <= 0) pageSize = 10;
 
-    public async Task<List<ReviewDto>> GetAllActiveAsync(string productId)
+        var query = _readRepo.Query()
+            .AsNoTracking()
+            .Where(x => !x.IsDeleted && x.Status == false);
+
+        var totalCount = await query.CountAsync();
+
+        var entities = await query
+            .Include(r => r.User).Include(q=>q.Product)
+            .ThenInclude(p=>p.Images)
+            .OrderByDescending(r => r.CreatedDate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResult<ReviewDto>
+        {
+            Items = _mapper.Map<List<ReviewDto>>(entities),
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
+    }
+    public async Task<PagedResult<ReviewDto>> GetAllForAdminAsync(int page = 1, int pageSize = 10)
+    {
+        if (page <= 0) page = 1;
+        if (pageSize <= 0) pageSize = 10;
+
+        var query = _readRepo.Query()
+            .AsNoTracking().Where(x => x.Status == true);
+           
+
+        var totalCount = await query.CountAsync();
+
+        var entities = await query
+            .Include(r => r.User).Include(q=>q.Product)
+            .ThenInclude(p=>p.Images)
+            .OrderByDescending(r => r.CreatedDate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResult<ReviewDto>
+        {
+            Items = _mapper.Map<List<ReviewDto>>(entities),
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
+    }
+    public async Task<PagedResult<ReviewDto>> GetAllInactiveByProductForAdminAsync(string productId, int page = 1, int pageSize = 10)
     {
         var pid = ParseGuidOrThrow(productId);
 
-        var entities = await _readRepo.GetAllAsync(
-            x => x.ProductId == pid && x.Status == true && !x.IsDeleted,
-            q => q.Include(r => r.User)
-                  .OrderByDescending(r => r.CreatedDate)
-        );
+        if (page <= 0) page = 1;
+        if (pageSize <= 0) pageSize = 10;
 
-        return _mapper.Map<List<ReviewDto>>(entities);
+        var query = _readRepo.Query()
+            .AsNoTracking()
+            .Where(x => !x.IsDeleted && x.Status == false && x.ProductId == pid);
+
+        var totalCount = await query.CountAsync();
+
+        var entities = await query
+            .Include(r => r.User).Include(q=>q.Product)
+            .ThenInclude(p=>p.Images)
+            .OrderByDescending(r => r.CreatedDate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResult<ReviewDto>
+        {
+            Items = _mapper.Map<List<ReviewDto>>(entities),
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
     }
+    public async Task<PagedResult<ReviewDto>> GetAllActiveByProductForAdminAsync(string productId, int page = 1, int pageSize = 10)
+    {
+        var pid = ParseGuidOrThrow(productId);
+
+        if (page <= 0) page = 1;
+        if (pageSize <= 0) pageSize = 10;
+
+        var query = _readRepo.Query()
+            .AsNoTracking()
+            .Where(x => x.ProductId == pid && x.Status == true);
+
+        var totalCount = await query.CountAsync();
+
+        var entities = await query
+            .Include(r => r.User).Include(q=>q.Product)
+            .ThenInclude(p=>p.Images)
+            .OrderByDescending(r => r.CreatedDate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResult<ReviewDto>
+        {
+            Items = _mapper.Map<List<ReviewDto>>(entities),
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
+    }
+    public async Task<PagedResult<ReviewDto>> GetAllInactiveByRatingForAdminAsync(int rating, int page = 1, int pageSize = 10)
+    {
+     
+
+        if (page <= 0) page = 1;
+        if (pageSize <= 0) pageSize = 10;
+
+        var query = _readRepo.Query()
+            .AsNoTracking()
+            .Where(x => !x.IsDeleted && x.Status == false && x.Rating == rating);
+
+        var totalCount = await query.CountAsync();
+
+        var entities = await query
+            .Include(r => r.User).Include(q=>q.Product)
+            .ThenInclude(p=>p.Images)
+            .OrderByDescending(r => r.CreatedDate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResult<ReviewDto>
+        {
+            Items = _mapper.Map<List<ReviewDto>>(entities),
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
+    }
+    public async Task<PagedResult<ReviewDto>> GetAllActiveByRatingForAdminAsync(int rating, int page = 1, int pageSize = 10)
+    {
+     
+
+        if (page <= 0) page = 1;
+        if (pageSize <= 0) pageSize = 10;
+
+        var query = _readRepo.Query()
+            .AsNoTracking()
+            .Where(x => x.Rating == rating  && x.Status == true);
+
+        var totalCount = await query.CountAsync();
+
+        var entities = await query
+            .Include(r => r.User).Include(q=>q.Product)
+            .ThenInclude(p=>p.Images)
+            .OrderByDescending(r => r.CreatedDate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResult<ReviewDto>
+        {
+            Items = _mapper.Map<List<ReviewDto>>(entities),
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
+    }
+    public async Task<PagedResult<ReviewDto>> GetAllInActiveSortedAsync(
+        int sort = 2,
+        int page = 1,
+        int pageSize = 10)
+    {
+        if (page <= 0) page = 1;
+        if (pageSize <= 0) pageSize = 10;
+
+        IQueryable<Review> q = _readRepo.Query()
+            .AsNoTracking()
+            .Where(r => !r.IsDeleted && r.Status == false);
+
+        // Sort
+        q = sort switch
+        {
+            1 => q.OrderBy(r => r.CreatedDate),            // köhnə -> yeni
+            2 => q.OrderByDescending(r => r.CreatedDate),  // yeni -> köhnə
+            3 => q.OrderBy(r => r.Rating),                 // az -> çox
+            4 => q.OrderByDescending(r => r.Rating),       // çox -> az
+            _ => q.OrderByDescending(r => r.CreatedDate)
+        };
+
+        var total = await q.CountAsync();
+
+        // Include-ni sonda et
+        var items = await q
+            .Include(r => r.User).Include(x=>x.Product)
+            .ThenInclude(p=>p.Images)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResult<ReviewDto>
+        {
+            Items = _mapper.Map<List<ReviewDto>>(items),
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = total
+        };
+    }
+    public async Task<PagedResult<ReviewDto>> GetAllActiveSortedAsync(
+        int sort = 2,
+        int page = 1,
+        int pageSize = 10)
+    {
+        if (page <= 0) page = 1;
+        if (pageSize <= 0) pageSize = 10;
+
+        IQueryable<Review> q = _readRepo.Query()
+            .AsNoTracking()
+            .Where(r => r.Status == true);
+            ;
+
+        // Sort
+        q = sort switch
+        {
+            1 => q.OrderBy(r => r.CreatedDate),            // köhnə -> yeni
+            2 => q.OrderByDescending(r => r.CreatedDate),  // yeni -> köhnə
+            3 => q.OrderBy(r => r.Rating),                 // az -> çox
+            4 => q.OrderByDescending(r => r.Rating),       // çox -> az
+            _ => q.OrderByDescending(r => r.CreatedDate)
+        };
+
+        var total = await q.CountAsync();
+
+        // Include-ni sonda et
+        var items = await q
+            .Include(r => r.User).Include(x=>x.Product)
+            .ThenInclude(p=>p.Images)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResult<ReviewDto>
+        {
+            Items = _mapper.Map<List<ReviewDto>>(items),
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = total
+        };
+    }
+    
+    public async Task<PagedResult<ReviewDto>> GetByStatusAndDeleteAsync(
+        bool value,
+        int page = 1,
+        int pageSize = 10)
+    {
+        if (page <= 0) page = 1;
+        if (pageSize <= 0) pageSize = 10;
+
+        var query = _readRepo.Query()
+            .AsNoTracking()
+            .Include(r => r.User).Include(q=>q.Product)
+            .ThenInclude(p=>p.Images)
+            .Where(r => r.IsDeleted == value && r.Status == value);
+
+        var total = await query.CountAsync();
+
+        var items = await query
+            .OrderByDescending(r => r.CreatedDate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new PagedResult<ReviewDto>
+        {
+            Items = _mapper.Map<List<ReviewDto>>(items),
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = total
+        };
+    }
+
+
 
     public async Task InCreaseAsync(string reviewId) // like +
     {
@@ -160,7 +452,7 @@ public class ReviewService : IReviewService
         await _writeRepo.CommitAsync();
     }
 
-    public async Task DeleteAsync(string id)
+    public async Task  RejectAsync(string id)
     {
         var gid = ParseGuidOrThrow(id);
 
@@ -170,6 +462,7 @@ public class ReviewService : IReviewService
         ) ?? throw new GlobalAppException("REVIEW_NOT_FOUND");
 
         entity.IsDeleted = true;
+
         entity.DeletedDate = DateTime.UtcNow;
         entity.LastUpdatedDate = DateTime.UtcNow;
 
@@ -204,7 +497,7 @@ public class ReviewService : IReviewService
         // Repo list qaytarır → include User
         var list = await _readRepo.GetAllAsync(
             x => x.ProductId == pid && !x.IsDeleted && x.Status==true,
-            q => q.Include(r => r.User)
+            q => q.Include(r => r.User).Include(x=>x.Product)
         );
 
         IEnumerable<Review> ordered;

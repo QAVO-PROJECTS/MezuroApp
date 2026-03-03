@@ -47,20 +47,20 @@ public abstract class BaseApiController : ControllerBase
             "Parent'e bağlı tüm kategoriler başarıyla silindi.",
             "Все категории, связанные с родителем, успешно удалены."
         ),
-        ["EDIT_PROFILE_SUCCESS"]=(
-        
-         "Profil məlumatları yeniləndi",
-        "Profile information has been updated",
-        "Profil bilgileri güncellendi",
-        "Информация профиля обновлена"
-            ),
-        ["GET_PROFILE_SUCCESS"]=(
-        
-        "İstifadəçi məlumatları uğurla qaytarıldı",
-        "User information was successfully retrieved",
-        "Kullanıcı bilgileri başarıyla alındı",
-        "Данные пользователя успешно получены"
-                ),
+        ["EDIT_PROFILE_SUCCESS"] = (
+
+            "Profil məlumatları yeniləndi",
+            "Profile information has been updated",
+            "Profil bilgileri güncellendi",
+            "Информация профиля обновлена"
+        ),
+        ["GET_PROFILE_SUCCESS"] = (
+
+            "İstifadəçi məlumatları uğurla qaytarıldı",
+            "User information was successfully retrieved",
+            "Kullanıcı bilgileri başarıyla alındı",
+            "Данные пользователя успешно получены"
+        ),
         ["CATEGORY_NOT_FOUND"] = (
             "Kateqoriya tapılmadı.",
             "Category not found.",
@@ -193,7 +193,7 @@ public abstract class BaseApiController : ControllerBase
             "Ürün başarıyla silindi.",
             "Товар успешно удалён."
         ),
-   
+
         ["SKU_ALREADY_EXISTS"] = (
             "Bu SKU artıq mövcuddur.",
             "This SKU already exists.",
@@ -281,12 +281,11 @@ public abstract class BaseApiController : ControllerBase
             "Адрес успешно удалён."
         ),
         ["ADDRESS_NOT_FOUND"] = (
-                "Ünvan tapılmadı.",
-                "Address not found.",
-                "Adres bulunamadı.",
-                "Адрес не найден."
-            )
-,
+            "Ünvan tapılmadı.",
+            "Address not found.",
+            "Adres bulunamadı.",
+            "Адрес не найден."
+        ),
         ["PRODUCT_NOT_FOUND"] = (
             "Məhsul tapılmadı.",
             "Product not found.",
@@ -409,7 +408,7 @@ public abstract class BaseApiController : ControllerBase
             "Adminler başarıyla döndürüldü.",
             "Администраторы успешно возвращены."
         ),
-        
+
         ["ADMIN_RESPONSE"] = (
             "Admin məlumatı uğurla qaytarıldı.",
             "Admin info returned successfully.",
@@ -433,7 +432,7 @@ public abstract class BaseApiController : ControllerBase
             "Admin password reset successfully.",
             "Admin şifresi başarıyla sıfırlandı.",
             "Пароль администратора успешно сброшен."
-        ),// ====== PRODUCT CATEGORY FILTER ======
+        ), // ====== PRODUCT CATEGORY FILTER ======
         ["PRODUCTS_BY_CATEGORY_RETURNED"] = (
             "Kateqoriyaya aid məhsullar uğurla qaytarıldı.",
             "Products by category have been returned successfully.",
@@ -485,11 +484,11 @@ public abstract class BaseApiController : ControllerBase
             "Такой SKU цвета уже существует."
         ),
         ["COLOR_CODE_ALREADY_EXISTS"] = (
-                "Bu rəng kodu artıq mövcuddur.",
-                "This color code already exists.",
-                "Bu renk kodu zaten mevcut.",
-                "Такой код цвета уже существует."
-            ),
+            "Bu rəng kodu artıq mövcuddur.",
+            "This color code already exists.",
+            "Bu renk kodu zaten mevcut.",
+            "Такой код цвета уже существует."
+        ),
 // ====== OPTION – VALIDATION & ERRORS ======
         ["OPTION_NAME_ALREADY_EXISTS"] = (
             "Bu option adı bu məhsul üçün artıq mövcuddur.",
@@ -530,19 +529,18 @@ public abstract class BaseApiController : ControllerBase
             "Достигнуто максимальное число опций для данного товара."
         ),
         ["OPTION_VALUE_IN_USE"] = (
-                "Bu option dəyəri aktiv variantlarda istifadə olunur və silinə bilməz.",
-                "This option value is used by active variants and cannot be deleted.",
-                "Bu seçenek değeri aktif varyantlarda kullanılıyor ve silinemez.",
-                "Это значение опции используется активными вариантами и не может быть удалено."
-            ),
+            "Bu option dəyəri aktiv variantlarda istifadə olunur və silinə bilməz.",
+            "This option value is used by active variants and cannot be deleted.",
+            "Bu seçenek değeri aktif varyantlarda kullanılıyor ve silinemez.",
+            "Это значение опции используется активными вариантами и не может быть удалено."
+        ),
 // ====== OPTIONS BY PRODUCT ======
         ["OPTIONS_BY_PRODUCT_RETURNED"] = (
             "Məhsula aid option-lar uğurla qaytarıldı.",
             "Options for this product have been returned successfully.",
             "Bu ürüne ait option'lar başarıyla döndürüldü.",
             "Опции для данного товара успешно возвращены."
-        )
-        ,// ====== PRODUCT OPTION (PRODUCT-LEVEL OPTION) ======
+        ), // ====== PRODUCT OPTION (PRODUCT-LEVEL OPTION) ======
         ["PRODUCT_OPTION_NOT_FOUND"] = (
             "Product option tapılmadı.",
             "Product option not found.",
@@ -576,18 +574,28 @@ public abstract class BaseApiController : ControllerBase
             "Kategori'nin menüde gösterim durumu güncellendi.",
             "Статус отображения категории в меню обновлён."
         ),
-        ["REVIEWS_RETURNED"] = ("Rəylər uğurla qaytarıldı.","Reviews have been returned successfully.","Yorumlar başarıyla döndürüldü.","Отзывы успешно возвращены."),
-        ["REVIEWS_ACTIVE_RETURNED"] = ("Aktiv rəylər uğurla qaytarıldı.","Active reviews have been returned successfully.","Aktif yorumlar başarıyla döndürüldü.","Активные отзывы успешно возвращены."),
-        ["REVIEW_RETURNED"] = ("Rəy uğurla qaytarıldı.","Review has been returned successfully.","Yorum başarıyla döndürüldü.","Отзыв успешно возвращён."),
-        ["REVIEW_CREATED"] = ("Rəy uğurla yaradıldı.","Review has been created successfully.","Yorum başarıyla oluşturuldu.","Отзыв успешно создан."),
-        ["REVIEW_REPLIED"] = ("Rəyə cavab uğurla əlavə olundu.","Reply to review has been added successfully.","Yoruma yanıt başarıyla eklendi.","Ответ на отзыв успешно добавлен."),
-        ["REVIEW_STATUS_UPDATED"] = ("Rəyin statusu yeniləndi.","Review status has been updated.","Yorum durumu güncellendi.","Статус отзыва обновлён."),
-        ["REVIEW_LIKED"] = ("Rəy bəyənildi.","Review liked.","Yorum beğenildi.","Отзыв отмечен как понравившийся."),
-        ["REVIEW_DISLIKED"] = ("Rəy bəyənilmədi.","Review disliked.","Yorum beğenilmedi.","Отзыв отмечен как не понравившийся."),
-        ["REVIEWS_SORTED"] = ("Rəylər sıralandı.","Reviews have been sorted.","Yorumlar sıralandı.","Отзывы отсортированы."),
-        ["REVIEW_DELETED"] = ("Rəy uğurla silindi.","Review has been deleted successfully.","Yorum başarıyla silindi.","Отзыв успешно удалён."),
-        ["REVIEW_NOT_FOUND"] = ("Rəy tapılmadı.","Review not found.","Yorum bulunamadı.","Отзыв не найден."),
-        
+        ["REVIEWS_RETURNED"] = ("Rəylər uğurla qaytarıldı.", "Reviews have been returned successfully.",
+            "Yorumlar başarıyla döndürüldü.", "Отзывы успешно возвращены."),
+        ["REVIEWS_ACTIVE_RETURNED"] = ("Aktiv rəylər uğurla qaytarıldı.",
+            "Active reviews have been returned successfully.", "Aktif yorumlar başarıyla döndürüldü.",
+            "Активные отзывы успешно возвращены."),
+        ["REVIEW_RETURNED"] = ("Rəy uğurla qaytarıldı.", "Review has been returned successfully.",
+            "Yorum başarıyla döndürüldü.", "Отзыв успешно возвращён."),
+        ["REVIEW_CREATED"] = ("Rəy uğurla yaradıldı.", "Review has been created successfully.",
+            "Yorum başarıyla oluşturuldu.", "Отзыв успешно создан."),
+        ["REVIEW_REPLIED"] = ("Rəyə cavab uğurla əlavə olundu.", "Reply to review has been added successfully.",
+            "Yoruma yanıt başarıyla eklendi.", "Ответ на отзыв успешно добавлен."),
+        ["REVIEW_STATUS_UPDATED"] = ("Rəyin statusu yeniləndi.", "Review status has been updated.",
+            "Yorum durumu güncellendi.", "Статус отзыва обновлён."),
+        ["REVIEW_LIKED"] = ("Rəy bəyənildi.", "Review liked.", "Yorum beğenildi.", "Отзыв отмечен как понравившийся."),
+        ["REVIEW_DISLIKED"] = ("Rəy bəyənilmədi.", "Review disliked.", "Yorum beğenilmedi.",
+            "Отзыв отмечен как не понравившийся."),
+        ["REVIEWS_SORTED"] = ("Rəylər sıralandı.", "Reviews have been sorted.", "Yorumlar sıralandı.",
+            "Отзывы отсортированы."),
+        ["REVIEW_DELETED"] = ("Rəy uğurla silindi.", "Review has been deleted successfully.",
+            "Yorum başarıyla silindi.", "Отзыв успешно удалён."),
+        ["REVIEW_NOT_FOUND"] = ("Rəy tapılmadı.", "Review not found.", "Yorum bulunamadı.", "Отзыв не найден."),
+
         ["WISHLIST_UPDATED"] = (
             "İstək siyahısı yeniləndi.",
             "Wishlist updated successfully.",
@@ -714,14 +722,54 @@ public abstract class BaseApiController : ControllerBase
             "Kuponun süresi doldu.",
             "Срок действия купона истёк."
         ),
-
+        ["NEWSLETTER_SUBSCRIBERS_RETURNED"] = (
+            "Abunəçilər siyahısı qaytarıldı.",
+            "Subscribers list returned.",
+            "Abone listesi döndürüldü.",
+            "Список подписчиков возвращён."
+        ),
+        ["INVALID_STATUS"] = (
+            "Status yalniz 'active' və ya 'deactivated' ola bilər.",
+            "Status can only be 'active' or 'deactivated'.",
+            "Durum yalnız 'active' veya 'deactivated' olabilir.",
+            "Статус может быть только 'active' или 'deactivated'."
+        ),
         ["COUPON_NOT_STARTED"] = (
             "Kupon hələ aktiv deyil.",
             "Coupon is not active yet.",
             "Kupon henüz aktif değil.",
             "Купон ещё не активен."
         ),
-
+        ["INVALID_SCHEDULED_AT"] = (
+            "Tarix və saat formatı yanlışdır. Format: dd.MM.yyyy HH:mm",
+            "Invalid date and time format. Expected format: dd.MM.yyyy HH:mm",
+            "Tarih ve saat formatı geçersiz. Format: dd.MM.yyyy HH:mm",
+            "Неверный формат даты и времени. Ожидаемый формат: dd.MM.yyyy HH:mm"
+        ),
+        ["ESTIMATED_RECIPIENTS_RETURNED"] = (
+            "Təxmini alıcı sayı qaytarıldı.",
+            "Estimated recipients count returned.",
+            "Tahmini alıcı sayısı döndürüldü.",
+            "Предполагаемое количество получателей возвращено."
+        ),
+        ["TRANSACTION_DASHBOARD_RETURNED"] = (
+            "Transaksiya panel məlumatları uğurla qaytarıldı.",
+            "Transaction dashboard data returned successfully.",
+            "İşlem paneli verileri başarıyla getirildi.",
+            "Данные панели транзакций успешно получены."
+        ),
+        ["ADMIN_ACTIVITY_RETURNED"] = (
+            "Admin fəaliyyəti siyahısı qaytarıldı.",
+            "Admin activity list returned.",
+            "Admin işlem geçmişi listesi döndürüldü.",
+            "Список активности администратора возвращён."
+        ), 
+        ["INVALID_DATE_RANGE"] = (
+            "Tarix aralığı yanlışdır.",
+            "Invalid date range.",
+            "Geçersiz tarih aralığı.",
+            "Неверный диапазон дат."
+        ),
         ["COUPON_MIN_AMOUNT"] = (
             "Minimum alış məbləği təmin olunmayıb.",
             "Minimum purchase amount not reached.",
@@ -737,12 +785,11 @@ public abstract class BaseApiController : ControllerBase
         ),
 
         ["COUPON_USER_LIMIT"] = (
-                "Bu kuponu artıq istifadə etmisiniz.",
-                "You have already used this coupon.",
-                "Bu kuponu zaten kullandınız.",
-                "Вы уже использовали этот купон."
-            )
-,
+            "Bu kuponu artıq istifadə etmisiniz.",
+            "You have already used this coupon.",
+            "Bu kuponu zaten kullandınız.",
+            "Вы уже использовали этот купон."
+        ),
 
 // ====== COUPON – ERRORS / VALIDATION KEYS (service ilə uyğundur) ======
         ["UNIQE_CUPON"] = ( // service-də bu açarı istifadə etmisən — eynisini saxladım
@@ -837,212 +884,651 @@ public abstract class BaseApiController : ControllerBase
             "Variant not found.",
             "Varyant bulunamadı.",
             "Вариант не найден."
-        )
-,// ====== ORDER (EXTRA KEYS) ======
-["ORDER_DETAIL_RETURNED"] = (
-    "Sifariş detalları uğurla qaytarıldı.",
-    "Order details returned successfully.",
-    "Sipariş detayları başarıyla döndürüldü.",
-    "Детали заказа успешно возвращены."
+        ), // ====== ORDER (EXTRA KEYS) ======
+        ["ORDER_DETAIL_RETURNED"] = (
+            "Sifariş detalları uğurla qaytarıldı.",
+            "Order details returned successfully.",
+            "Sipariş detayları başarıyla döndürüldü.",
+            "Детали заказа успешно возвращены."
+        ),
+
+        ["ORDER_NOT_FOUND"] = (
+            "Sifariş tapılmadı.",
+            "Order not found.",
+            "Sipariş bulunamadı.",
+            "Заказ не найден."
+        ),
+
+        ["INVALID_ORDER_ID"] = (
+            "Sifariş ID formatı yanlışdır!",
+            "Invalid order ID format!",
+            "Geçersiz sipariş ID formatı!",
+            "Неверный формат идентификатора заказа!"
+        ),
+
+        ["INVALID_STATUS"] = (
+            "Status yanlışdır. Yalnız: pending, delivered, cancelled.",
+            "Invalid status. Allowed: pending, delivered, cancelled.",
+            "Geçersiz durum. İzin verilen: pending, delivered, cancelled.",
+            "Неверный статус. Допустимые: pending, delivered, cancelled."
+        ),
+
+        ["INVALID_DATE_FILTER"] = (
+            "Tarix filtri yanlışdır. Yalnız: week, month, year.",
+            "Invalid date filter. Allowed: week, month, year.",
+            "Geçersiz tarih filtresi. İzin verilen: week, month, year.",
+            "Неверный фильтр даты. Допустимые: week, month, year."
+        ),
+
+        ["PAYMENT_METHOD_REQUIRED"] = (
+            "Ödəniş metodu tələb olunur.",
+            "Payment method is required.",
+            "Ödeme yöntemi gereklidir.",
+            "Требуется способ оплаты."
+        ),
+
+        ["INVALID_PAYMENT_METHOD"] = (
+            "Ödəniş metodu yanlışdır. Yalnız: card, debit_card, cash.",
+            "Invalid payment method. Allowed: card, debit_card, cash.",
+            "Geçersiz ödeme yöntemi. İzin verilen: card, debit_card, cash.",
+            "Неверный способ оплаты. Допустимые: card, debit_card, cash."
+        ),
+        ["PAYMENT_STARTED"] = (
+            "Ödəniş prosesi başladıldı.",
+            "Payment process started.",
+            "Ödeme süreci başlatıldı.",
+            "Процесс оплаты запущен."
+        ),
+        ["PAYMENT_CALLBACK_OK"] = (
+            "Ödəniş nəticəsi qəbul olundu.",
+            "Payment result received.",
+            "Ödeme sonucu alındı.",
+            "Результат оплаты получен."
+        ),
+        ["PAYMENT_STATUS_RETURNED"] = (
+            "Ödəniş statusu qaytarıldı.",
+            "Payment status returned.",
+            "Ödeme durumu döndürüldü.",
+            "Статус оплаты возвращён."
+        ),
+        ["PAYMENT_START_FAILED"] = (
+            "Ödənişi başlatmaq mümkün olmadı.",
+            "Failed to start payment.",
+            "Ödeme başlatılamadı.",
+            "Не удалось начать оплату."
+        ),
+        ["ORDER_ALREADY_PAID"] = (
+            "Bu sifariş artıq ödənilib.",
+            "This order is already paid.",
+            "Bu sipariş zaten ödendi.",
+            "Этот заказ уже оплачен."
+        ),
+        ["INVALID_ORDER_ID"] = (
+            "Sifariş ID formatı yanlışdır!",
+            "Invalid order id format!",
+            "Geçersiz sipariş id formatı!",
+            "Неверный формат id заказа!"
+        ),
+        ["ORDER_NOT_FOUND"] = (
+            "Sifariş tapılmadı.",
+            "Order not found.",
+            "Sipariş bulunamadı.",
+            "Заказ не найден."
+        ),
+        ["EPOINT_SIGNATURE_MISMATCH"] = (
+            "Epoint imzası uyğunsuzdur.",
+            "Epoint signature mismatch.",
+            "Epoint imzası uyuşmuyor.",
+            "Подпись Epoint не совпадает."
+        ),
+        ["NEWSLETTER_SUBSCRIBED"] = (
+            "Abunəlik uğurla aktiv edildi.",
+            "Subscription activated successfully.",
+            "Abonelik başarıyla aktif edildi.",
+            "Подписка успешно активирована."
+        ),
+        ["CAMPAIGN_CREATED"] = (
+            "Kampaniya uğurla yaradıldı.",
+            "Campaign created successfully.",
+            "Kampanya başarıyla oluşturuldu.",
+            "Кампания успешно создана."
+        ),
+
+        ["USER_ID_NOT_FOUND"] = (
+            "İstifadəçi identifikatoru tapılmadı.",
+            "User identifier not found.",
+            "Kullanıcı kimliği bulunamadı.",
+            "Идентификатор пользователя не найден."
+        ),
+
+        ["CAMPAIGN_CANCELLED"] = (
+            "Kampaniya ləğv edildi.",
+            "Campaign has been cancelled.",
+            "Kampanya iptal edildi.",
+            "Кампания была отменена."
+        ),
+
+        ["CAMPAIGNS_RETURNED"] = (
+            "Kampaniyalar uğurla qaytarıldı.",
+            "Campaigns retrieved successfully.",
+            "Kampanyalar başarıyla getirildi.",
+            "Кампании успешно получены."
+        ),
+
+        ["CAMPAIGN_RETURNED"] = (
+            "Kampaniya məlumatları qaytarıldı.",
+            "Campaign details retrieved successfully.",
+            "Kampanya detayları başarıyla getirildi.",
+            "Данные кампании успешно получены."
+        ),
+
+        ["CAMPAIGN_NOT_FOUND"] = (
+            "Kampaniya tapılmadı.",
+            "Campaign not found.",
+            "Kampanya bulunamadı.",
+            "Кампания не найдена."
+        ),
+
+        ["CAMPAIGN_ALREADY_SENT"] = (
+            "Kampaniya artıq göndərilib.",
+            "Campaign has already been sent.",
+            "Kampanya zaten gönderildi.",
+            "Кампания уже отправлена."
+        ),
+
+        ["CAMPAIGN_CANNOT_BE_CANCELLED"] = (
+            "Göndərilmiş kampaniya ləğv edilə bilməz.",
+            "A sent campaign cannot be cancelled.",
+            "Gönderilmiş kampanya iptal edilemez.",
+            "Отправленную кампанию нельзя отменить."
+        ),
+
+        ["CAMPAIGN_CANNOT_BE_SCHEDULED"] = (
+            "Bu kampaniya planlaşdırıla bilməz.",
+            "This campaign cannot be scheduled.",
+            "Bu kampanya planlanamaz.",
+            "Эту кампанию нельзя запланировать."
+        ),
+
+        ["SERVER_ERROR"] = (
+            "Server xətası baş verdi.",
+            "An internal server error occurred.",
+            "Sunucu hatası oluştu.",
+            "Произошла внутренняя ошибка сервера."
+        ),
+        ["NEWSLETTER_UNSUBSCRIBED"] = (
+            "Abunəlik deaktiv edildi.",
+            "Subscription has been deactivated.",
+            "Abonelik devre dışı bırakıldı.",
+            "Подписка отключена."
+        ),
+        ["NEWSLETTER_ME_RETURNED"] = (
+            "Abunəlik məlumatları qaytarıldı.",
+            "Subscription info returned.",
+            "Abonelik bilgisi döndürüldü.",
+            "Данные подписки возвращены."
+        ),
+        ["NEWSLETTER_ENSURED"] = (
+            "Abunəlik yaradıldı və ya yeniləndi.",
+            "Subscription ensured (created or updated).",
+            "Abonelik oluşturuldu veya güncellendi.",
+            "Подписка создана или обновлена."
+        ),
+        ["SUBSCRIBER_NOT_FOUND"] = (
+            "Abunə tapılmadı.",
+            "Subscriber not found.",
+            "Abone bulunamadı.",
+            "Подписчик не найден."
+        ),
+        ["INVALID_EMAIL"] = (
+            "E-poçt formatı yanlışdır.",
+            "Invalid email format.",
+            "Geçersiz e-posta formatı.",
+            "Неверный формат электронной почты."
+        ),
+        ["ADMIN_UPDATED"] = (
+            "Admin məlumatları uğurla yeniləndi.",
+            "Admin has been updated successfully.",
+            "Данные администратора успешно обновлены.",
+            "Admin bilgileri başarıyla güncellendi."
+        ),
+        ["ONLY_SUPERADMIN_CAN_UPDATE_ADMIN"]= (
+       "Yalnız SuperAdmin admin məlumatlarını dəyişə bilər.",
+       "Only SuperAdmin can update admin data.",
+       "Только SuperAdmin может обновлять данные администратора.",
+        "Sadece SuperAdmin admin bilgilerini güncelleyebilir."
+    ),
+          ["INVALID_EMAIL"] = (
+                "E-poçt formatı yanlışdır.",
+                "Invalid email format.",
+                "Geçersiz e-posta formatı.",
+                "Неверный формат электронной почты."
+            ),
+
+            ["ACTOR_NOT_FOUND"] = (
+                "İcra edən istifadəçi tapılmadı.",
+                "Actor user not found.",
+                "İşlemi yapan kullanıcı bulunamadı.",
+                "Исполнитель не найден."
+            ),
+
+            ["ONLY_SUPERADMIN_CAN_UPDATE_ADMIN"] = (
+                "Yalnız SuperAdmin admin məlumatlarını dəyişə bilər.",
+                "Only SuperAdmin can update admin data.",
+                "Sadece SuperAdmin admin bilgilerini güncelleyebilir.",
+                "Только SuperAdmin может обновлять данные администратора."
+            ),
+
+            ["INVALID_ADMIN_ID"] = (
+                "Admin ID formatı yanlışdır.",
+                "Invalid admin ID format.",
+                "Admin ID formatı geçersiz.",
+                "Неверный формат ID администратора."
+            ),
+
+            ["TARGET_ADMIN_NOT_FOUND"] = (
+                "Hədəf admin tapılmadı.",
+                "Target admin not found.",
+                "Hedef admin bulunamadı.",
+                "Целевой администратор не найден."
+            ),
+
+            ["TARGET_USER_IS_NOT_ADMIN"] = (
+                "Hədəf istifadəçi admin deyil.",
+                "Target user is not an admin.",
+                "Hedef kullanıcı admin değil.",
+                "Целевой пользователь не является администратором."
+            ),
+
+            ["ADMIN_UPDATE_FAILED"] = (
+                "Admin yenilənə bilmədi.",
+                "Admin update failed.",
+                "Admin güncellenemedi.",
+                "Не удалось обновить администратора."
+            ),
+
+            ["ADMINS_RETURNED"] = (
+                "Adminlər uğurla qaytarıldı.",
+                "Admins returned successfully.",
+                "Adminler başarıyla döndürüldü.",
+                "Администраторы успешно получены."
+            ),
+
+            ["ADMIN_ACTIVE_STATUS_UPDATED"] = (
+                "Admin aktiv statusu yeniləndi.",
+                "Admin active status updated.",
+                "Admin aktiflik durumu güncellendi.",
+                "Статус активности администратора обновлён."
+            )
+            ,["EMAIL_ALREADY_ADMIN"] = (
+                "Bu e-poçt artıq admin kimi qeydiyyatdadır.",
+                "This email is already registered as an admin.",
+                "Bu e-posta zaten admin olarak kayıtlı.",
+                "Этот email уже зарегистрирован как администратор."
+            ),
+            ["ONLY_SUPERADMIN_CAN_DELETE_ADMIN"] = (
+                "Yalnız SuperAdmin admini silə bilər.",
+                "Only SuperAdmin can delete an admin.",
+                "Sadece SuperAdmin admin silebilir.",
+                "Только SuperAdmin может удалить администратора."
+            ),
+
+            ["ADMIN_DELETE_FAILED"] = (
+                "Admin silinə bilmədi.",
+                "Admin deletion failed.",
+                "Admin silinemedi.",
+                "Не удалось удалить администратора."
+            ),
+
+            ["ADMIN_UPDATE_FAILED"] = (
+                "Admin məlumatları yenilənə bilmədi.",
+                "Admin update failed.",
+                "Admin güncellenemedi.",
+                "Не удалось обновить администратора."
+            ),
+
+            ["ADMIN_DELETED_SUCCESSFULLY"] = (
+                "Admin əməliyyatı uğurla tamamlandı.",
+                "Admin operation completed successfully.",
+                "Admin işlemi başarıyla tamamlandı.",
+                "Операция с администратором успешно завершена."
+            ),
+
+            ["CANNOT_DELETE_YOURSELF"] = (
+                "Öz hesabını silə bilməzsən.",
+                "You cannot delete your own account.",
+                "Kendi hesabını silemezsin.",
+                "Вы не можете удалить свою учетную запись."
+            ),
+                ["ABANDONED_CART_STATS_RETURNED"] = (
+        "Abandoned carts statistikaları qaytarıldı.",
+        "Abandoned carts statistics returned.",
+        "Terk edilmiş sepet istatistikleri getirildi.",
+        "Статистика брошенных корзин получена."
+    ),
+    ["ABANDONED_CARTS_RETURNED"] = (
+        "Abandoned carts siyahısı qaytarıldı.",
+        "Abandoned carts list returned.",
+        "Terk edilmiş sepet listesi getirildi.",
+        "Список брошенных корзин получен."
+    ),
+    ["ABANDONED_CART_DETAIL_RETURNED"] = (
+        "Abandoned cart detalları qaytarıldı.",
+        "Abandoned cart details returned.",
+        "Terk edilmiş sepet detayları getirildi.",
+        "Детали брошенной корзины получены."
+    ),
+
+    // ===== COMMON ERRORS =====
+    ["INVALID_INPUT"] = (
+        "Daxil edilən məlumatlar yanlışdır.",
+        "Invalid input.",
+        "Geçersiz giriş.",
+        "Неверные входные данные."
+    ),
+    ["INVALID_ABANDONED_CART_ID"] = (
+        "Abandoned cart ID yanlışdır.",
+        "Invalid abandoned cart ID.",
+        "Geçersiz abandoned cart ID.",
+        "Неверный ID брошенной корзины."
+    ),
+    ["ABANDONED_CART_NOT_FOUND"] = (
+        "Abandoned cart tapılmadı.",
+        "Abandoned cart not found.",
+        "Terk edilmiş sepet bulunamadı.",
+        "Брошенная корзина не найдена."
+    ),
+
+    // ===== DATE FILTER ERRORS =====
+    ["INVALID_CREATED_FROM_DATE"] = (
+        "Created from tarixi yanlışdır. Format: dd.MM.yyyy",
+        "Invalid created from date. Format: dd.MM.yyyy",
+        "Created from tarihi geçersiz. Format: dd.MM.yyyy",
+        "Неверная дата created from. Формат: dd.MM.yyyy"
+    ),
+    ["INVALID_CREATED_UNTIL_DATE"] = (
+        "Created until tarixi yanlışdır. Format: dd.MM.yyyy",
+        "Invalid created until date. Format: dd.MM.yyyy",
+        "Created until tarihi geçersiz. Format: dd.MM.yyyy",
+        "Неверная дата created until. Формат: dd.MM.yyyy"
+    ),
+    ["INVALID_EXPIRY_FROM_DATE"] = (
+        "Expiry from tarixi yanlışdır. Format: dd.MM.yyyy",
+        "Invalid expiry from date. Format: dd.MM.yyyy",
+        "Expiry from tarihi geçersiz. Format: dd.MM.yyyy",
+        "Неверная дата expiry from. Формат: dd.MM.yyyy"
+    ),
+    ["INVALID_EXPIRY_UNTIL_DATE"] = (
+        "Expiry until tarixi yanlışdır. Format: dd.MM.yyyy",
+        "Invalid expiry until date. Format: dd.MM.yyyy",
+        "Expiry until tarihi geçersiz. Format: dd.MM.yyyy",
+        "Неверная дата expiry until. Формат: dd.MM.yyyy"
+    ),
+    // Success
+    ["USERS_RETURNED"] = (
+        "İstifadəçilər uğurla qaytarıldı.",
+        "Users returned successfully.",
+        "Kullanıcılar başarıyla getirildi.",
+        "Пользователи успешно получены."
+    ),
+    ["USER_DETAILS_RETURNED"] = (
+        "İstifadəçi detalları uğurla qaytarıldı.",
+        "User details returned successfully.",
+        "Kullanıcı detayları başarıyla getirildi.",
+        "Детали пользователя успешно получены."
+    ),
+
+// Errors
+    ["INVALID_USER_ID"] = (
+        "İstifadəçi ID formatı yanlışdır.",
+        "Invalid user id format.",
+        "Geçersiz kullanıcı id formatı.",
+        "Неверный формат идентификатора пользователя."
+    ),
+    ["USER_NOT_FOUND"] = (
+        "İstifadəçi tapılmadı.",
+        "User not found.",
+        "Kullanıcı bulunamadı.",
+        "Пользователь не найден."
+    ),
+    ["PAYMENT_STARTED"] = (
+        "Ödəniş başlatıldı.",
+        "Payment started.",
+        "Ödeme başlatıldı.",
+        "Оплата начата."
+    ),
+    ["PAYMENT_REVERSED"] = (
+        "Ödəniş uğurla geri alındı.",
+        "Payment reversed successfully.",
+        "Ödeme başarıyla geri alındı.",
+        "Платёж успешно отменён."
+    ),
+    ["PAYMENT_CALLBACK_OK"] = (
+        "Ödəniş bildirişi qəbul edildi.",
+        "Payment callback received.",
+        "Ödeme bildirimi alındı.",
+        "Колбэк оплаты получен."
+    ),
+    ["PAYMENT_COMPLETED"] = (
+        "Ödəniş uğurla tamamlandı.",
+        "Payment completed successfully.",
+        "Ödeme başarıyla tamamlandı.",
+        "Оплата успешно завершена."
+    ),
+    ["PAYMENT_STATUS_RETURNED"] = (
+        "Ödəniş statusu qaytarıldı.",
+        "Payment status returned.",
+        "Ödeme durumu getirildi.",
+        "Статус оплаты получен."
+    ),
+    ["USER_CARDS_RETURNED"] = (
+        "Kart siyahısı qaytarıldı.",
+        "Cards list returned.",
+        "Kart listesi getirildi.",
+        "Список карт получен."
+    ),
+    ["USER_CARD_DEFAULT_SET"] = (
+        "Default kart təyin edildi.",
+        "Default card set.",
+        "Varsayılan kart ayarlandı.",
+        "Карта по умолчанию установлена."
+    ),
+    ["PAYMENT_FALLBACK_TO_3DS"] = (
+        "Sürətli ödəniş mümkün olmadı, bank təsdiqinə yönləndirilirsiniz.",
+        "Fast payment failed, redirecting to bank verification.",
+        "Hızlı ödeme başarısız, banka doğrulamasına yönlendiriliyorsunuz.",
+        "Быстрый платеж не удался, перенаправляем на подтверждение банка."
+    ),
+
+    ["PAYMENT_FAILED"] = (
+        "Ödəniş uğursuz oldu.",
+        "Payment failed.",
+        "Ödeme başarısız.",
+        "Платеж не удался."
+    ),
+    ["ADMIN_ORDERS_RETURNED"] = (
+        "Sifarişlər siyahısı qaytarıldı.",
+        "Orders list returned.",
+        "Sipariş listesi döndürüldü.",
+        "Список заказов получен."
+    ),
+
+    ["ADMIN_ORDER_DETAIL_RETURNED"] = (
+        "Sifariş detalları qaytarıldı.",
+        "Order details returned.",
+        "Sipariş detayları döndürüldü.",
+        "Детали заказа получены."
+    ),
+
+    ["ADMIN_ORDER_STATUS_UPDATED"] = (
+        "Sifariş statusu yeniləndi.",
+        "Order status updated.",
+        "Sipariş durumu güncellendi.",
+        "Статус заказа обновлён."
+    ),
+
+    ["ADMIN_ORDER_CANCELLED"] = (
+        "Sifariş ləğv edildi.",
+        "Order cancelled.",
+        "Sipariş iptal edildi.",
+        "Заказ отменён."
+    ),
+
+    ["ADMIN_ORDER_CONFIRMATION_SENT"] = (
+        "Təsdiqləmə mesajı yenidən göndərildi.",
+        "Confirmation message resent.",
+        "Onay mesajı tekrar gönderildi.",
+        "Подтверждение отправлено повторно."
+    ),
+
+    ["ADMIN_REFUNDS_RETURNED"] = (
+        "Refund siyahısı qaytarıldı.",
+        "Refunds list returned.",
+        "İade listesi döndürüldü.",
+        "Список возвратов получен."
+    ),
+
+    ["ADMIN_REFUND_DETAIL_RETURNED"] = (
+        "Refund detalları qaytarıldı.",
+        "Refund details returned.",
+        "İade detayları döndürüldü.",
+        "Детали возврата получены."
+    ),
+
+    ["ADMIN_PAYMENT_REVERSED"] = (
+        "Ödəniş geri alındı (reverse/refund).",
+        "Payment reversed/refunded.",
+        "Ödeme geri alındı (iade).",
+        "Платёж отменён/возвращён."
+    ),
+    
+    ["INVALID_FROM_DATE"] = (
+        "Tarix formatı yanlışdır. (dd.MM.yyyy)",
+        "Invalid date format. (dd.MM.yyyy)",
+        "Tarih formatı geçersiz. (dd.MM.yyyy)",
+        "Неверный формат даты. (dd.MM.yyyy)"
+    ),
+    ["INVALID_TO_DATE"] = (
+        "Tarix formatı yanlışdır. (dd.MM.yyyy)",
+        "Invalid date format. (dd.MM.yyyy)",
+        "Tarih formatı geçersiz. (dd.MM.yyyy)",
+        "Неверный формат даты. (dd.MM.yyyy)"
+    ),
+
+    ["PAYMENT_FALLBACK_TO_3DS"] = (
+        "Sürətli ödəniş mümkün olmadı, bank təsdiqinə yönləndirilirsiniz.",
+        "Fast payment failed, redirecting to bank verification.",
+        "Hızlı ödeme başarısız, banka doğrulamasına yönlendiriliyorsunuz.",
+        "Быстрый платеж не удался, перенаправляем на подтверждение банка."
+    ),
+    ["ADMIN_PAYMENT_REVERSED"] = (
+        "Ödəniş geri alındı.",
+        "Payment reversed.",
+        "Ödeme geri alındı.",
+        "Платёж отменён."
+    ),
+
+    ["ADMIN_PAYMENT_REFUNDED"] = (
+        "Refund əməliyyatı icra olundu.",
+        "Refund completed.",
+        "İade işlemi tamamlandı.",
+        "Возврат выполнен."
+    ),
+
+    ["REFUND_FAILED"] = (
+        "Refund alınmadı.",
+        "Refund failed.",
+        "İade başarısız.",
+        "Возврат не выполнен."
+    ),
+
+    ["REVERSE_FAILED"] = (
+        "Reverse alınmadı.",
+        "Reverse failed.",
+        "İptal başarısız.",
+        "Отмена не выполнена."
+    ),
+
+    ["REFUND_AMOUNT_EXCEEDS_AVAILABLE"] = (
+        "Refund məbləği qaytarıla bilən məbləğdən çoxdur.",
+        "Refund amount exceeds available refundable amount.",
+        "İade tutarı iade edilebilir tutarı aşıyor.",
+        "Сумма возврата превышает доступную сумму."
+    ),
+    ["TRANSACTIONS_RETURNED"] = (
+  "Tranzaksiyalar siyahısı qaytarıldı.",
+  "Transactions list returned.",
+  "İşlemler listesi döndürüldü.",
+  "Список транзакций возвращён."
+),
+["TRANSACTION_DETAIL_RETURNED"] = (
+  "Tranzaksiya detalları qaytarıldı.",
+  "Transaction details returned.",
+  "İşlem detayları döndürüldü.",
+  "Детали транзакции возвращены."
+),
+["INVALID_TRANSACTION_ID"] = (
+  "Tranzaksiya ID yanlışdır.",
+  "Invalid transaction ID.",
+  "Geçersiz işlem ID.",
+  "Неверный ID транзакции."
+),
+["TRANSACTION_NOT_FOUND"] = (
+  "Tranzaksiya tapılmadı.",
+  "Transaction not found.",
+  "İşlem bulunamadı.",
+  "Транзакция не найдена."
 ),
 
-["ORDER_NOT_FOUND"] = (
-    "Sifariş tapılmadı.",
-    "Order not found.",
-    "Sipariş bulunamadı.",
-    "Заказ не найден."
+["REFUND_ONLY_EPOINT"] = (
+  "Refund yalnız Epoint ödənişləri üçün mümkündür.",
+  "Refund is only available for Epoint payments.",
+  "İade yalnız Epoint ödemeleri için mümkündür.",
+  "Возврат возможен только для платежей Epoint."
+),
+["REFUND_ONLY_COMPLETED"] = (
+  "Yalnız tamamlanmış (completed) ödənişlər refund edilə bilər.",
+  "Only completed payments can be refunded.",
+  "Sadece tamamlanmış ödemeler iade edilebilir.",
+  "Возврат возможен только для завершённых платежей."
+),
+["ALREADY_REFUNDED"] = (
+  "Bu ödəniş artıq refund edilib.",
+  "This payment is already refunded.",
+  "Bu ödeme zaten iade edilmiş.",
+  "Этот платеж уже возвращён."
+),
+["TRANSACTION_ID_MISSING"] = (
+  "Gateway transaction id tapılmadı.",
+  "Gateway transaction id is missing.",
+  "Gateway işlem id bulunamadı.",
+  "Отсутствует идентификатор транзакции."
+),
+["REVERSE_FAILED"] = (
+  "Refund əməliyyatı uğursuz oldu.",
+  "Refund operation failed.",
+  "İade işlemi başarısız oldu.",
+  "Операция возврата не удалась."
+),
+["REFUND_CREATED"] = (
+  "Refund yaradıldı.",
+  "Refund created.",
+  "İade oluşturuldu.",
+  "Возврат создан."
 ),
 
-["INVALID_ORDER_ID"] = (
-    "Sifariş ID formatı yanlışdır!",
-    "Invalid order ID format!",
-    "Geçersiz sipariş ID formatı!",
-    "Неверный формат идентификатора заказа!"
+// sənin istədiyin əvvəlki mesaj:
+["PAYMENT_FALLBACK_TO_3DS"] = (
+  "Sürətli ödəniş mümkün olmadı, bank təsdiqinə yönləndirilirsiniz.",
+  "Fast payment failed, redirecting to bank verification.",
+  "Hızlı ödeme başarısız, banka doğrulamasına yönlendiriliyorsunuz.",
+  "Быстрый платеж не удался, перенаправляем на подтверждение банка."
 ),
-
-["INVALID_STATUS"] = (
-    "Status yanlışdır. Yalnız: pending, delivered, cancelled.",
-    "Invalid status. Allowed: pending, delivered, cancelled.",
-    "Geçersiz durum. İzin verilen: pending, delivered, cancelled.",
-    "Неверный статус. Допустимые: pending, delivered, cancelled."
-),
-
-["INVALID_DATE_FILTER"] = (
-    "Tarix filtri yanlışdır. Yalnız: week, month, year.",
-    "Invalid date filter. Allowed: week, month, year.",
-    "Geçersiz tarih filtresi. İzin verilen: week, month, year.",
-    "Неверный фильтр даты. Допустимые: week, month, year."
-),
-
-["PAYMENT_METHOD_REQUIRED"] = (
-    "Ödəniş metodu tələb olunur.",
-    "Payment method is required.",
-    "Ödeme yöntemi gereklidir.",
-    "Требуется способ оплаты."
-),
-
-["INVALID_PAYMENT_METHOD"] = (
-    "Ödəniş metodu yanlışdır. Yalnız: card, debit_card, cash.",
-    "Invalid payment method. Allowed: card, debit_card, cash.",
-    "Geçersiz ödeme yöntemi. İzin verilen: card, debit_card, cash.",
-    "Неверный способ оплаты. Допустимые: card, debit_card, cash."
-),["PAYMENT_STARTED"] = (
-    "Ödəniş prosesi başladıldı.",
-    "Payment process started.",
-    "Ödeme süreci başlatıldı.",
-    "Процесс оплаты запущен."
-),
-["PAYMENT_CALLBACK_OK"] = (
-    "Ödəniş nəticəsi qəbul olundu.",
-    "Payment result received.",
-    "Ödeme sonucu alındı.",
-    "Результат оплаты получен."
-),
-["PAYMENT_STATUS_RETURNED"] = (
-    "Ödəniş statusu qaytarıldı.",
-    "Payment status returned.",
-    "Ödeme durumu döndürüldü.",
-    "Статус оплаты возвращён."
-),
-["PAYMENT_START_FAILED"] = (
-    "Ödənişi başlatmaq mümkün olmadı.",
-    "Failed to start payment.",
-    "Ödeme başlatılamadı.",
-    "Не удалось начать оплату."
-),
-["ORDER_ALREADY_PAID"] = (
-    "Bu sifariş artıq ödənilib.",
-    "This order is already paid.",
-    "Bu sipariş zaten ödendi.",
-    "Этот заказ уже оплачен."
-),
-["INVALID_ORDER_ID"] = (
-    "Sifariş ID formatı yanlışdır!",
-    "Invalid order id format!",
-    "Geçersiz sipariş id formatı!",
-    "Неверный формат id заказа!"
-),
-["ORDER_NOT_FOUND"] = (
-    "Sifariş tapılmadı.",
-    "Order not found.",
-    "Sipariş bulunamadı.",
-    "Заказ не найден."
-),
-["EPOINT_SIGNATURE_MISMATCH"] = (
-    "Epoint imzası uyğunsuzdur.",
-    "Epoint signature mismatch.",
-    "Epoint imzası uyuşmuyor.",
-    "Подпись Epoint не совпадает."
-),["NEWSLETTER_SUBSCRIBED"] = (
-    "Abunəlik uğurla aktiv edildi.",
-    "Subscription activated successfully.",
-    "Abonelik başarıyla aktif edildi.",
-    "Подписка успешно активирована."
-),
-["CAMPAIGN_CREATED"] = (
-    "Kampaniya uğurla yaradıldı.",
-    "Campaign created successfully.",
-    "Kampanya başarıyla oluşturuldu.",
-    "Кампания успешно создана."
-),
-
-["USER_ID_NOT_FOUND"] = (
-    "İstifadəçi identifikatoru tapılmadı.",
-    "User identifier not found.",
-    "Kullanıcı kimliği bulunamadı.",
-    "Идентификатор пользователя не найден."
-),
-
-["CAMPAIGN_CANCELLED"] = (
-    "Kampaniya ləğv edildi.",
-    "Campaign has been cancelled.",
-    "Kampanya iptal edildi.",
-    "Кампания была отменена."
-),
-
-["CAMPAIGNS_RETURNED"] = (
-    "Kampaniyalar uğurla qaytarıldı.",
-    "Campaigns retrieved successfully.",
-    "Kampanyalar başarıyla getirildi.",
-    "Кампании успешно получены."
-),
-
-["CAMPAIGN_RETURNED"] = (
-    "Kampaniya məlumatları qaytarıldı.",
-    "Campaign details retrieved successfully.",
-    "Kampanya detayları başarıyla getirildi.",
-    "Данные кампании успешно получены."
-),
-
-["CAMPAIGN_NOT_FOUND"] = (
-    "Kampaniya tapılmadı.",
-    "Campaign not found.",
-    "Kampanya bulunamadı.",
-    "Кампания не найдена."
-),
-
-["CAMPAIGN_ALREADY_SENT"] = (
-    "Kampaniya artıq göndərilib.",
-    "Campaign has already been sent.",
-    "Kampanya zaten gönderildi.",
-    "Кампания уже отправлена."
-),
-
-["CAMPAIGN_CANNOT_BE_CANCELLED"] = (
-    "Göndərilmiş kampaniya ləğv edilə bilməz.",
-    "A sent campaign cannot be cancelled.",
-    "Gönderilmiş kampanya iptal edilemez.",
-    "Отправленную кампанию нельзя отменить."
-),
-
-["CAMPAIGN_CANNOT_BE_SCHEDULED"] = (
-    "Bu kampaniya planlaşdırıla bilməz.",
-    "This campaign cannot be scheduled.",
-    "Bu kampanya planlanamaz.",
-    "Эту кампанию нельзя запланировать."
-),
-
-["SERVER_ERROR"] = (
-    "Server xətası baş verdi.",
-    "An internal server error occurred.",
-    "Sunucu hatası oluştu.",
-    "Произошла внутренняя ошибка сервера."
-),
-["NEWSLETTER_UNSUBSCRIBED"] = (
-    "Abunəlik deaktiv edildi.",
-    "Subscription has been deactivated.",
-    "Abonelik devre dışı bırakıldı.",
-    "Подписка отключена."
-),
-["NEWSLETTER_ME_RETURNED"] = (
-    "Abunəlik məlumatları qaytarıldı.",
-    "Subscription info returned.",
-    "Abonelik bilgisi döndürüldü.",
-    "Данные подписки возвращены."
-),
-["NEWSLETTER_ENSURED"] = (
-    "Abunəlik yaradıldı və ya yeniləndi.",
-    "Subscription ensured (created or updated).",
-    "Abonelik oluşturuldu veya güncellendi.",
-    "Подписка создана или обновлена."
-),
-["SUBSCRIBER_NOT_FOUND"] = (
-    "Abunə tapılmadı.",
-    "Subscriber not found.",
-    "Abone bulunamadı.",
-    "Подписчик не найден."
-),
-["INVALID_EMAIL"] = (
-    "E-poçt formatı yanlışdır.",
-    "Invalid email format.",
-    "Geçersiz e-posta formatı.",
-    "Неверный формат электронной почты."
-)
-
-            
     };
+    
 
-    /// <summary>
+
+/// <summary>
     /// Mesaj açarı üçün 4 dilli obyekt qaytarır; tapılmazsa bütün dillərə eyni mətni qoyur.
     /// </summary>
     protected LocalizedMessage LocalizeAll(string messageKeyOrPlain)

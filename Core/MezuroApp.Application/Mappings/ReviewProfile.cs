@@ -12,12 +12,9 @@ public class ReviewProfile : Profile
         // Entity -> ReviewDto
         CreateMap<Review, ReviewDto>()
             .ForMember(d => d.Id,            m => m.MapFrom(s => s.Id.ToString()))
-            .ForMember(d => d.ProductId,     m => m.MapFrom(s => s.ProductId.ToString()))
-            .ForMember(d => d.UserId,     m => m.MapFrom(s => s.UserId.ToString()))
-            .ForMember(d => d.UserName,      m => m.MapFrom(s => s.User != null ? /* s.User.FirstName */ s.User.FirstName : null))       // <-- öz property adınıza uyğunlaşdırın
-            .ForMember(d => d.UserSurname,   m => m.MapFrom(s => s.User != null ? /* s.User.LastName */ s.User.LastName : null))     // <-- öz property adınıza uyğunlaşdırın
-            .ForMember(d => d.UserProfileImage,
-                                            m => m.MapFrom(s => s.User != null ? /* s.User.ProfileImage */ s.User.ProfileImage : null)) // <-- öz property adınıza uyğunlaşdırın
+            .ForMember(d => d.Product,     m => m.MapFrom(s => s.Product))
+            .ForMember(d => d.User,     m => m.MapFrom(s => s.User))
+
             .ForMember(d => d.AdminReplyDate,m => m.MapFrom(s => s.AdminReplyDate.HasValue ? s.AdminReplyDate.Value.AddDays(4).ToString("yyyy-MM-dd HH:mm:ss") : null))
             .ForMember(d => d.CreatedDate,   m => m.MapFrom(s => s.CreatedDate.AddHours(4).ToString("yyyy-MM-dd HH:mm:ss")))
             .ForMember(d => d.LikeCount,     m => m.MapFrom(s => s.LikeCount ?? 0))

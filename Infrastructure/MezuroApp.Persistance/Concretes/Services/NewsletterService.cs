@@ -3,8 +3,11 @@ using Microsoft.AspNetCore.Identity;
 using MezuroApp.Application.Abstracts.Repositories.NewsletterSubscribers;
 using MezuroApp.Application.Abstracts.Services;
 using MezuroApp.Application.Dtos.Newsletter;
+using MezuroApp.Application.Dtos.Newsletter.Admin;
 using MezuroApp.Application.GlobalException;
 using MezuroApp.Domain.Entities;
+using MezuroApp.Domain.HelperEntities;
+using Microsoft.EntityFrameworkCore;
 
 namespace MezuroApp.Persistance.Concretes.Services;
 
@@ -269,6 +272,103 @@ public async Task<NewsletterSubscriberDto> EnsureForCurrentUserAsync(string user
 
     return Map(primary);
 }
+    public async Task<AdminNewsletterSubscribersListResponseDto> GetAsync(AdminNewsletterSubscribersFilterDto f, CancellationToken ct)
+    {
+        var q = _read.Query()
+            .AsNoTracking()
+            .Where(x => !x.IsDeleted);
+
+        // Search (email)
+        if (!string.IsNullOrWhiteSpace(f.Search))
+        {
+            var s = f.Search.Trim().ToLowerInvariant();
+            q = q.Where(x => (x.Email ?? "").ToLower().Contains(s));
+        }
+
+        // Status: only active/deactivated
+        if (!string.IsNullOrWhiteSpace(f.Status))
+        {
+            var st = f.Status.Trim().ToLowerInvariant();
+            if (st is "active")
+                q = q.Where(x => x.IsActive);
+            else if (st is "deactivated")
+                q = q.Where(x => !x.IsActive);
+            else
+                throw new GlobalAppException("INVALID_STATUS");
+        }
+
+        // Language
+        if (!string.IsNullOrWhiteSpace(f.Language))
+        {
+            var lang = f.Language.Trim().ToLowerInvariant();
+            q = q.Where(x => (x.PreferredLanguage ?? "az").ToLower() == lang);
+        }
+
+        // Frequency
+        if (!string.IsNullOrWhiteSpace(f.Frequency))
+        {
+            var fr = f.Frequency.Trim().ToLowerInvariant();
+            q = q.Where(x => (x.Frequency ?? "weekly").ToLower() == fr);
+        }
+
+        // ------------------------
+        // Dashboard (after filters)
+        // ------------------------
+        var total = await q.CountAsync(ct);
+
+        var activeCount = await q.Where(x => x.IsActive).CountAsync(ct);
+        var verifiedCount = await q.Where(x => x.IsVerified).CountAsync(ct);
+
+        // “Unsubscribed” = deactivated
+        var unsubscribedCount = await q.Where(x => !x.IsActive).CountAsync(ct);
+
+        var dashboard = new AdminNewsletterSubscribersDashboardDto(
+            TotalSubscribers: total,
+            ActiveSubscribers: activeCount,
+            VerifiedSubscribers: verifiedCount,
+            UnsubscribedSubscribers: unsubscribedCount
+        );
+
+        // ------------------------
+        // List (pagination)
+        // ------------------------
+        var page = Math.Max(1, f.Page);
+        var size = Math.Clamp(f.PageSize, 1, 200);
+
+        var raw = await q
+            .OrderByDescending(x => x.SubscribedAt)
+            .Skip((page - 1) * size)
+            .Take(size)
+            .Select(x => new
+            {
+                x.Id,
+                x.Email,
+                x.IsActive,
+                x.PreferredLanguage,
+                x.Frequency,
+                x.SubscribedAt
+            })
+            .ToListAsync(ct);
+
+        var items = raw.Select(x => new AdminNewsletterSubscriberListItemDto(
+            Id: x.Id.ToString(),
+            Email: x.Email ?? "",
+            Status: x.IsActive ? "active" : "deactivated",
+            Language: (x.PreferredLanguage ?? "az").ToLowerInvariant(),
+            Frequency: (x.Frequency ?? "weekly").ToLowerInvariant(),
+            SubscriptionDate: DateTime.SpecifyKind(x.SubscribedAt, DateTimeKind.Utc).ToString("dd.MM.yyyy")
+        )).ToList();
+
+        var list = new PagedResult<AdminNewsletterSubscriberListItemDto>
+        {
+            Items = items,
+            TotalCount = total,
+            Page = page,
+            PageSize = size
+        };
+
+        return new AdminNewsletterSubscribersListResponseDto(list, dashboard);
+    }
 
     // ================
     // 5) GetMe (logged-in user)

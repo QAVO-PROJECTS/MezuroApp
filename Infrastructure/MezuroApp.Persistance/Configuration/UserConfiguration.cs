@@ -30,6 +30,7 @@ namespace MezuroApp.Persistance.Configuration
 
             // Soft Delete
             builder.Property(u => u.IsDeleted).HasDefaultValue(false);
+            builder.Property(u => u.IsActive).HasDefaultValue(true);
 
             // Other fields
             builder.Property(u => u.FirstName).HasMaxLength(100);
