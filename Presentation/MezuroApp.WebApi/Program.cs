@@ -150,7 +150,7 @@ app.UseRequestLocalization(new RequestLocalizationOptions
     SupportedUICultures = supportedCultures
 });
 
-builder.WebHost.UseUrls("http://0.0.0.0:5093");
+// builder.WebHost.UseUrls("http://0.0.0.0:5093");
 
 // 👇 SUPERADMIN SEED
 using (var scope = app.Services.CreateScope())
