@@ -23,7 +23,7 @@ namespace MezuroApp.Persistance.Concretes.Services
         private readonly ILogger<AdminService> _logger;
         private readonly IMailService _mailService;
         private readonly ITokenService _tokenService;
-        private readonly IAuditLogService _auditLog;
+        private readonly IAuditHelper _audit;
 
         // IMPORTANT: sahələrə doğru təyin!
         public AdminService(
@@ -33,7 +33,7 @@ namespace MezuroApp.Persistance.Concretes.Services
             ILogger<AdminService> logger,
             IMailService mailService,
             ITokenService tokenService,
-            IAuditLogService auditLogService)
+            IAuditHelper audit)
         {
             _userManager  = userManager;
             _roleManager  = roleManager;
@@ -41,7 +41,7 @@ namespace MezuroApp.Persistance.Concretes.Services
             _logger       = logger;
             _mailService  = mailService;
             _tokenService = tokenService;
-            _auditLog     = auditLogService;
+            _audit = audit;
         }
         public async Task<PagedResult<AdminDto>> GetAllAdminsAsync(string id, bool ? isActive, int page = 1, int pageSize = 10)
         {
@@ -113,6 +113,7 @@ namespace MezuroApp.Persistance.Concretes.Services
 
             var target = await _userManager.FindByIdAsync(gid.ToString())
                          ?? throw new GlobalAppException("TARGET_ADMIN_NOT_FOUND");
+         
 
             var roles = await _userManager.GetRolesAsync(target);
             if (!roles.Contains(ADMIN_ROLE) && !roles.Contains(SUPERADMIN_ROLE))
@@ -122,12 +123,28 @@ namespace MezuroApp.Persistance.Concretes.Services
             // if (roles.Contains(SUPERADMIN_ROLE) && value == false)
             //     throw new GlobalAppException("CANNOT_DEACTIVATE_SUPERADMIN");
 
+            var oldValues = new Dictionary<string, object>
+            {
+                ["IsActive"] = target.IsActive
+            };
             target.IsActive = value;
             target.UpdatedAt = DateTime.UtcNow;
 
             var res = await _userManager.UpdateAsync(target);
             if (!res.Succeeded)
                 throw new GlobalAppException("ADMIN_UPDATE_FAILED");
+            await _audit.LogAsync(
+                "Admins",
+                "UPDATE",
+                value ? "ADMIN_ACTIVATED" : "ADMIN_DEACTIVATED",
+                target.Id,
+                oldValues,
+                new Dictionary<string, object>
+                {
+                    ["IsActive"] = target.IsActive,
+                    ["TargetEmail"] = target.Email ?? ""
+                }
+            );
         }
         public async Task<AdminCreateResponseDto> CreateAsync(AdminCreateRequestDto dto, Guid actorId , bool superAdmin)
         {
@@ -222,6 +239,22 @@ namespace MezuroApp.Persistance.Concretes.Services
 
             var roles = await _userManager.GetRolesAsync(admin);
             var claims = await _userManager.GetClaimsAsync(admin);
+            await _audit.LogAsync(
+                "Admins",
+                "CREATE",
+                superAdmin ? "SUPERADMIN_CREATED" : "ADMIN_CREATED",
+                admin.Id,
+                null,
+                new Dictionary<string, object>
+                {
+                    ["Email"] = admin.Email ?? "",
+                    ["FirstName"] = admin.FirstName ?? "",
+                    ["LastName"] = admin.LastName ?? "",
+                    ["PhoneNumber"] = admin.PhoneNumber ?? "",
+                    ["Role"] = superAdmin ? SUPERADMIN_ROLE : ADMIN_ROLE,
+                    ["InitialPermissionsCount"] = superAdmin ? GetAllPermissions().Count() : (dto.InitialPermissions?.Distinct().Count() ?? 0)
+                }
+            );
             return new AdminCreateResponseDto
             {
                 Id = admin.Id.ToString(),
@@ -249,11 +282,23 @@ namespace MezuroApp.Persistance.Concretes.Services
 
     var target = await _userManager.FindByIdAsync(targetId.ToString())
                  ?? throw new GlobalAppException("Hədəf admin tapılmadı.");
+    
 
     // target admin/superadmin olmalıdır
     var targetRoles = await _userManager.GetRolesAsync(target);
     if (!targetRoles.Contains(ADMIN_ROLE) && !targetRoles.Contains(SUPERADMIN_ROLE))
         throw new GlobalAppException("Hədəf istifadəçi admin deyil.");
+    var oldValues = new Dictionary<string, object>
+    {
+        ["Email"] = target.Email ?? "",
+        ["FirstName"] = target.FirstName ?? "",
+        ["LastName"] = target.LastName ?? "",
+        ["PhoneNumber"] = target.PhoneNumber ?? "",
+        ["IsSuperAdmin"] = targetRoles.Contains(SUPERADMIN_ROLE) || (target is Admin b && b.IsSuperAdmin),
+        ["Roles"] = string.Join(",", targetRoles),
+    };
+    
+    
 
     // ===== basic fields (partial) =====
     if (!string.IsNullOrWhiteSpace(dto.Email) && dto.Email.Trim() != target.Email)
@@ -307,6 +352,7 @@ namespace MezuroApp.Persistance.Concretes.Services
                 if (!existingPerms.Contains(p))
                     await _userManager.AddClaimAsync(target, new Claim(Permissions.ClaimType, p));
         }
+        
         else
         {
             if (!targetRoles.Contains(ADMIN_ROLE))
@@ -317,7 +363,9 @@ namespace MezuroApp.Persistance.Concretes.Services
 
             if (target is Admin a) a.IsSuperAdmin = false;
         }
+        
     }
+    
 
     // ===== permissions update =====
     // ReplaceAllPermissions = true → hamısını sil, yenisini yaz
@@ -363,10 +411,29 @@ namespace MezuroApp.Persistance.Concretes.Services
     var updateRes = await _userManager.UpdateAsync(target);
     if (!updateRes.Succeeded)
         throw new GlobalAppException(string.Join(", ", updateRes.Errors.Select(e => e.Description)));
+    
 
     // response
     var rolesAfter = await _userManager.GetRolesAsync(target);
     var claimsAfter = await _userManager.GetClaimsAsync(target);
+    var newValues = new Dictionary<string, object>
+    {
+        ["Email"] = target.Email ?? "",
+        ["FirstName"] = target.FirstName ?? "",
+        ["LastName"] = target.LastName ?? "",
+        ["PhoneNumber"] = target.PhoneNumber ?? "",
+        ["IsSuperAdmin"] = rolesAfter.Contains(SUPERADMIN_ROLE) || (target is Admin bb && bb.IsSuperAdmin),
+        ["Roles"] = string.Join(",", rolesAfter),
+        ["PermissionsCount"] = claimsAfter.Count(c => c.Type == Permissions.ClaimType)
+    };
+    await _audit.LogAsync(
+        "Admins",
+        "UPDATE",
+        "ADMIN_UPDATED",
+        target.Id,
+        oldValues,
+        newValues
+    );
 
     return new AdminUpdateResponseDto
     {
@@ -544,6 +611,8 @@ namespace MezuroApp.Persistance.Concretes.Services
 
             var existingClaims = (await _userManager.GetClaimsAsync(target))
                 .Where(c => c.Type == Permissions.ClaimType).ToList();
+            var before = await _userManager.GetClaimsAsync(target);
+            var beforePerms = before.Where(c => c.Type == Permissions.ClaimType).Select(c => c.Value).ToList();
 
             // mövcudları sil
             foreach (var c in existingClaims)
@@ -552,6 +621,22 @@ namespace MezuroApp.Persistance.Concretes.Services
             // yenilərini əlavə et
             foreach (var p in (dto.Permissions ?? Array.Empty<string>()).Distinct())
                 await _userManager.AddClaimAsync(target, new Claim(Permissions.ClaimType, p));
+            await _audit.LogAsync(
+                "Admins",
+                "UPDATE",
+                "ADMIN_PERMISSIONS_REPLACED",
+                target.Id,
+                new Dictionary<string, object>
+                {
+                    ["BeforePermissions"] = beforePerms,
+                    ["BeforeCount"] = beforePerms.Count
+                },
+                new Dictionary<string, object>
+                {
+                    ["AfterPermissions"] = (dto.Permissions ?? Array.Empty<string>()).Distinct().ToList(),
+                    ["AfterCount"] = (dto.Permissions ?? Array.Empty<string>()).Distinct().Count()
+                }
+            );
 
 
         }
@@ -572,6 +657,8 @@ namespace MezuroApp.Persistance.Concretes.Services
 
             var existing = await _userManager.GetClaimsAsync(target);
             var existingPerms = existing.Where(c => c.Type == Permissions.ClaimType).Select(c => c.Value).ToHashSet();
+            var before = await _userManager.GetClaimsAsync(target);
+            var beforePerms = before.Where(c => c.Type == Permissions.ClaimType).Select(c => c.Value).ToHashSet();
 
             // Add
             foreach (var p in (dto.Add ?? Array.Empty<string>()).Distinct())
@@ -587,6 +674,23 @@ namespace MezuroApp.Persistance.Concretes.Services
                 if (claim != null)
                     await _userManager.RemoveClaimAsync(target, claim);
             }
+            await _audit.LogAsync(
+                "Admins",
+                "UPDATE",
+                "ADMIN_PERMISSIONS_PATCHED",
+                target.Id,
+                new Dictionary<string, object>
+                {
+                    ["BeforeCount"] = beforePerms.Count
+                },
+                new Dictionary<string, object>
+                {
+                    ["Add"] = (dto.Add ?? Array.Empty<string>()).Distinct().ToList(),
+                    ["Remove"] = (dto.Remove ?? Array.Empty<string>()).Distinct().ToList(),
+                    ["AfterCount"] = (await _userManager.GetClaimsAsync(target))
+                        .Count(c => c.Type == Permissions.ClaimType)
+                }
+            );
 
 
         }
@@ -674,6 +778,13 @@ namespace MezuroApp.Persistance.Concretes.Services
 
     if (!roles.Contains(ADMIN_ROLE) && !roles.Contains(SUPERADMIN_ROLE))
         throw new GlobalAppException("TARGET_USER_IS_NOT_ADMIN");
+    var oldValues = new Dictionary<string, object>
+    {
+        ["Email"] = target.Email ?? "",
+        ["IsActive"] = target.IsActive,
+        ["IsDeleted"] = target.IsDeleted,
+        ["Roles"] = string.Join(",", roles)
+    };
 
     // özünü silməsin
     if (target.Id == actor.Id)
@@ -706,6 +817,20 @@ namespace MezuroApp.Persistance.Concretes.Services
         var update = await _userManager.UpdateAsync(target);
         if (!update.Succeeded)
             throw new GlobalAppException("ADMIN_UPDATE_FAILED");
+        await _audit.LogAsync(
+            "Admins",
+            "DELETE",
+            "ADMIN_REVOKED",
+            target.Id,
+            oldValues,
+            new Dictionary<string, object>
+            {
+                ["IsActive"] = target.IsActive,
+                ["IsDeleted"] = target.IsDeleted,
+                ["RemovedRoles"] = new [] { ADMIN_ROLE, SUPERADMIN_ROLE },
+                ["RemovedPermissions"] = true
+            }
+        );
     }
     else
     {
@@ -727,6 +852,21 @@ namespace MezuroApp.Persistance.Concretes.Services
         var update = await _userManager.UpdateAsync(target);
         if (!update.Succeeded)
             throw new GlobalAppException("ADMIN_DELETE_FAILED");
+        await _audit.LogAsync(
+            "Admins",
+            "DELETE",
+            "ADMIN_SOFT_DELETED",
+            target.Id,
+            oldValues,
+            new Dictionary<string, object>
+            {
+                ["IsActive"] = target.IsActive,
+                ["IsDeleted"] = target.IsDeleted,
+                ["DeletedDate"] = target.DeletedDate?.ToString("O") ?? "",
+                ["EmailAfter"] = target.Email ?? "",
+                ["UserNameAfter"] = target.UserName ?? ""
+            }
+        );
     }
 }
         private static IEnumerable<string> GetAllPermissions()

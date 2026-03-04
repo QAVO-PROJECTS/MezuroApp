@@ -6,21 +6,29 @@ using MezuroApp.Application.Dtos.Order.AdminOrder;
 using MezuroApp.Application.GlobalException;
 using MezuroApp.Domain.Entities;
 using MezuroApp.Domain.HelperEntities;
-
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 public sealed class AdminOrderService : IAdminOrderService
 {
     private readonly IOrderReadRepository _orderRead;
     private readonly IOrderWriteRepository _orderWrite;
     private readonly IEmailCampaignService _campaign;
+    private readonly IAuditLogService _audit;
+    private readonly IHttpContextAccessor _http;
+    
 
     public AdminOrderService(
         IOrderReadRepository orderRead,
         IOrderWriteRepository orderWrite,
-        IEmailCampaignService campaign)
+        IEmailCampaignService campaign,
+        IAuditLogService audit,
+        IHttpContextAccessor http)
     {
         _orderRead = orderRead;
         _orderWrite = orderWrite;
         _campaign = campaign;
+        _audit = audit;
+        _http = http;
     }
 
     private static DateTime ParseDdMmYyyyOrThrow(string value, string errorKey)
@@ -229,6 +237,7 @@ public sealed class AdminOrderService : IAdminOrderService
         var order = await _orderRead.GetAsync(o => !o.IsDeleted && o.Id == oid, enableTracking: true);
         if (order == null)
             throw new GlobalAppException("ORDER_NOT_FOUND");
+        var oldSnap = OrderSnap(order);
 
         order.Status = s;
         order.LastUpdatedDate = DateTime.UtcNow;
@@ -239,6 +248,12 @@ public sealed class AdminOrderService : IAdminOrderService
 
         await _orderWrite.UpdateAsync(order);
         await _orderWrite.CommitAsync();
+        await WriteAuditAsync(
+            action: "STATUS CHANGE",
+            entityId: order.Id,
+            oldValues: oldSnap,
+            newValues: OrderSnap(order)
+        );
 
         await _campaign.CreateAndScheduleOrderStatusCampaignAsync(order);
     }
@@ -251,11 +266,13 @@ public sealed class AdminOrderService : IAdminOrderService
         var order = await _orderRead.GetAsync(o => !o.IsDeleted && o.Id == oid, enableTracking: true);
         if (order == null)
             throw new GlobalAppException("ORDER_NOT_FOUND");
+        var oldSnap = OrderSnap(order);
 
         order.Status = "cancelled";
         order.CancelledDate = DateTime.UtcNow;
         order.AdminNote = adminNote;
         order.LastUpdatedDate = DateTime.UtcNow;
+        await WriteAuditAsync("DELETE", order.Id, oldSnap, OrderSnap(order));
 
         await _orderWrite.UpdateAsync(order);
         await _orderWrite.CommitAsync();
@@ -271,7 +288,67 @@ public sealed class AdminOrderService : IAdminOrderService
         var order = await _orderRead.GetAsync(o => !o.IsDeleted && o.Id == oid, enableTracking: false);
         if (order == null)
             throw new GlobalAppException("ORDER_NOT_FOUND");
+        await WriteAuditAsync("ORDER_RESEND_CONFIRMATION", order.Id, null, OrderSnap(order));
 
         await _campaign.CreateAndScheduleOrderStatusCampaignAsync(order);
+    }
+    //Helpers
+    private string GetUserId()
+    {
+        var u = _http.HttpContext?.User;
+        return u?.FindFirstValue(ClaimTypes.NameIdentifier)
+               ?? u?.FindFirst("sub")?.Value
+               ?? "Anonymous";
+    }
+
+    private (string ip, string ua) GetReqInfo()
+    {
+        var ctx = _http.HttpContext;
+        var ip = ctx?.Connection.RemoteIpAddress?.ToString() ?? "";
+        var ua = ctx?.Request.Headers["User-Agent"].ToString() ?? "";
+        return (ip, ua);
+    }
+
+    private static Dictionary<string, object> OrderSnap(Order o) => new()
+    {
+        ["id"] = o.Id.ToString(),
+        ["orderNumber"] = o.OrderNumber,
+        ["status"] = o.Status,
+        ["paymentStatus"] = o.PaymentStatus,
+        ["fulfillmentStatus"] = o.FulfillmentStatus,
+        ["total"] = o.Total,
+        ["subTotal"] = o.SubTotal,
+        ["discountAmount"] = o.DiscountAmount,
+        ["shippingCost"] = o.ShippingCost,
+        ["taxAmount"] = o.TaxAmount,
+        ["adminNote"] = o.AdminNote,
+        ["cancelledDate"] = o.CancelledDate,
+        ["shippedDate"] = o.ShippedDate,
+        ["deliveredDate"] = o.DeliveredDate,
+        ["createdDate"] = o.CreatedDate,
+        ["lastUpdatedDate"] = o.LastUpdatedDate,
+        ["isDeleted"] = o.IsDeleted
+    };
+
+    private async Task WriteAuditAsync(
+        string action, // "CREATE" | "UPDATE" | "DELETE"
+        Guid entityId,
+        Dictionary<string, object>? oldValues,
+        Dictionary<string, object>? newValues)
+    {
+        var (ip, ua) = GetReqInfo();
+
+        await _audit.LogAsync(new AuditLog
+        {
+            UserId = GetUserId(),
+            Module = "Orders",
+            EntityId = entityId,
+            ActionType = action,
+            OldValuesJson = oldValues ?? new Dictionary<string, object>(),
+            NewValuesJson = newValues ?? new Dictionary<string, object>(),
+            IpAddress = ip,
+            UserAgent = ua,
+            CreatedAt = DateTime.UtcNow
+        });
     }
 }

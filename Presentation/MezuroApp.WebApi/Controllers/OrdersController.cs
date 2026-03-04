@@ -37,7 +37,7 @@ public class OrdersController : BaseApiController
         catch { return ServerErrorResponse(); }
     }
     [HttpGet("my")]
-    [Authorize]
+    [Authorize(Roles = "Customer")]
     public async Task<IActionResult> GetMyOrders()
     {
         try
@@ -50,7 +50,7 @@ public class OrdersController : BaseApiController
         catch { return ServerErrorResponse(); }
     }
     [HttpGet("my/by-date")]
-    [Authorize]
+    [Authorize(Roles = "Customer")]
     public async Task<IActionResult> GetMyOrdersByDate([FromQuery] string dateFilter)
     {
         try
@@ -63,22 +63,10 @@ public class OrdersController : BaseApiController
         catch { return ServerErrorResponse(); }
     }
 
-    // [Authorize(Roles = "Admin,SuperAdmin")]
-    [HttpPatch("change-status")]
-    public async Task<IActionResult> ChangeStatus([FromQuery] string status, [FromQuery] string orderId)
-    {
-        try
-        {
-              await _service.SetOrderStatusAsync(orderId, status);
-              return OkResponse(orderId, "ORDER_RETURNED");
-        }
-        catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
-        catch { return ServerErrorResponse(); }
-    }
 
 
     [HttpGet("my/by-status")]
-    [Authorize]
+    [Authorize(Roles = "Customer")]
     public async Task<IActionResult> GetMyOrdersByStatus([FromQuery] string status)
     {
         try
@@ -90,7 +78,7 @@ public class OrdersController : BaseApiController
         catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
         catch { return ServerErrorResponse(); }
     }    [HttpGet("my/{orderId}")]
-    [Authorize]
+    [Authorize(Roles = "Customer")]
     public async Task<IActionResult> GetMyOrderDetail([FromRoute] string orderId)
     {
         try

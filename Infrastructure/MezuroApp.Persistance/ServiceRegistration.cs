@@ -190,7 +190,9 @@ namespace MezuroApp.Persistance;
             //Background Services
             services.AddHostedService<AbandonedCartBackgroundService>();
             services.AddHostedService<EmailCampaignSenderBackgroundService>();
+            //Helper Service
             services.AddHttpContextAccessor();
+            services.AddScoped<IAuditHelper, AuditHelper>();
        
 
 

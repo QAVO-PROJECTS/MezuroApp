@@ -20,6 +20,7 @@ public class ProductColorService : IProductColorService
     private readonly IProductColorImageReadRepository _pciReadRepo;
     private readonly IProductColorImageWriteRepository _pciWriteRepo;
     private readonly IMapper _mapper;
+    private readonly IAuditHelper _audit;
 
     public ProductColorService(
         IProductColorReadRepository readRepo,
@@ -28,7 +29,8 @@ public class ProductColorService : IProductColorService
         IProductImageReadRepository imageReadRepo,
         IProductColorImageReadRepository pciReadRepo,
         IProductColorImageWriteRepository pciWriteRepo,
-        IMapper mapper)
+        IMapper mapper,
+        IAuditHelper audit)
     {
         _readRepo = readRepo;
         _writeRepo = writeRepo;
@@ -37,6 +39,7 @@ public class ProductColorService : IProductColorService
         _pciReadRepo = pciReadRepo;
         _pciWriteRepo = pciWriteRepo;
         _mapper = mapper;
+        _audit = audit;
     }
 
     // =============================
@@ -106,6 +109,20 @@ public class ProductColorService : IProductColorService
 
         await _writeRepo.AddAsync(entity);
         await _writeRepo.CommitAsync();
+        await _audit.LogAsync(
+            "ProductColors",
+            "CREATE",
+            "PRODUCT_COLOR_CREATED",
+            entity.Id,
+            null,
+            new Dictionary<string, object>
+            {
+                ["ProductId"] = entity.ProductId,
+                ["ColorNameAz"] = entity.ColorNameAz ?? "",
+                ["ColorCode"] = entity.ColorCode ?? "",
+                ["Sku"] = entity.Sku ?? ""
+            }
+        );
 
         // 4) ColorImage linkləri (toplu, N+1-siz)
         if (dto.ColorImageIds != null && dto.ColorImageIds.Count > 0)
@@ -164,6 +181,12 @@ public class ProductColorService : IProductColorService
         ) ?? throw new GlobalAppException("PRODUCT_COLOR_NOT_FOUND");
         var product = await _productReadRepo.GetAsync(x => x.Id == entity.ProductId && !x.IsDeleted)
                       ?? throw new GlobalAppException("PRODUCT_NOT_FOUND");
+        var oldValues = new Dictionary<string, object>
+        {
+            ["ColorNameAz"] = entity.ColorNameAz ?? "",
+            ["ColorCode"] = entity.ColorCode ?? "",
+            ["Sku"] = entity.Sku ?? ""
+        };
 
         // SKU həmişə regenerate (update zamanı da)
         var temp = new CreateProductColorDto
@@ -259,6 +282,19 @@ public class ProductColorService : IProductColorService
         }
 
         await _writeRepo.CommitAsync();
+        await _audit.LogAsync(
+            "ProductColors",
+            "UPDATE",
+            "PRODUCT_COLOR_UPDATED",
+            entity.Id,
+            oldValues,
+            new Dictionary<string, object>
+            {
+                ["ColorNameAz"] = entity.ColorNameAz ?? "",
+                ["ColorCode"] = entity.ColorCode ?? "",
+                ["Sku"] = entity.Sku ?? ""
+            }
+        );
     }
 
     public async Task DeleteAsync(string id)
@@ -283,9 +319,21 @@ public class ProductColorService : IProductColorService
         // Rəngi soft-delete
         entity.IsDeleted = true;
         entity.DeletedDate = DateTime.UtcNow;
-
+                     
         await _writeRepo.UpdateAsync(entity);
         await _writeRepo.CommitAsync();
+        await _audit.LogAsync(
+            "ProductColors",
+            "DELETE",
+            "PRODUCT_COLOR_DELETED",
+            entity.Id,
+            new Dictionary<string, object>
+            {
+                ["ColorNameAz"] = entity.ColorNameAz ?? "",
+                ["ColorCode"] = entity.ColorCode ?? ""
+            },
+            null
+        );         
     }
 
     // =============================

@@ -7,6 +7,7 @@ using MezuroApp.Application.GlobalException;
 using MezuroApp.Domain.Entities;
 using MezuroApp.Domain.HelperEntities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace MezuroApp.Persistance.Concretes.Services;
 
@@ -16,13 +17,16 @@ public class ReviewService : IReviewService
     private readonly IReviewWriteRepository _writeRepo;
     private readonly IMapper _mapper;
     private readonly UserManager<User> _userManager;
+    private readonly IAuditHelper _audit;
 
-    public ReviewService(IReviewReadRepository readRepo, IReviewWriteRepository writeRepo, IMapper mapper, UserManager<User> userManager)
+    public ReviewService(IReviewReadRepository readRepo, IReviewWriteRepository writeRepo, IMapper mapper, UserManager<User> userManager, IAuditHelper audit)
     {
         _readRepo = readRepo;
         _writeRepo = writeRepo;
         _mapper = mapper;
         _userManager = userManager;
+        _audit = audit;
+        
         
     }
 
@@ -443,13 +447,30 @@ public class ReviewService : IReviewService
             x => x.Id == rid && !x.IsDeleted,
             enableTracking: true
         ) ?? throw new GlobalAppException("REVIEW_NOT_FOUND");
+        var oldValues = new Dictionary<string, object>
+        {
+            ["AdminReplyDescription"] = entity.AdminReplyDescription ?? "",
+            ["AdminReplyDate"] = entity.AdminReplyDate?.ToString("dd.MM.yyyy HH:mm:ss") ?? ""
+        };
 
         entity.AdminReplyDescription = dto.Description;
-        entity.AdminReplyDate = DateTime.UtcNow;
-        entity.LastUpdatedDate = DateTime.UtcNow;
+        entity.AdminReplyDate = DateTime.UtcNow.AddHours(4);
+        entity.LastUpdatedDate = DateTime.UtcNow.AddHours(4);
 
         await _writeRepo.UpdateAsync(entity);
         await _writeRepo.CommitAsync();
+        await _audit.LogAsync(
+            "Reviews",
+            "UPDATE",
+            "REVIEW_REPLIED",
+            entity.Id,
+            oldValues,
+            new Dictionary<string, object>
+            {
+                ["AdminReplyDescription"] = entity.AdminReplyDescription ?? "",
+                ["AdminReplyDate"] = entity.AdminReplyDate?.ToString("dd.MM.yyyy HH:mm:ss") ?? ""
+            }
+        );
     }
 
     public async Task  RejectAsync(string id)
@@ -460,6 +481,13 @@ public class ReviewService : IReviewService
             x => x.Id == gid && !x.IsDeleted,
             enableTracking: true
         ) ?? throw new GlobalAppException("REVIEW_NOT_FOUND");
+        var oldValues = new Dictionary<string, object>
+        {
+        
+            ["Status"] = entity.Status ?? false,
+            ["Rating"] = entity.Rating ?? 0,
+            ["Description"] = entity.Description ?? ""
+        };
 
         entity.IsDeleted = true;
 
@@ -468,6 +496,18 @@ public class ReviewService : IReviewService
 
         await _writeRepo.UpdateAsync(entity);
         await _writeRepo.CommitAsync();
+        await _audit.LogAsync(
+            "Reviews",
+            "DELETE",
+            "REVIEW_REJECTED",
+            entity.Id,
+            oldValues,
+            new Dictionary<string, object>
+            {
+             
+                ["DeletedDate"] = entity.DeletedDate.ToString("dd.MM.yyyy HH:mm:ss")
+            }
+        );
     }
 
     public async Task EditStatusAsync(string id, bool status)
@@ -478,12 +518,27 @@ public class ReviewService : IReviewService
             x => x.Id == gid && !x.IsDeleted,
             enableTracking: true
         ) ?? throw new GlobalAppException("REVIEW_NOT_FOUND");
+        var oldValues = new Dictionary<string, object>
+        {
+            ["Status"] = entity.Status ?? false
+        };
 
         entity.Status = status;
         entity.LastUpdatedDate = DateTime.UtcNow;
 
         await _writeRepo.UpdateAsync(entity);
         await _writeRepo.CommitAsync();
+        await _audit.LogAsync(
+            "Reviews",
+            "UPDATE",
+            status ? "REVIEW_APPROVED" : "REVIEW_UNAPPROVED",
+            entity.Id,
+            oldValues,
+            new Dictionary<string, object>
+            {
+                ["Status"] = entity.Status ?? false
+            }
+        );
     }
 
 

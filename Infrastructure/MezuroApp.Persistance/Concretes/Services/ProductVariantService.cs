@@ -25,6 +25,7 @@ public class ProductVariantService : IProductVariantService
 
     private readonly IProductOptionValueReadRepository _ovr;
     private readonly IMapper _mapper;
+    private readonly IAuditHelper _audit;
 
     public ProductVariantService(
         IProductVariantReadRepository vr,
@@ -35,7 +36,8 @@ public class ProductVariantService : IProductVariantService
         IProductReadRepository pr,
         IProductWriteRepository pw,
         IProductOptionValueReadRepository ovr,
-        IMapper mapper)
+        IMapper mapper,
+        IAuditHelper audit)
     {
         _vr = vr;
         _vw = vw;
@@ -46,6 +48,7 @@ public class ProductVariantService : IProductVariantService
         _pw = pw;
         _ovr = ovr;
         _mapper = mapper;
+        _audit = audit;
     }
 
     // ======================================================
@@ -176,6 +179,32 @@ public async Task CreateAsync(CreateProductVariantDto dto)
     await _vw.CommitAsync();
 
     await RefreshProductStock(productId);
+    await _audit.LogAsync(
+        "ProductVariants",
+        "CREATE",
+        "PRODUCT_VARIANT_CREATED",
+        variant.Id,
+        null,
+        new Dictionary<string, object>
+        {
+            ["ProductId"] = variant.ProductId,
+            ["ProductColorId"] = variant.ProductColorId?.ToString() ?? "",
+            ["Sku"] = variant.Sku ?? "",
+            ["StockQuantity"] = variant.StockQuantity
+        }
+    );
+    await _audit.LogAsync(
+        "Products",
+        "UPDATE",
+        "PRODUCT_BUILD_COMPLETED",
+        productId,
+        null,
+        new Dictionary<string, object>
+        {
+            ["ProductId"] = productId,
+            ["TriggeredBy"] = "VariantCreated"
+        }
+    );
 }
 
     // ======================================================
@@ -190,6 +219,11 @@ public async Task UpdateAsync(UpdateProductVariantDto dto)
         q => q.Include(v => v.OptionValues),
         enableTracking: true
     ) ?? throw new GlobalAppException("PRODUCT_VARIANT_NOT_FOUND");
+    var oldValues = new Dictionary<string, object>
+    {
+        ["Sku"] = variant.Sku ?? "",
+        ["StockQuantity"] = variant.StockQuantity
+    };
 
     // ==========================
     // 1) SKU uniqueness
@@ -306,6 +340,18 @@ public async Task UpdateAsync(UpdateProductVariantDto dto)
     // 8) REFRESH PRODUCT STOCK
     // ==========================
     await RefreshProductStock(productId);
+    await _audit.LogAsync(
+        "ProductVariants",
+        "UPDATE",
+        "PRODUCT_VARIANT_UPDATED",
+        variant.Id,
+        oldValues,
+        new Dictionary<string, object>
+        {
+            ["Sku"] = variant.Sku ?? "",
+            ["StockQuantity"] = variant.StockQuantity
+        }
+    );
 }
 
     // ======================================================
@@ -323,6 +369,18 @@ public async Task UpdateAsync(UpdateProductVariantDto dto)
 
         await _vw.CommitAsync();
         await RefreshProductStock(variant.ProductId);
+        await _audit.LogAsync(
+            "ProductVariants",
+            "DELETE",
+            "PRODUCT_VARIANT_DELETED",
+            variant.Id,
+            new Dictionary<string, object>
+            {
+                ["Sku"] = variant.Sku ?? "",
+                ["ProductId"] = variant.ProductId
+            },
+            null
+        );
     }
 
     // ======================================================

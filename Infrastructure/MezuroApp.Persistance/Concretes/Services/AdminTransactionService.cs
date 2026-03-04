@@ -25,6 +25,7 @@ public sealed class AdminTransactionService : IAdminTransactionService
 
     private readonly IOrderReadRepository _orderRead;
     private readonly IOrderWriteRepository _orderWrite;
+    private readonly IAuditHelper _audit;
 
     public AdminTransactionService(
         IHttpClientFactory factory,
@@ -32,7 +33,8 @@ public sealed class AdminTransactionService : IAdminTransactionService
         IPaymentTransactionReadRepository trxRead,
         IPaymentTransactionWriteRepository trxWrite,
         IOrderReadRepository orderRead,
-        IOrderWriteRepository orderWrite)
+        IOrderWriteRepository orderWrite,
+        IAuditHelper audit)
     {
         _http = factory.CreateClient("epoint");
         _cfg = cfg;
@@ -41,18 +43,10 @@ public sealed class AdminTransactionService : IAdminTransactionService
         _trxWrite = trxWrite;
         _orderRead = orderRead;
         _orderWrite = orderWrite;
+        _audit = audit; 
     }
 
-    private static bool AllFiltersEmpty(AdminTransactionListFilterDto f)
-    {
-        return string.IsNullOrWhiteSpace(f.Search)
-               && string.IsNullOrWhiteSpace(f.PaymentMethod)
-               && string.IsNullOrWhiteSpace(f.Status)
-               && string.IsNullOrWhiteSpace(f.From)
-               && string.IsNullOrWhiteSpace(f.To)
-               && !f.MinAmount.HasValue
-               && !f.MaxAmount.HasValue;
-    }
+
      public async Task<AdminTransactionDashboardDto> GetDashboardAsync(AdminTransactionListFilterDto f, CancellationToken ct)
     {
         // base query (filters)
@@ -416,6 +410,29 @@ public sealed class AdminTransactionService : IAdminTransactionService
         };
 
         var (data, signature) = BuildDataAndSignature(payloadObj, privateKey);
+        var oldValues = new Dictionary<string, object>
+        {
+            ["Status"] = trx.Status ?? "",
+            ["RefundedAmount"] = trx.RefundedAmount,
+            ["Amount"] = trx.Amount,
+            ["PaymentMethod"] = trx.PaymentMethod ?? "",
+            ["TransactionId"] = trx.TransactionId ?? "",
+            ["OrderId"] = trx.OrderId.ToString()
+        };
+
+        await _audit.LogAsync(
+            "Transactions",
+            "REFUND",
+            "EPOINT_REVERSE_REQUESTED",
+            trx.Id,
+            oldValues,
+            new Dictionary<string, object>
+            {
+                ["RequestedRefundAmount"] = trx.Amount - trx.RefundedAmount,
+                ["RefundType"] = "full",
+                ["Currency"] = trx.Currency ?? "AZN"
+            }
+        );
 
         using var resp = await _http.PostAsync(
             "https://epoint.az/api/1/reverse",
@@ -431,10 +448,11 @@ public sealed class AdminTransactionService : IAdminTransactionService
         if (!resp.IsSuccessStatusCode)
         {
             trx.ErrorMessage = $"HTTP {(int)resp.StatusCode} {resp.ReasonPhrase}";
-            trx.GatewayResponse = body;
+       
             trx.LastUpdatedDate = DateTime.UtcNow;
             await _trxWrite.UpdateAsync(trx);
             await _trxWrite.CommitAsync();
+            
             throw new GlobalAppException("REVERSE_FAILED");
         }
 
@@ -442,6 +460,21 @@ public sealed class AdminTransactionService : IAdminTransactionService
             body,
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
         ) ?? throw new Exception("EPOINT_RESPONSE_PARSE_ERROR");
+        await _audit.LogAsync(
+            "Transactions",
+            "REFUND",
+            "EPOINT_REVERSE_FAILED",
+            trx.Id,
+            oldValues,
+            new Dictionary<string, object>
+            {
+                ["FailStage"] = "GATEWAY",
+                ["GatewayStatus"] = ep.status ?? "",
+                ["GatewayCode"] = ep.code ?? "",
+                ["GatewayMessage"] = ep.message ?? "",
+                ["GatewayResponse"] = body
+            }
+        );
 
         var ok = string.Equals(ep.status, "success", StringComparison.OrdinalIgnoreCase);
         if (!ok)
@@ -472,6 +505,44 @@ public sealed class AdminTransactionService : IAdminTransactionService
             order.LastUpdatedDate = DateTime.UtcNow;
             await _orderWrite.UpdateAsync(order);
             await _orderWrite.CommitAsync();
+        }
+        var newValues = new Dictionary<string, object>
+        {
+            ["Status"] = trx.Status ?? "",
+            ["RefundedAmount"] = trx.RefundedAmount,
+            ["Amount"] = trx.Amount,
+            ["PaymentMethod"] = trx.PaymentMethod ?? "",
+            ["Currency"] = trx.Currency ?? "AZN",
+            ["OrderId"] = trx.OrderId.ToString()
+        };
+
+        await _audit.LogAsync(
+            "Transactions",
+            "REFUND",
+            "EPOINT_REVERSE_SUCCEEDED",
+            trx.Id,
+            oldValues,
+            newValues
+        );
+
+// order da update olunubsa ayrıca event (istəsən)
+        if (order != null)
+        {
+            await _audit.LogAsync(
+                "Orders",
+                "UPDATE",
+                "ORDER_PAYMENT_REFUNDED",
+                order.Id,
+                null,
+                new Dictionary<string, object>
+                {
+                    ["PaymentStatus"] = order.PaymentStatus ?? "",
+                    ["PaymentMethod"] = order.PaymentMethod ?? "",
+                    ["TransactionId"] = trx.TransactionId ?? "",
+                    ["RefundedAmount"] = trx.RefundedAmount,
+                    ["Currency"] = trx.Currency ?? "AZN"
+                }
+            );
         }
 
         return new AdminRefundResultDto(

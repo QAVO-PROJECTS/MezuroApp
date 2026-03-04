@@ -42,19 +42,7 @@ public class PaymentsController : BaseApiController
     }
 // PaymentsController.cs (əlavə et)
 
-    [HttpPost("epoint/reverse")]
-    [Authorize(Roles = "Customer")]
-    public async Task<IActionResult> Reverse([FromBody] ReverseEpointDto dto, CancellationToken ct)
-    {
-        try
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
-            await _service.ReverseEpointAsync(userId!, dto, ct);
-            return OkResponse(true, "PAYMENT_REVERSED");
-        }
-        catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
-        catch { return ServerErrorResponse(); }
-    }
+
     // CALLBACK (Epoint buranı vuracaq)
     [HttpPost("epoint/callback")]
     [AllowAnonymous]

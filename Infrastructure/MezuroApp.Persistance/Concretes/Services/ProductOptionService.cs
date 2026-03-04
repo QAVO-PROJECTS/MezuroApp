@@ -18,6 +18,7 @@ public class ProductOptionService : IProductOptionService
     private readonly IProductVariantOptionValueReadRepository _variantValueReadRepo;
     private readonly IProductReadRepository _productReadRepo;
     private readonly IMapper _mapper;
+    private readonly IAuditHelper _audit;
 
     public ProductOptionService(
         IProductOptionReadRepository readRepo,
@@ -26,7 +27,8 @@ public class ProductOptionService : IProductOptionService
         IProductOptionValueWriteRepository valueWriteRepo,
         IProductVariantOptionValueReadRepository variantValueReadRepo,
         IProductReadRepository productReadRepo,
-        IMapper mapper)
+        IMapper mapper,
+        IAuditHelper audit)
     {
         _readRepo = readRepo;
         _writeRepo = writeRepo;
@@ -35,6 +37,7 @@ public class ProductOptionService : IProductOptionService
         _variantValueReadRepo = variantValueReadRepo;
         _productReadRepo = productReadRepo;
         _mapper = mapper;
+        _audit = audit;
     }
 
     public async Task<ProductOptionDto> GetByIdAsync(string id)
@@ -126,6 +129,19 @@ public class ProductOptionService : IProductOptionService
 
         await _writeRepo.AddAsync(entity);
         await _writeRepo.CommitAsync();
+        await _audit.LogAsync(
+            "ProductOptions",
+            "CREATE",
+            "PRODUCT_OPTION_ADDED",
+            entity.Id,
+            null,
+            new Dictionary<string, object>
+            {
+                ["ProductId"] = entity.ProductId,
+                ["OptionId"] = entity.OptionId,
+                ["CustomNameAz"] = entity.CustomNameAz ?? ""
+            }
+        );
     }
 
     public async Task UpdateAsync(UpdateProductOptionDto dto)
@@ -137,6 +153,12 @@ public class ProductOptionService : IProductOptionService
             q => q.Include(x => x.Values),
             enableTracking: true
         ) ?? throw new GlobalAppException("PRODUCT_OPTION_NOT_FOUND");
+        var oldValues = new Dictionary<string, object>
+        {
+            ["CustomNameAz"] = option.CustomNameAz ?? "",
+            ["ProductId"] = option.ProductId
+            
+        };
 
         // Update metadata
         _mapper.Map(dto, option);
@@ -224,7 +246,21 @@ public class ProductOptionService : IProductOptionService
         }
 
         await _writeRepo.CommitAsync();
+        await _audit.LogAsync(
+            "ProductOptions",
+            "UPDATE",
+            "PRODUCT_OPTION_UPDATED",
+            option.Id,
+            oldValues,
+            new Dictionary<string, object>
+            {
+                ["CustomNameAz"] = option.CustomNameAz ?? "",
+                ["ProductId"] = option.ProductId
+            }
+        );
     }
+
+
 
     public async Task DeleteAsync(string id)
     {
@@ -254,6 +290,18 @@ public class ProductOptionService : IProductOptionService
         }
 
         await _writeRepo.CommitAsync();
+        await _audit.LogAsync(
+            "ProductOptions",
+            "DELETE",
+            "PRODUCT_OPTION_DELETED",
+            option.Id,
+            new Dictionary<string, object>
+            {
+                ["ProductId"] = option.ProductId,
+                ["OptionId"] = option.OptionId
+            },
+            null
+        );
     }
 
     // Helpers

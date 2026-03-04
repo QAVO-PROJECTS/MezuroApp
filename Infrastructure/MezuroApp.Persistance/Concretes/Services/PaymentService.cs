@@ -11,6 +11,7 @@ using MezuroApp.Application.Abstracts.Services;
 using MezuroApp.Application.Dtos.Payment;
 using MezuroApp.Application.GlobalException;
 using MezuroApp.Domain.Entities;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
 namespace MezuroApp.Persistance.Concretes.Services;
@@ -27,6 +28,8 @@ public sealed class PaymentService : IPaymentService
     private readonly IPaymentTransactionWriteRepository _trxWrite;
     private readonly IUserCardReadRepository _userCardRead;
     private readonly IUserCardWriteRepository _userCardWrite;
+    private readonly IAuditLogService _audit;
+    private readonly IHttpContextAccessor _httpContext;
 
     public PaymentService(
         IHttpClientFactory factory,
@@ -36,7 +39,9 @@ public sealed class PaymentService : IPaymentService
         IPaymentTransactionReadRepository trxRead,
         IPaymentTransactionWriteRepository trxWrite,
         IUserCardReadRepository userCardRead,
-        IUserCardWriteRepository userCardWrite
+        IUserCardWriteRepository userCardWrite,
+        IAuditLogService audit,
+        IHttpContextAccessor httpContext
         )
     {
         _http = factory.CreateClient("epoint");
@@ -49,6 +54,8 @@ public sealed class PaymentService : IPaymentService
         _trxWrite = trxWrite;
         _userCardRead = userCardRead;
         _userCardWrite = userCardWrite;
+        _audit = audit;
+        _httpContext = httpContext;
     }
 
 public async Task<PaymentInitResultDto> StartEpointAsync(
@@ -262,134 +269,10 @@ public async Task<PaymentInitResultDto> StartEpointAsync(
 
 
 
-public async Task ReverseEpointAsync(string userId, ReverseEpointDto dto, CancellationToken ct = default)
-{
-    if (!Guid.TryParse(userId, out var uid))
-        throw new GlobalAppException("INVALID_USER_ID");
-
-    if (!Guid.TryParse(dto.OrderId, out var oid))
-        throw new GlobalAppException("INVALID_ORDER_ID");
-
-    var order = await _orderRead.GetAsync(
-        o => !o.IsDeleted && o.Id == oid && o.UserId == uid,
-        enableTracking: true
-    );
-
-    if (order == null)
-        throw new GlobalAppException("ORDER_NOT_FOUND");
-
-    // ✅ son COMPLETED trx götür
-    var trx = await _trxRead.Query()
-        .AsTracking()
-        .Where(t => !t.IsDeleted
-                    && t.OrderId == order.Id
-                    && t.Status == "completed")
-        .OrderByDescending(t => t.CompletedAt ?? t.LastUpdatedDate)
-        .FirstOrDefaultAsync(ct);
-
-    if (trx == null)
-        throw new GlobalAppException("TRANSACTION_NOT_FOUND");
-
-    // ✅ artıq reverse/refund olunubsa bir daha etmə
-    if (trx.Status is "refunded" or "reversed")
-        throw new GlobalAppException("ALREADY_REFUNDED");
-
-    if (string.IsNullOrWhiteSpace(trx.TransactionId))
-        throw new GlobalAppException("TRANSACTION_ID_MISSING");
-
-    var publicKey  = _cfg["Epoint:PublicKey"]  ?? throw new Exception("Epoint:PublicKey missing");
-    var privateKey = _cfg["Epoint:PrivateKey"] ?? throw new Exception("Epoint:PrivateKey missing");
-
-    // ✅ reverse payload: amount göndərmirik (tam cancel)
-    var payloadObj = new
-    {
-        public_key = publicKey,
-        language = "az",
-        transaction = trx.TransactionId,
-        currency = trx.Currency ?? "AZN"
-    };
-
-    var payloadJson = JsonSerializer.Serialize(payloadObj);
-    var (data, signature) = BuildDataAndSignature(payloadObj, privateKey);
-
-    Console.WriteLine("========== EPOINT REVERSE DEBUG ==========");
-    Console.WriteLine($"OrderId: {order.Id} | OrderNumber: {order.OrderNumber}");
-    Console.WriteLine($"Trx(local): {trx.Id} | Trx(gateway): {trx.TransactionId}");
-    Console.WriteLine($"Payload JSON: {payloadJson}");
-    Console.WriteLine($"DATA(base64): {data}");
-    Console.WriteLine($"SIGNATURE: {signature}");
-    Console.WriteLine("=========================================");
-
-    using var resp = await _http.PostAsync(
-        "https://epoint.az/api/1/reverse",
-        new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["data"] = data,
-            ["signature"] = signature
-        }),
-        ct);
-
-    var body = await resp.Content.ReadAsStringAsync(ct);
-
-    Console.WriteLine("========== EPOINT REVERSE RESPONSE ==========");
-    Console.WriteLine($"HTTP: {(int)resp.StatusCode} {resp.ReasonPhrase}");
-    Console.WriteLine($"RAW BODY: {body}");
-    Console.WriteLine("============================================");
-
-    if (!resp.IsSuccessStatusCode)
-    {
-        trx.ErrorMessage = $"HTTP {(int)resp.StatusCode} {resp.ReasonPhrase}";
-        trx.GatewayResponse = body;
-        trx.LastUpdatedDate = DateTime.UtcNow;
-        await _trxWrite.UpdateAsync(trx);
-        await _trxWrite.CommitAsync();
-
-        throw new GlobalAppException("REVERSE_FAILED");
-    }
-
-    var ep = JsonSerializer.Deserialize<EpointReverseResponse>(
-        body,
-        new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
-    ) ?? throw new Exception("EPOINT_RESPONSE_PARSE_ERROR");
-
-    var ok = string.Equals(ep.status, "success", StringComparison.OrdinalIgnoreCase);
-
-    if (!ok)
-    {
-        trx.ErrorMessage = ep.message ?? "Reverse failed";
-        trx.GatewayResponse = body;
-        trx.LastUpdatedDate = DateTime.UtcNow;
-        await _trxWrite.UpdateAsync(trx);
-        await _trxWrite.CommitAsync();
-
-        // istəyirsənsə xüsusi error:
-        // if (ep.message?.Contains("cannot cancel", StringComparison.OrdinalIgnoreCase) == true)
-        //     throw new GlobalAppException("REVERSE_NOT_ALLOWED");
-
-        throw new GlobalAppException("REVERSE_FAILED");
-    }
-
-    // ✅ local update
-    trx.Status = "refunded"; // "refunded" da yaza bilərsən, amma reverse ayrıdır
-    trx.GatewayResponse = body;
-    trx.LastUpdatedDate = DateTime.UtcNow;
-    await _trxWrite.UpdateAsync(trx);
-    await _trxWrite.CommitAsync();
-
-    order.PaymentStatus = "refunded";
-    order.LastUpdatedDate = DateTime.UtcNow;
-    await _orderWrite.UpdateAsync(order);
-    await _orderWrite.CommitAsync();
-}
 
 
 
-private sealed class EpointReverseResponse
-{
-    public string status { get; set; } = default!;
-    public string? message { get; set; }
-    public string? code { get; set; }
-}
+
 
 
 
@@ -753,7 +636,6 @@ public async Task AdminReverseEpointAsync(AdminReverseEpointDto dto, Cancellatio
     if (!resp.IsSuccessStatusCode)
     {
         trx.ErrorMessage = $"HTTP {(int)resp.StatusCode} {resp.ReasonPhrase}";
-        trx.GatewayResponse = body;
         trx.LastUpdatedDate = DateTime.UtcNow;
         await _trxWrite.UpdateAsync(trx);
         await _trxWrite.CommitAsync();
@@ -798,6 +680,31 @@ public async Task AdminReverseEpointAsync(AdminReverseEpointDto dto, Cancellatio
 
     await _orderWrite.UpdateAsync(order);
     await _orderWrite.CommitAsync();
+    // audit log
+    var (ip, ua) = GetReqInfo();
+
+    await _audit.LogAsync(new AuditLog
+    {
+        UserId = GetUserId(),
+        Module = "Payment",
+        EntityId = order.Id,
+        ActionType = "UPDATE",
+        OldValuesJson = new Dictionary<string, object?>
+        {
+            ["Order"] = OrderSnap(order),
+            ["Transaction"] = TrxSnap(trx)
+        },
+        NewValuesJson = new Dictionary<string, object?>
+        {
+            ["event"] = "ORDER_PAYMENT_REVERSED",
+            ["note"] = dto.Note,
+            ["Order"] = OrderSnap(order),
+            ["Transaction"] = TrxSnap(trx)
+        },
+        IpAddress = ip,
+        UserAgent = ua,
+        CreatedAt = DateTime.UtcNow
+    });
 }
 
     // ===== helpers =====
@@ -881,11 +788,13 @@ public async Task AdminReverseEpointAsync(AdminReverseEpointDto dto, Cancellatio
     await _userCardWrite.AddAsync(newCard);
     await _userCardWrite.CommitAsync();
 }
-    private sealed class EpointRefundResponse
+
+    //Sealed Class
+    private sealed class EpointReverseResponse
     {
         public string status { get; set; } = default!;
-        public string? code { get; set; }
         public string? message { get; set; }
+        public string? code { get; set; }
     }
     private sealed class EpointRequestResponse
     {
@@ -921,4 +830,35 @@ public async Task AdminReverseEpointAsync(AdminReverseEpointDto dto, Cancellatio
         public string? card_expiry { get; set; }
         public decimal? amount { get; set; }
     }
+    //Helpers
+    private string? GetUserId()
+    {
+        var id = _httpContext.HttpContext?.User?.FindFirst("sub")?.Value;
+        return id;
+    }
+
+    private (string? ip, string? ua) GetReqInfo()
+    {
+        var ctx = _httpContext.HttpContext;
+        return (
+            ctx?.Connection?.RemoteIpAddress?.ToString(),
+            ctx?.Request?.Headers["User-Agent"].ToString()
+        );
+    }
+
+    private static Dictionary<string, object?> OrderSnap(Order o) => new()
+    {
+        ["OrderNumber"] = o.OrderNumber,
+        ["PaymentStatus"] = o.PaymentStatus,
+        ["PaymentMethod"] = o.PaymentMethod,
+        ["Total"] = o.Total
+    };
+
+    private static Dictionary<string, object?> TrxSnap(PaymentTransaction t) => new()
+    {
+        ["TransactionId"] = t.TransactionId,
+        ["Status"] = t.Status,
+        ["Amount"] = t.Amount,
+        ["Currency"] = t.Currency
+    };
 }

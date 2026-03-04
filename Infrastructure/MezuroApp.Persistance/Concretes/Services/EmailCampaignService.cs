@@ -13,6 +13,8 @@ using MezuroApp.Domain.Entities;
 using MezuroApp.Domain.HelperEntities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 using Serilog;
 
 namespace MezuroApp.Persistance.Concretes.Services;
@@ -31,6 +33,9 @@ public sealed class EmailCampaignService : IEmailCampaignService
     private readonly IMailService _mail;
     private readonly IConfiguration _cfg;
     private readonly ILogger<EmailCampaignService> _logger; 
+    private readonly IAuditLogService _audit;
+    private readonly IHttpContextAccessor _http;
+    
     
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
@@ -46,7 +51,9 @@ public sealed class EmailCampaignService : IEmailCampaignService
         UserManager<User> userManager,
         IMailService mail,
         IConfiguration cfg,
-        ILogger<EmailCampaignService> logger)
+        ILogger<EmailCampaignService> logger,
+        IAuditLogService audit,
+        IHttpContextAccessor http)
     {
         _campaignRead = campaignRead;
         _campaignWrite = campaignWrite;
@@ -57,6 +64,8 @@ public sealed class EmailCampaignService : IEmailCampaignService
         _mail = mail;
         _cfg = cfg;
         _logger = logger;
+        _audit = audit;
+        _http = http;
     }
 
     public async Task<EmailCampaignDto> CreateAsync(string adminUserId, CreateEmailCampaignDto dto)
@@ -100,7 +109,16 @@ public sealed class EmailCampaignService : IEmailCampaignService
         await _campaignWrite.AddAsync(campaign);
         await _campaignWrite.CommitAsync();
 
+
+        await WriteAuditAsync(
+            action: "CREATE",
+            entityId: campaign.Id,
+            oldValues: null,
+            newValues: CampaignSnap(campaign)
+        );
+
         return Map(campaign);
+  
     }  
 
 
@@ -552,6 +570,7 @@ public async Task SendCampaignInternalAsync(Guid campaignId, CancellationToken c
 
         if (campaign.Status is "sending" or "sent")
             throw new GlobalAppException("CAMPAIGN_CANNOT_BE_SCHEDULED");
+        var oldSnap = CampaignSnap(campaign);
         await EnsureLogsCreatedAsync(campaign);
 
         campaign.Status = "scheduled";
@@ -560,6 +579,13 @@ public async Task SendCampaignInternalAsync(Guid campaignId, CancellationToken c
 
         await _campaignWrite.UpdateAsync(campaign);
         await _campaignWrite.CommitAsync();
+        
+        await WriteAuditAsync(
+            action: "UPDATE",
+            entityId: campaign.Id,
+            oldValues: oldSnap,
+            newValues: CampaignSnap(campaign)
+        );
 
         return Map(campaign);
     }
@@ -567,6 +593,7 @@ public async Task SendCampaignInternalAsync(Guid campaignId, CancellationToken c
     public async Task<EmailCampaignDto> SendNowAsync(string adminUserId, string campaignId)
     {
         var campaign = await GetCampaignTracked(campaignId);
+        var oldSnap = CampaignSnap(campaign);
 
         if (campaign.Status is "sending" or "sent")
             throw new GlobalAppException("CAMPAIGN_ALREADY_SENT");
@@ -577,6 +604,13 @@ public async Task SendCampaignInternalAsync(Guid campaignId, CancellationToken c
 
         await _campaignWrite.UpdateAsync(campaign);
         await _campaignWrite.CommitAsync();
+        
+        await WriteAuditAsync(
+            action: "UPDATE",
+            entityId: campaign.Id,
+            oldValues: oldSnap,
+            newValues: CampaignSnap(campaign)
+        );
 
         return Map(campaign);
     }
@@ -584,6 +618,7 @@ public async Task SendCampaignInternalAsync(Guid campaignId, CancellationToken c
     public async Task CancelAsync(string adminUserId, string campaignId)
     {
         var campaign = await GetCampaignTracked(campaignId);
+        var oldSnap = CampaignSnap(campaign);
 
         if (campaign.Status is "sent")
             throw new GlobalAppException("CAMPAIGN_CANNOT_BE_CANCELLED");
@@ -593,6 +628,12 @@ public async Task SendCampaignInternalAsync(Guid campaignId, CancellationToken c
 
         await _campaignWrite.UpdateAsync(campaign);
         await _campaignWrite.CommitAsync();
+        await WriteAuditAsync(
+            action: "UPDATE", // istəsən "UPDATE" də yaza bilərsən
+            entityId: campaign.Id,
+            oldValues: oldSnap,
+            newValues: CampaignSnap(campaign)
+        );
     }
 
     public async Task<List<EmailCampaignDto>> GetAllAsync()
@@ -635,4 +676,74 @@ public async Task SendCampaignInternalAsync(Guid campaignId, CancellationToken c
         TotalBounced = c.TotalBounced,
         TotalUnsubscribed = c.TotalUnsubscribed
     };
+    private bool IsAdminRequest()
+{
+    var user = _http.HttpContext?.User;
+    if (user == null) return false;
+
+    // rollara görə (səndə SuperAdmin var)
+    if (user.IsInRole("SuperAdmin") || user.IsInRole("Admin") || user.IsInRole("Owner"))
+        return true;
+
+    // permission claim varsa da admin say
+    return user.Claims.Any(c => c.Type == Permissions.ClaimType);
+}
+
+private string GetUserId()
+{
+    var user = _http.HttpContext?.User;
+    return user?.FindFirstValue(ClaimTypes.NameIdentifier)
+           ?? user?.FindFirst("sub")?.Value
+           ?? "Anonymous";
+}
+
+private (string ip, string ua) GetReqInfo()
+{
+    var ctx = _http.HttpContext;
+    var ip = ctx?.Connection.RemoteIpAddress?.ToString() ?? "";
+    var ua = ctx?.Request.Headers["User-Agent"].ToString() ?? "";
+    return (ip, ua);
+}
+
+private static Dictionary<string, object> CampaignSnap(EmailCampaign c) => new()
+{
+    ["id"] = c.Id.ToString(),
+    ["name"] = c.Name,
+    ["campaignType"] = c.CampaignType,
+    ["targetSegment"] = c.TargetSegment,
+    ["status"] = c.Status,
+    ["scheduledAt"] = c.ScheduledAt,
+    ["sentAt"] = c.SentAt,
+    ["totalRecipients"] = c.TotalRecipients,
+    ["totalSent"] = c.TotalSent,
+    ["totalOpened"] = c.TotalOpened,
+    ["totalClicked"] = c.TotalClicked,
+    ["totalBounced"] = c.TotalBounced,
+    ["totalUnsubscribed"] = c.TotalUnsubscribed,
+    ["createdById"] = c.CreatedById
+};
+
+private async Task WriteAuditAsync(
+    string action, // "CREATE" | "UPDATE" | "DELETE"
+    Guid? entityId,
+    Dictionary<string, object>? oldValues,
+    Dictionary<string, object>? newValues)
+{
+    if (!IsAdminRequest()) return;
+
+    var (ip, ua) = GetReqInfo();
+
+    await _audit.LogAsync(new AuditLog
+    {
+        UserId = GetUserId(),
+         Module = "Campaigns",
+        EntityId = entityId,
+        ActionType = action,
+        OldValuesJson = oldValues ?? new Dictionary<string, object>(),
+        NewValuesJson = newValues ?? new Dictionary<string, object>(),
+        IpAddress = ip,
+        UserAgent = ua,
+        CreatedAt = DateTime.UtcNow
+    });
+}
 }

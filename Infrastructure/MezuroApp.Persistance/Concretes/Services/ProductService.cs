@@ -34,6 +34,7 @@ public class ProductService : IProductService
     private readonly IMapper _mapper;
     private readonly IEmailCampaignService _campaignService;
     private readonly ILogger<ProductService> _logger;
+    private readonly IAuditHelper _audit;
     
 
     private const string ProductFolder = "products";
@@ -48,7 +49,8 @@ public class ProductService : IProductService
         IWishlistItemReadRepository wishlistReadRepo,
         IEmailCampaignService campaignService,
         IMapper mapper,
-        ILogger<ProductService> logger)
+        ILogger<ProductService> logger,
+        IAuditHelper audit)
     {
         _readRepo = readRepo;
         _writeRepo = writeRepo;
@@ -60,6 +62,7 @@ public class ProductService : IProductService
         _mapper = mapper;
         _campaignService = campaignService;
         _logger = logger;
+        _audit = audit;
     }
 
     // ================================================
@@ -913,6 +916,20 @@ public async Task<PagedResult<ProductDto>> AdminSearchAsync(
         await _writeRepo.AddAsync(entity);
 
         await _writeRepo.CommitAsync();
+        await _audit.LogAsync(
+            entityType: "Products",
+            action: "CREATE",
+            eventName: "PRODUCT_CREATED",
+            entityId: entity.Id,
+            oldValues: null,
+            newValues: new Dictionary<string, object>
+            {
+                ["NameAz"] = entity.NameAz ?? "",
+                ["Sku"] = entity.Sku ?? "",
+                ["Price"] = entity.Price,
+                ["IsActive"] = entity.IsActive ?? false
+            }
+        );
 
 
         // 5) Category Relations
@@ -959,6 +976,13 @@ public async Task<PagedResult<ProductDto>> AdminSearchAsync(
                 .Include(p => p.ProductCategories.Where(pc => !pc.IsDeleted)),
             enableTracking: true
         ) ?? throw new GlobalAppException("PRODUCT_NOT_FOUND");
+        var oldValues = new Dictionary<string, object>
+        {
+            ["NameAz"] = entity.NameAz ?? "",
+            ["Price"] = entity.Price,
+            ["Sku"] = entity.Sku ?? "",
+            ["IsActive"] = entity.IsActive ?? false
+        };
 
 
         // ======================================
@@ -1164,6 +1188,20 @@ public async Task<PagedResult<ProductDto>> AdminSearchAsync(
         // =====================================================
        
             await _writeRepo.CommitAsync();
+            await _audit.LogAsync(
+                "Products",
+                "UPDATE",
+                "PRODUCT_UPDATED",
+                entity.Id,
+                oldValues,
+                new Dictionary<string, object>
+                {
+                    ["NameAz"] = entity.NameAz ?? "",
+                    ["Price"] = entity.Price,
+                    ["Sku"] = entity.Sku ?? "",
+                    ["IsActive"] = entity.IsActive ?? false
+                }
+            );
         
     
     }
@@ -1177,12 +1215,26 @@ public async Task<PagedResult<ProductDto>> AdminSearchAsync(
 
         var entity = await _readRepo.GetAsync(x => x.Id == gid)
                      ?? throw new GlobalAppException("Product not found!");
+        var oldValues = new Dictionary<string, object>
+        {
+            ["NameAz"] = entity.NameAz ?? "",
+            ["Sku"] = entity.Sku ?? "",
+            ["Price"] = entity.Price
+        };
 
         entity.IsDeleted = true;
         entity.DeletedDate = DateTime.UtcNow;
 
         await _writeRepo.UpdateAsync(entity);
         await _writeRepo.CommitAsync();
+        await _audit.LogAsync(
+            "Products",
+            "DELETE",
+            "PRODUCT_DELETED",
+            entity.Id,
+            oldValues,
+            null
+        );
     }
 
     // ================================================
