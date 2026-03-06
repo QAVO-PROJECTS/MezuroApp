@@ -26,7 +26,7 @@ public interface IProductService
 
     Task<PagedResult<ProductDto>> FilterAsync(ProductFilterRequestDto r);
     Task<PagedResult<ProductDto>> AdminFilterByPriceAsync(AdminProductFilterRequestDto r);
-    Task CreateAsync(CreateProductDto dto);
+    Task<string> CreateAsync(CreateProductDto dto);
     Task UpdateAsync(UpdateProductDto dto);
     Task DeleteAsync(string id);
 

@@ -184,6 +184,20 @@ namespace MezuroApp.Persistance.Concretes.Services
 
             return category == null ? null : _mapper.Map<CategoryDto>(category);
         }
+        public async Task<CategoryDto?> GetCategoryByIdForAdmin(string id)
+        {
+            var gid = ParseGuidOrThrow(id, "Id");
+
+            var category = await _readRepo.GetAsync(
+                c => c.Id == gid && !c.IsDeleted ,
+                q => q
+                    .Include(c => c.Children)
+                    .Include(c => c.ProductCategories)
+                    .ThenInclude(pc => pc.Product)
+            );
+
+            return category == null ? null : _mapper.Map<CategoryDto>(category);
+        }
 
         #endregion
 

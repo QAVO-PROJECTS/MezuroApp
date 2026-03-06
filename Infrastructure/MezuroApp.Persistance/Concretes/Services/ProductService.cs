@@ -786,7 +786,7 @@ public async Task<PagedResult<ProductDto>> AdminSearchAsync(
     // ================================================
     //                CREATE
     // ================================================
-    public async Task CreateAsync(CreateProductDto dto)
+    public async Task<string> CreateAsync(CreateProductDto dto)
     {
         // 1) Map Product basic fields
         var entity = _mapper.Map<Product>(dto);
@@ -957,6 +957,8 @@ public async Task<PagedResult<ProductDto>> AdminSearchAsync(
         {
             await _campaignService.CreateAndScheduleNewProductCampaignAsync(entity);
         }
+
+        return entity.Id.ToString();
     }
 
     // ================================================

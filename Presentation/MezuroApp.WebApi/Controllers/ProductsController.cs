@@ -215,8 +215,8 @@ public class ProductsController : BaseApiController
     {
         try
         {
-            await _service.CreateAsync(dto);
-            return CreatedResponse<object>(null, dto, "PRODUCT_CREATED");
+            var id=await _service.CreateAsync(dto);
+            return CreatedResponse<object>(null, id, "PRODUCT_CREATED");
         }
         catch (GlobalAppException ex)
         {

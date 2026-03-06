@@ -239,6 +239,26 @@ public class CategoriesController : BaseApiController
             return ServerErrorResponse();
         }
     }
+    [HttpGet("admin/{id}")]
+    public async Task<IActionResult> GetByIdForAdmin([FromRoute] string id)
+    {
+        try
+        {
+            var dto = await _service.GetCategoryByIdForAdmin(id);
+            if (dto is null)
+                return NotFoundResponse("CATEGORY_NOT_FOUND");
+
+            return OkResponse(dto, "CATEGORY_RETURNED");
+        }
+        catch (GlobalAppException ex)
+        {
+            return BadRequestResponse(ex.Message);
+        }
+        catch (Exception)
+        {
+            return ServerErrorResponse();
+        }
+    }
 
     [Authorize(Policy = Permissions.Categories.Update)]
     [HttpPost]

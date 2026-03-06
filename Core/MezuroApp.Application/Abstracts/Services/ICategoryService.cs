@@ -14,6 +14,7 @@ public interface ICategoryService
    Task<List<CategoryDto>> GetFilteredSubCategoriesForActiveStatus(string parentId, bool isActive);
    Task<List<CategoryDto>> GetFilteredCategoriesForShowMenu(bool isShowMenu);
    Task<List<CategoryDto>> GetFilteredSubCategoriesForShowMenu(string parentId, bool isShowMenu);
+   Task<CategoryDto?> GetCategoryByIdForAdmin(string id);
    public Task CreateCategory(CreateCategoryDto categoryDto);
    public Task UpdateCategory(UpdateCategoryDto categoryDto);
    public Task DeleteCategory(string id);
