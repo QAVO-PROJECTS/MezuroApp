@@ -239,6 +239,7 @@ public class CategoriesController : BaseApiController
             return ServerErrorResponse();
         }
     }
+    [Authorize(Policy = Permissions.Categories.Read)]
     [HttpGet("admin/{id}")]
     public async Task<IActionResult> GetByIdForAdmin([FromRoute] string id)
     {
