@@ -168,3 +168,4 @@
 /Users/gulchohrasultanova/Desktop/MezuroApp/Presentation/MezuroApp.WebApi/obj/Debug/net8.0/MezuroApp.WebApi.pdb
 /Users/gulchohrasultanova/Desktop/MezuroApp/Presentation/MezuroApp.WebApi/obj/Debug/net8.0/MezuroApp.WebApi.genruntimeconfig.cache
 /Users/gulchohrasultanova/Desktop/MezuroApp/Presentation/MezuroApp.WebApi/obj/Debug/net8.0/ref/MezuroApp.WebApi.dll
+/Users/gulchohrasultanova/Desktop/MezuroApp/Presentation/MezuroApp.WebApi/bin/Debug/net8.0/swagger.json

@@ -166,7 +166,7 @@ using (var scope = app.Services.CreateScope())
 // }
 
 app.UseHttpsRedirection();
-app.UseMiddleware<IpAllowListMiddleware>();
+// app.UseMiddleware<IpAllowListMiddleware>();
 app.UseAuthentication();  // VERY IMPORTANT
 app.UseAuthorization();
 
