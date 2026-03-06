@@ -83,7 +83,7 @@ public class ProductColorService : IProductColorService
     // =============================
     //            COMMANDS
     // =============================
-    public async Task CreateAsync(CreateProductColorDto dto)
+    public async Task<string> CreateAsync(CreateProductColorDto dto)
     {
         var pid = ParseGuidOrThrow(dto.ProductId);
 
@@ -167,6 +167,7 @@ public class ProductColorService : IProductColorService
                     await _pciWriteRepo.CommitAsync();
             }
         }
+        return entity.Id.ToString();
     }
 
     public async Task UpdateAsync(UpdateProductColorDto dto)

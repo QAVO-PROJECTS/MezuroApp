@@ -62,8 +62,8 @@ public class ProductColorsController : BaseApiController
     {
         try
         {
-            await _service.CreateAsync(dto);
-            return CreatedResponse<object>(null, dto, "PRODUCT_COLOR_CREATED");
+            var id=await _service.CreateAsync(dto);
+            return CreatedResponse<object>(null, id, "PRODUCT_COLOR_CREATED");
         }
         catch (GlobalAppException ex)
         {
