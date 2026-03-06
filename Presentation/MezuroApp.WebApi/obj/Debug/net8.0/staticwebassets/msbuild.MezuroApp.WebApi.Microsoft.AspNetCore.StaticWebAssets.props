@@ -96,6 +96,22 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\files\categories\83d69c85-9225-4fe8-ae9c-e8a0d3fd2918.webp))</OriginalItemSpec>
     </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\files\categories\8b2ce906-f269-4b28-bacc-12ebf46f5ef8.webp))">
+      <SourceType>Package</SourceType>
+      <SourceId>MezuroApp.WebApi</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/MezuroApp.WebApi</BasePath>
+      <RelativePath>files/categories/8b2ce906-f269-4b28-bacc-12ebf46f5ef8.webp</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\files\categories\8b2ce906-f269-4b28-bacc-12ebf46f5ef8.webp))</OriginalItemSpec>
+    </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\files\categories\a608bf58-b795-4c1d-8bb2-cf095231f5d8.webp))">
       <SourceType>Package</SourceType>
       <SourceId>MezuroApp.WebApi</SourceId>

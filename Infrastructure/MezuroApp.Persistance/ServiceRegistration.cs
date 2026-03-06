@@ -158,7 +158,7 @@ namespace MezuroApp.Persistance;
             
             // Services
             services.AddScoped<IMailService,MailService>();
-            services.AddScoped<IFileService, FileService>();
+            services.AddScoped<IFileService, CloudinaryFileService>();
             services.AddScoped<IUserAuthService, UserAuthService>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IProductCategoryService, ProductCategoryService>();

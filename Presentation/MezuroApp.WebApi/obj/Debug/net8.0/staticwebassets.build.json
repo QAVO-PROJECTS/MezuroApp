@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "39EbXmyV3n4Papi2UuWfKrk5arS9uHk1oImHGiU+xzE=",
+  "Hash": "QVQTKK8+Co0dlUrpImp9Xxe3ZjFMPJGhOA/vP/upeoQ=",
   "Source": "MezuroApp.WebApi",
   "BasePath": "_content/MezuroApp.WebApi",
   "Mode": "Default",
@@ -129,6 +129,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/files/categories/83d69c85-9225-4fe8-ae9c-e8a0d3fd2918.webp"
+    },
+    {
+      "Identity": "/Users/gulchohrasultanova/Desktop/MezuroApp/Presentation/MezuroApp.WebApi/wwwroot/files/categories/8b2ce906-f269-4b28-bacc-12ebf46f5ef8.webp",
+      "SourceId": "MezuroApp.WebApi",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/gulchohrasultanova/Desktop/MezuroApp/Presentation/MezuroApp.WebApi/wwwroot/",
+      "BasePath": "_content/MezuroApp.WebApi",
+      "RelativePath": "files/categories/8b2ce906-f269-4b28-bacc-12ebf46f5ef8.webp",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/files/categories/8b2ce906-f269-4b28-bacc-12ebf46f5ef8.webp"
     },
     {
       "Identity": "/Users/gulchohrasultanova/Desktop/MezuroApp/Presentation/MezuroApp.WebApi/wwwroot/files/categories/a608bf58-b795-4c1d-8bb2-cf095231f5d8.webp",

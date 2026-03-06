@@ -148,6 +148,8 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod();
     });
 });
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("CloudinarySettings"));
 builder.Services.AddHttpClient("epoint", c =>
 {
     c.BaseAddress = new Uri("https://epoint.az/");
