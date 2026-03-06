@@ -187,7 +187,7 @@ public async Task CreateAsync(CreateProductVariantDto dto)
         null,
         new Dictionary<string, object>
         {
-            ["ProductId"] = variant.ProductId,
+            ["ProductId"] = variant.ProductId.ToString(),
             ["ProductColorId"] = variant.ProductColorId?.ToString() ?? "",
             ["Sku"] = variant.Sku ?? "",
             ["StockQuantity"] = variant.StockQuantity
@@ -201,7 +201,7 @@ public async Task CreateAsync(CreateProductVariantDto dto)
         null,
         new Dictionary<string, object>
         {
-            ["ProductId"] = productId,
+            ["ProductId"] = productId.ToString(),
             ["TriggeredBy"] = "VariantCreated"
         }
     );

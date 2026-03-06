@@ -137,7 +137,7 @@ public class ProductOptionService : IProductOptionService
             null,
             new Dictionary<string, object>
             {
-                ["ProductId"] = entity.ProductId,
+                ["ProductId"] = entity.ProductId.ToString(),
                 ["OptionId"] = entity.OptionId,
                 ["CustomNameAz"] = entity.CustomNameAz ?? ""
             }

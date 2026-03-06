@@ -109,21 +109,7 @@ public class ProductColorService : IProductColorService
 
         await _writeRepo.AddAsync(entity);
         await _writeRepo.CommitAsync();
-        await _audit.LogAsync(
-            "ProductColors",
-            "CREATE",
-            "PRODUCT_COLOR_CREATED",
-            entity.Id,
-            null,
-            new Dictionary<string, object>
-            {
-                ["ProductId"] = entity.ProductId,
-                ["ColorNameAz"] = entity.ColorNameAz ?? "",
-                ["ColorCode"] = entity.ColorCode ?? "",
-                ["Sku"] = entity.Sku ?? ""
-            }
-        );
-
+ 
         // 4) ColorImage linkləri (toplu, N+1-siz)
         if (dto.ColorImageIds != null && dto.ColorImageIds.Count > 0)
         {
@@ -167,6 +153,21 @@ public class ProductColorService : IProductColorService
                     await _pciWriteRepo.CommitAsync();
             }
         }
+        await _audit.LogAsync(
+            "ProductColors",
+            "CREATE",
+            "PRODUCT_COLOR_CREATED",
+            entity.Id,
+            null,
+            new Dictionary<string, object>
+            {
+                ["ProductId"] = entity.ProductId.ToString(),
+                ["ColorNameAz"] = entity.ColorNameAz ?? "",
+                ["ColorCode"] = entity.ColorCode ?? "",
+                ["Sku"] = entity.Sku ?? ""
+            }
+        );
+
         return entity.Id.ToString();
     }
 

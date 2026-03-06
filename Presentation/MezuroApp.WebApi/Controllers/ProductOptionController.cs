@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MezuroApp.Application.Abstracts.Services;
 using MezuroApp.Application.Dtos.ProductOption;
+using MezuroApp.Application.GlobalException;
 
 namespace MezuroApp.WebApi.Controllers;
 
@@ -20,14 +21,39 @@ public class ProductOptionController : BaseApiController
     public async Task<IActionResult> GetById(string id)
     {
         var result = await _service.GetByIdAsync(id);
-        return OkResponse(result, "OPTION_RETURNED");
+        try
+        {
+            return OkResponse(result, "OPTION_RETURNED");
+        }
+        catch (GlobalAppException ex)
+        {
+            return BadRequestResponse(ex.Message);
+        }
+        catch
+        {
+            return ServerErrorResponse();
+        }
+ 
+        
     }
 
     [HttpGet("by-product/{productId}")]
     public async Task<IActionResult> GetByProduct(string productId)
     {
         var result = await _service.GetByProductAsync(productId);
-        return OkResponse(result, "OPTIONS_BY_PRODUCT_RETURNED");
+      
+        try
+        {
+            return OkResponse(result, "OPTIONS_BY_PRODUCT_RETURNED");
+        }
+        catch (GlobalAppException ex)
+        {
+            return BadRequestResponse(ex.Message);
+        }
+        catch
+        {
+            return ServerErrorResponse();
+        }
     }
 
     // ===================== CREATE =====================
@@ -36,7 +62,20 @@ public class ProductOptionController : BaseApiController
     public async Task<IActionResult> Create([FromBody] CreateProductOptionDto dto)
     {
         await _service.CreateAsync(dto);
-        return CreatedResponse<object>(null,dto, "OPTION_CREATED");
+
+        try
+        {
+            return CreatedResponse<object>(null,dto, "OPTION_CREATED");
+        }
+        catch (GlobalAppException ex)
+        {
+            return BadRequestResponse(ex.Message);
+        }
+        catch
+        {
+            return ServerErrorResponse();
+        }
+        
     }
 
     // ===================== UPDATE =====================
@@ -45,7 +84,19 @@ public class ProductOptionController : BaseApiController
     public async Task<IActionResult> Update([FromBody] UpdateProductOptionDto dto)
     {
         await _service.UpdateAsync(dto);
-        return OkResponse(dto,"OPTION_UPDATED");
+      
+        try
+        {
+            return OkResponse(dto, "OPTION_UPDATED");
+        }
+        catch (GlobalAppException ex)
+        {
+            return BadRequestResponse(ex.Message);
+        }
+        catch
+        {
+            return ServerErrorResponse();
+        }
     }
 
     // ===================== DELETE =====================
@@ -54,6 +105,19 @@ public class ProductOptionController : BaseApiController
     public async Task<IActionResult> Delete(string id)
     {
         await _service.DeleteAsync(id);
-        return OkResponse(id,"OPTION_DELETED");
+     
+        try
+        {
+            return OkResponse(id,"OPTION_DELETED");
+        }
+        catch (GlobalAppException ex)
+        {
+            return BadRequestResponse(ex.Message);
+        }
+        catch
+        {
+            return ServerErrorResponse();
+        }
+        
     }
 }
