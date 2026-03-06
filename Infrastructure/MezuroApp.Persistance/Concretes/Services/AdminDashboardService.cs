@@ -1,23 +1,20 @@
-using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using MezuroApp.Application.Abstracts.Repositories.AbandonedCarts;
+using MezuroApp.Application.Abstracts.Repositories.Categories;
 using MezuroApp.Application.Abstracts.Repositories.Orders;
 using MezuroApp.Application.Abstracts.Repositories.PaymentTransactions;
-using MezuroApp.Application.Abstracts.Repositories.Products;
 using MezuroApp.Application.Abstracts.Repositories.ProductCategories;
-using MezuroApp.Application.Abstracts.Repositories.Categories;
 using MezuroApp.Application.Abstracts.Services;
 using MezuroApp.Application.Dtos.Dashboard;
-using MezuroApp.Application.GlobalException;
 using MezuroApp.Domain.Entities;
+
 namespace MezuroApp.Persistance.Concretes.Services;
 
-public class AdminDashboardService:IAdminDashboardService
+public class AdminDashboardService : IAdminDashboardService
 {
     private readonly IOrderReadRepository _orderRead;
     private readonly IPaymentTransactionReadRepository _trxRead;
     private readonly IAbandonedCartReadRepository _abandonedRead;
-    private readonly IProductReadRepository _productRead;
     private readonly IProductCategoryReadRepository _productCategoryRead;
     private readonly ICategoryReadRepository _categoryRead;
 
@@ -25,20 +22,30 @@ public class AdminDashboardService:IAdminDashboardService
         IOrderReadRepository orderRead,
         IPaymentTransactionReadRepository trxRead,
         IAbandonedCartReadRepository abandonedRead,
-        IProductReadRepository productRead,
         IProductCategoryReadRepository productCategoryRead,
         ICategoryReadRepository categoryRead)
     {
         _orderRead = orderRead;
         _trxRead = trxRead;
         _abandonedRead = abandonedRead;
-        _productRead = productRead;
         _productCategoryRead = productCategoryRead;
         _categoryRead = categoryRead;
     }
-        public async Task<AdminDashboardDto> GetDashboardAsync(AdminDashboardFilterDto filter, CancellationToken ct = default)
+
+    public async Task<AdminDashboardDto> GetDashboardAsync(CancellationToken ct = default)
     {
-        var (fromUtc, toExUtc, prevFromUtc, prevToExUtc) = ResolveRanges(filter);
+        // =========================
+        // LAST 7 DAYS (today included)
+        // current: today-6 ... tomorrow(exclusive)
+        // previous: today-13 ... today-6(exclusive)
+        // =========================
+        var today = DateTime.UtcNow.Date;
+
+        var fromUtc = DateTime.SpecifyKind(today.AddDays(-6), DateTimeKind.Utc);
+        var toExUtc = DateTime.SpecifyKind(today.AddDays(1), DateTimeKind.Utc);
+
+        var prevFromUtc = DateTime.SpecifyKind(today.AddDays(-13), DateTimeKind.Utc);
+        var prevToExUtc = DateTime.SpecifyKind(today.AddDays(-6), DateTimeKind.Utc);
 
         var ordersQ = _orderRead.Query()
             .AsNoTracking()
@@ -64,11 +71,13 @@ public class AdminDashboardService:IAdminDashboardService
         // SUMMARY
         // =========================
         var curRevenue = await curOrders
-            .Where(x => x.PaymentStatus == "paid" || x.PaymentStatus == "completed")
+            .Where(x => x.PaymentStatus != null &&
+                        (x.PaymentStatus.ToLower() == "paid" || x.PaymentStatus.ToLower() == "completed"))
             .SumAsync(x => (decimal?)x.Total, ct) ?? 0m;
 
         var prevRevenue = await prevOrders
-            .Where(x => x.PaymentStatus == "paid" || x.PaymentStatus == "completed")
+            .Where(x => x.PaymentStatus != null &&
+                        (x.PaymentStatus.ToLower() == "paid" || x.PaymentStatus.ToLower() == "completed"))
             .SumAsync(x => (decimal?)x.Total, ct) ?? 0m;
 
         var curOrderCount = await curOrders.CountAsync(ct);
@@ -78,19 +87,34 @@ public class AdminDashboardService:IAdminDashboardService
         var prevTrxCount = await prevTrx.CountAsync(ct);
 
         var curSuccessCount = await curTrx.CountAsync(x =>
-            x.Status == "completed" || x.Status == "paid", ct);
+            x.Status != null &&
+            (x.Status.ToLower() == "completed" || x.Status.ToLower() == "paid"), ct);
 
         var prevSuccessCount = await prevTrx.CountAsync(x =>
-            x.Status == "completed" || x.Status == "paid", ct);
+            x.Status != null &&
+            (x.Status.ToLower() == "completed" || x.Status.ToLower() == "paid"), ct);
 
-        var curRefundCount = await curTrx.CountAsync(x => x.Status == "refunded", ct);
-        var prevRefundCount = await prevTrx.CountAsync(x => x.Status == "refunded", ct);
+        var curRefundCount = await curTrx.CountAsync(x =>
+            x.Status != null && x.Status.ToLower() == "refunded", ct);
 
-        var curSuccessRate = curTrxCount == 0 ? 0m : Math.Round((decimal)curSuccessCount * 100m / curTrxCount, 2);
-        var prevSuccessRate = prevTrxCount == 0 ? 0m : Math.Round((decimal)prevSuccessCount * 100m / prevTrxCount, 2);
+        var prevRefundCount = await prevTrx.CountAsync(x =>
+            x.Status != null && x.Status.ToLower() == "refunded", ct);
 
-        var curRefundRate = curTrxCount == 0 ? 0m : Math.Round((decimal)curRefundCount * 100m / curTrxCount, 2);
-        var prevRefundRate = prevTrxCount == 0 ? 0m : Math.Round((decimal)prevRefundCount * 100m / prevTrxCount, 2);
+        var curSuccessRate = curTrxCount == 0
+            ? 0m
+            : Math.Round((decimal)curSuccessCount * 100m / curTrxCount, 2);
+
+        var prevSuccessRate = prevTrxCount == 0
+            ? 0m
+            : Math.Round((decimal)prevSuccessCount * 100m / prevTrxCount, 2);
+
+        var curRefundRate = curTrxCount == 0
+            ? 0m
+            : Math.Round((decimal)curRefundCount * 100m / curTrxCount, 2);
+
+        var prevRefundRate = prevTrxCount == 0
+            ? 0m
+            : Math.Round((decimal)prevRefundCount * 100m / prevTrxCount, 2);
 
         var summary = new AdminDashboardSummaryDto(
             Revenue: curRevenue,
@@ -104,28 +128,34 @@ public class AdminDashboardService:IAdminDashboardService
         );
 
         // =========================
-        // REVENUE TREND
+        // REVENUE TREND (7 gün, boş gün = 0)
         // =========================
         var revenueTrendRaw = await curOrders
-            .Where(x => x.PaymentStatus == "paid" || x.PaymentStatus == "completed")
+            .Where(x => x.PaymentStatus != null &&
+                        (x.PaymentStatus.ToLower() == "paid" || x.PaymentStatus.ToLower() == "completed"))
             .GroupBy(x => x.CreatedDate.Date)
             .Select(g => new
             {
                 Date = g.Key,
                 Revenue = g.Sum(x => x.Total)
             })
-            .OrderBy(x => x.Date)
             .ToListAsync(ct);
 
-        var revenueTrend = revenueTrendRaw
-            .Select(x => new RevenueTrendItemDto(
-                x.Date.ToString("dd.MM"),
-                x.Revenue
-            ))
+        var revenueTrendMap = revenueTrendRaw.ToDictionary(x => x.Date, x => x.Revenue);
+
+        var revenueTrend = Enumerable.Range(0, 7)
+            .Select(i =>
+            {
+                var date = fromUtc.Date.AddDays(i);
+                return new RevenueTrendItemDto(
+                    date.ToString("dd.MM"),
+                    revenueTrendMap.TryGetValue(date, out var revenue) ? revenue : 0m
+                );
+            })
             .ToList();
 
         // =========================
-        // DAILY ORDERS
+        // DAILY ORDERS (7 gün, boş gün = 0)
         // =========================
         var dailyOrdersRaw = await curOrders
             .GroupBy(x => x.CreatedDate.Date)
@@ -134,42 +164,54 @@ public class AdminDashboardService:IAdminDashboardService
                 Date = g.Key,
                 Count = g.Count()
             })
-            .OrderBy(x => x.Date)
             .ToListAsync(ct);
 
-        var dailyOrders = dailyOrdersRaw
-            .Select(x => new DailyOrdersItemDto(
-                x.Date.ToString("dd.MM"),
-                x.Count
-            ))
+        var dailyOrdersMap = dailyOrdersRaw.ToDictionary(x => x.Date, x => x.Count);
+
+        var dailyOrders = Enumerable.Range(0, 7)
+            .Select(i =>
+            {
+                var date = fromUtc.Date.AddDays(i);
+                return new DailyOrdersItemDto(
+                    date.ToString("dd.MM"),
+                    dailyOrdersMap.TryGetValue(date, out var count) ? count : 0
+                );
+            })
             .ToList();
 
         // =========================
-        // MONTHLY REFUNDS
+        // MONTHLY REFUNDS (burada da son 7 gün üçün)
+        // boş gün = 0
         // =========================
-        var monthlyRefundRaw = await curTrx
-            .Where(x => x.Status == "refunded")
+        var refundRaw = await curTrx
+            .Where(x => x.Status != null && x.Status.ToLower() == "refunded")
             .GroupBy(x => x.LastUpdatedDate.Date)
             .Select(g => new
             {
                 Date = g.Key,
                 Count = g.Count()
             })
-            .OrderBy(x => x.Date)
             .ToListAsync(ct);
 
-        var monthlyRefunds = monthlyRefundRaw
-            .Select(x => new MonthlyRefundItemDto(
-                x.Date.ToString("dd.MM"),
-                x.Count
-            ))
+        var refundMap = refundRaw.ToDictionary(x => x.Date, x => x.Count);
+
+        var monthlyRefunds = Enumerable.Range(0, 7)
+            .Select(i =>
+            {
+                var date = fromUtc.Date.AddDays(i);
+                return new MonthlyRefundItemDto(
+                    date.ToString("dd.MM"),
+                    refundMap.TryGetValue(date, out var count) ? count : 0
+                );
+            })
             .ToList();
 
         // =========================
         // PAYMENT SUCCESS RATE
         // =========================
         var failedCount = await curTrx.CountAsync(x =>
-            x.Status == "failed" || x.Status == "cancelled", ct);
+            x.Status != null &&
+            (x.Status.ToLower() == "failed" || x.Status.ToLower() == "cancelled"), ct);
 
         var paymentSuccessRate = new PaymentSuccessRateDto(
             SuccessfulCount: curSuccessCount,
@@ -180,17 +222,25 @@ public class AdminDashboardService:IAdminDashboardService
         // =========================
         // TOP PRODUCTS
         // =========================
-        var topProducts = await curOrders
+        var topProductsRaw = await curOrders
             .Include(x => x.OrderItems!.Where(i => !i.IsDeleted))
             .SelectMany(x => x.OrderItems!)
             .GroupBy(x => x.ProductName)
-            .Select(g => new TopProductItemDto(
-                g.Key ?? "Unknown",
-                g.Sum(x => x.Quantity)
-            ))
+            .Select(g => new
+            {
+                ProductName = g.Key ?? "Unknown",
+                Quantity = g.Sum(x => x.Quantity)
+            })
             .OrderByDescending(x => x.Quantity)
             .Take(5)
             .ToListAsync(ct);
+
+        var topProducts = topProductsRaw
+            .Select(x => new TopProductItemDto(
+                x.ProductName,
+                x.Quantity
+            ))
+            .ToList();
 
         // =========================
         // TOP CATEGORIES
@@ -240,10 +290,16 @@ public class AdminDashboardService:IAdminDashboardService
         var cartCreated = await curAbandoned.CountAsync(ct);
 
         var checkoutStarted = await curAbandoned.CountAsync(x =>
-            x.Status == "checkout_started" || x.Status == "abandoned" || x.Status == "recovered" || x.Status=="created", ct);
+            x.Status != null &&
+            (
+                x.Status.ToLower() == "checkout_started" ||
+                x.Status.ToLower() == "abandoned" ||
+                x.Status.ToLower() == "recovered" ||
+                x.Status.ToLower() == "created"
+            ), ct);
 
         var completedOrders = await curAbandoned.CountAsync(x =>
-            x.Status == "recovered", ct);
+            x.Status != null && x.Status.ToLower() == "recovered", ct);
 
         var conversionRate = cartCreated == 0
             ? 0m
@@ -257,24 +313,30 @@ public class AdminDashboardService:IAdminDashboardService
         );
 
         // =========================
-        // AVERAGE ORDER VALUE
+        // AVERAGE ORDER VALUE TREND (7 gün, boş gün = 0)
         // =========================
         var avgOrderRaw = await curOrders
-            .Where(x => x.PaymentStatus == "paid" || x.PaymentStatus == "completed")
+            .Where(x => x.PaymentStatus != null &&
+                        (x.PaymentStatus.ToLower() == "paid" || x.PaymentStatus.ToLower() == "completed"))
             .GroupBy(x => x.CreatedDate.Date)
             .Select(g => new
             {
                 Date = g.Key,
                 AvgValue = g.Average(x => x.Total)
             })
-            .OrderBy(x => x.Date)
             .ToListAsync(ct);
 
-        var avgOrderValueTrend = avgOrderRaw
-            .Select(x => new AverageOrderValueItemDto(
-                x.Date.ToString("dd.MM"),
-                Math.Round(x.AvgValue, 2)
-            ))
+        var avgOrderMap = avgOrderRaw.ToDictionary(x => x.Date, x => Math.Round(x.AvgValue, 2));
+
+        var avgOrderValueTrend = Enumerable.Range(0, 7)
+            .Select(i =>
+            {
+                var date = fromUtc.Date.AddDays(i);
+                return new AverageOrderValueItemDto(
+                    date.ToString("dd.MM"),
+                    avgOrderMap.TryGetValue(date, out var avg) ? avg : 0m
+                );
+            })
             .ToList();
 
         return new AdminDashboardDto(
@@ -288,54 +350,6 @@ public class AdminDashboardService:IAdminDashboardService
             AbandonedCartFunnel: abandonedCartFunnel,
             AverageOrderValueTrend: avgOrderValueTrend
         );
-    }
-    //Helper Methods
-        private static (DateTime curFrom, DateTime curToEx, DateTime prevFrom, DateTime prevToEx)
-        ResolveRanges(AdminDashboardFilterDto filter)
-    {
-        if (!string.IsNullOrWhiteSpace(filter.From) || !string.IsNullOrWhiteSpace(filter.To))
-        {
-            var curFrom = !string.IsNullOrWhiteSpace(filter.From)
-                ? ParseDdMmYyyyUtcOrThrow(filter.From, "INVALID_FROM_DATE")
-                : DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
-
-            var curToEx = !string.IsNullOrWhiteSpace(filter.To)
-                ? ParseDdMmYyyyUtcOrThrow(filter.To, "INVALID_TO_DATE").AddDays(1)
-                : DateTime.SpecifyKind(DateTime.UtcNow.Date.AddDays(1), DateTimeKind.Utc);
-
-            if (curToEx <= curFrom)
-                throw new GlobalAppException("INVALID_DATE_RANGE");
-
-            var span = curToEx - curFrom;
-            var prevToEx = curFrom;
-            var prevFrom = curFrom - span;
-
-            return (curFrom, curToEx, prevFrom, prevToEx);
-        }
-
-        var now = DateTime.UtcNow;
-        var curFromMtd = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-        var curToExMtd = DateTime.SpecifyKind(now.Date.AddDays(1), DateTimeKind.Utc);
-
-        var prevMonth = now.AddMonths(-1);
-        var prevFromMtd = new DateTime(prevMonth.Year, prevMonth.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-        var elapsed = curToExMtd - curFromMtd;
-        var prevToExMtd = prevFromMtd + elapsed;
-
-        return (curFromMtd, curToExMtd, prevFromMtd, prevToExMtd);
-    }
-
-    private static DateTime ParseDdMmYyyyUtcOrThrow(string value, string errorKey)
-    {
-        if (!DateTime.TryParseExact(
-                value.Trim(),
-                "dd.MM.yyyy",
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.None,
-                out var dt))
-            throw new GlobalAppException(errorKey);
-
-        return DateTime.SpecifyKind(dt.Date, DateTimeKind.Utc);
     }
 
     private static decimal CalcChangePercent(decimal current, decimal previous)
@@ -359,5 +373,4 @@ public class AdminDashboardService:IAdminDashboardService
 
         return Math.Round(((decimal)(current - previous) / previous) * 100m, 2);
     }
-
 }

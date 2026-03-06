@@ -4,5 +4,5 @@ namespace MezuroApp.Application.Abstracts.Services;
 
 public interface IAdminDashboardService
 {
-    Task<AdminDashboardDto> GetDashboardAsync(AdminDashboardFilterDto filter, CancellationToken ct = default);
+    Task<AdminDashboardDto> GetDashboardAsync( CancellationToken ct = default);
 }

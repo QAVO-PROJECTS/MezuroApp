@@ -19,14 +19,14 @@ public class AdminDashboardController : BaseApiController
     }
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] AdminDashboardFilterDto filter, CancellationToken ct)
+    public async Task<IActionResult> Get( CancellationToken ct)
     {
         try
         {
-            var data = await _service.GetDashboardAsync(filter, ct);
+            var data = await _service.GetDashboardAsync( ct);
             return OkResponse(data, "DASHBOARD_RETURNED");
         }
         catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
-        catch { return ServerErrorResponse(); }
+   
     }
 }
