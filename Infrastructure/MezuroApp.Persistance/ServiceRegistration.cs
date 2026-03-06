@@ -186,6 +186,7 @@ namespace MezuroApp.Persistance;
             services.AddScoped<IAdminRefundService, AdminRefundService>();
             services.AddScoped<IAdminTransactionService, AdminTransactionService>();
             services.AddScoped<AdminAuditLogService>();
+            services.AddScoped<IAdminDashboardService, AdminDashboardService>();
             
             //Background Services
             services.AddHostedService<AbandonedCartBackgroundService>();

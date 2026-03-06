@@ -94,7 +94,7 @@ namespace MezuroApp.Persistance.Concretes.Services
         public async Task<List<CategoryDto>> GetFilteredCategoriesForShowMenu(bool isShowMenu)
         {
             var categories = await _readRepo.GetAllAsync(
-                c => !c.IsDeleted &&  c.ParentId == null && c.IsActive==isShowMenu,
+                c => !c.IsDeleted &&  c.ParentId == null && c.ShowInMenu==isShowMenu,
                 q => q
                     .Include(c => c.Children)
                     .Include(c => c.ProductCategories)
@@ -106,9 +106,9 @@ namespace MezuroApp.Persistance.Concretes.Services
         public async Task<List<CategoryDto>> GetFilteredSubCategoriesForShowMenu(string parentId,bool isShowMenu)
         {
             var categories = await _readRepo.GetAllAsync(
-                c => !c.IsDeleted &&  c.ParentId.ToString() == parentId && c.IsActive==isShowMenu,
+                c => !c.IsDeleted &&  c.ParentId.ToString() == parentId && c.ShowInMenu     ==isShowMenu,
                 q => q
-                    .Include(c => c.Children)
+                    .Include(c => c.Children) 
                     .Include(c => c.ProductCategories)
                     .ThenInclude(pc => pc.Product)
             );
@@ -563,11 +563,11 @@ namespace MezuroApp.Persistance.Concretes.Services
 
             foreach (var link in links)
             {
-                // Soft delete
+                //  delete
                 link.IsDeleted = true;
                 link.DeletedDate = UtcNow();
                 await _productCategoryWriteRepo.UpdateAsync(link);
-
+    
                 // Tam silmək istəsən:
                 // await _productCategoryWriteRepo.HardDeleteAsync(link);
             }

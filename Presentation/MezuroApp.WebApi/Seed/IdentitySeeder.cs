@@ -22,7 +22,7 @@ public static class IdentitySeeder
         }
 
         // 2) SuperAdmin user
-        var email = "superadmin@mezuro.az";
+        var email = "superadmin1@mezuro.az";
         var superAdmin = await userManager.FindByEmailAsync(email);
 
         if (superAdmin == null)
