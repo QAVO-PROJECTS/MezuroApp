@@ -134,6 +134,20 @@ builder.Services.AddSwaggerGen(opt =>
         }
     });
 });
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("corsapp", policy =>
+    {
+        policy
+            .WithOrigins(
+                "http://localhost:5173",
+                "http://localhost:3000",
+                "https://mezuro.az"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 builder.Services.AddHttpClient("epoint", c =>
 {
     c.BaseAddress = new Uri("https://epoint.az/");
@@ -166,6 +180,7 @@ using (var scope = app.Services.CreateScope())
 // }
 
 app.UseHttpsRedirection();
+app.UseCors("corsapp");
 // app.UseMiddleware<IpAllowListMiddleware>();
 app.UseAuthentication();  // VERY IMPORTANT
 app.UseAuthorization();
@@ -173,7 +188,7 @@ app.UseAuthorization();
 
 
 // CORS
-app.UseCors("corsapp");
+
 
 app.MapControllers();
 // Program.cs – app.Run() çağrılmadan əvvəl
