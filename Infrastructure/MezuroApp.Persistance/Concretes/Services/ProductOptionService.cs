@@ -46,7 +46,7 @@ public class ProductOptionService : IProductOptionService
 
         var option = await _readRepo.GetAsync(
             x => x.Id == gid && !x.IsDeleted,
-            q => q.Include(x => x.Values).Include(x => x.Option)
+            q => q.Include(x => x.Values.Where(x=>!x.IsDeleted)).Include(x => x.Option)
         ) ?? throw new GlobalAppException("PRODUCT_OPTION_NOT_FOUND");
 
         return _mapper.Map<ProductOptionDto>(option);
@@ -58,7 +58,7 @@ public class ProductOptionService : IProductOptionService
 
         var list = await _readRepo.GetAllAsync(
             x => !x.IsDeleted && x.ProductId == pid,
-            q => q.Include(x => x.Values).Include(x => x.Option)
+            q => q.Include(x => x.Values.Where(x=>!x.IsDeleted)).Include(x => x.Option)
         );
 
         return _mapper.Map<List<ProductOptionDto>>(list);
@@ -200,7 +200,7 @@ public class ProductOptionService : IProductOptionService
                     if (duplicate)
                         throw new GlobalAppException("OPTION_VALUE_ALREADY_EXISTS");
 
-                    option.Values.Add(new ProductOptionValue
+                    var value=new ProductOptionValue
                     {
                         Id = Guid.NewGuid(),
                         OptionId = option.Id,
@@ -211,7 +211,10 @@ public class ProductOptionService : IProductOptionService
                         CreatedDate = DateTime.UtcNow,
                         LastUpdatedDate = DateTime.UtcNow,
                         IsDeleted = false
-                    });
+                    };
+                    await _valueWriteRepo.AddAsync(value);
+                    await _valueWriteRepo.CommitAsync();
+
                 }
                 else
                 {

@@ -93,10 +93,7 @@ public class ProductOptionController : BaseApiController
         {
             return BadRequestResponse(ex.Message);
         }
-        catch
-        {
-            return ServerErrorResponse();
-        }
+    
     }
 
     // ===================== DELETE =====================
