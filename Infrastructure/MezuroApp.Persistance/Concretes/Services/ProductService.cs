@@ -247,6 +247,50 @@ public async Task<PagedResult<ProductDto>> AdminSearchAsync(
 
         return dto;
     }
+    public async Task<ProductDto> GetBySlugAsync(string slug)
+    {
+  
+
+        var entity = await _readRepo.GetAsync(
+            x => x.Slug == slug && !x.IsDeleted && x.IsActive == true,
+            q => q
+                .Include(p => p.Images.Where(i => !i.IsDeleted))
+                .Include(p => p.ProductCategories.Where(pc => !pc.IsDeleted))
+                .ThenInclude(pc => pc.Category)
+                .Include(p => p.Options.Where(o => !o.IsDeleted))
+                .ThenInclude(o => o.Option)
+                .Include(p => p.Options.Where(o => !o.IsDeleted))
+                .ThenInclude(o => o.Values.Where(v => !v.IsDeleted))
+                .Include(p => p.ProductColors.Where(pc => !pc.IsDeleted))
+                .ThenInclude(pc => pc.ColorImages)
+                .Include(p => p.ProductColors)
+                .ThenInclude(pc => pc.ColorImages)
+                .ThenInclude(ci => ci.ProductImage)
+                .Include(p => p.Reviews) // istəsən: .Where(r => !r.IsDeleted && r.Status == true)
+            ,
+            enableTracking: true // <-- vacib: artımı save etmək üçün
+        );
+
+        if (entity == null)
+            throw new GlobalAppException("PRODUCT_NOT_FOUND"); // lüğətdə açar varsa onu istifadə et
+
+        var items = await _wishlistReadRepo.GetAllAsync(x => x.ProductId == entity.Id);
+        // ViewCount nullable-dırsa null-coalescing istifadə et
+        var wishlistCount = await _wishlistReadRepo.GetCountAsync(x => x.ProductId.ToString() == entity.Id.ToString());
+
+
+        await _writeRepo.UpdateAsync(entity);
+        await _writeRepo.CommitAsync();
+
+        var dto = _mapper.Map<ProductDto>(entity);
+        dto.WishlistCount = wishlistCount;
+        if (dto.Images != null)
+            dto.Images = dto.Images
+                .OrderBy(i => i.SortOrder ?? int.MaxValue)
+                .ToList();
+
+        return dto;
+    }
 
     public async Task<List<ProductDto>> GetAllAsync()
     {

@@ -154,7 +154,7 @@ public class ProductOptionService : IProductOptionService
         };
 
         // Update metadata
-        _mapper.Map(dto, option);
+        _mapper.Map(dto, option); 
         option.LastUpdatedDate = DateTime.UtcNow;
 
         option.Values ??= new List<ProductOptionValue>();

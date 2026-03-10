@@ -5,6 +5,7 @@ using MezuroApp.Domain.HelperEntities;
 public interface IProductService
 {
     Task<ProductDto> GetByIdAsync(string id);
+    Task<ProductDto> GetBySlugAsync(string slug);
     Task<List<ProductDto>> GetAllAsync();
     Task<PagedResult<ProductDto>> GetAllBestSellerAsync(int page, int pageSize);
     Task<PagedResult<ProductDto>> GetAllNewProductAsync(int page, int pageSize);

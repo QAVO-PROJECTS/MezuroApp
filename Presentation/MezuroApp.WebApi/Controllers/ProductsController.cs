@@ -114,6 +114,28 @@ public class ProductsController : BaseApiController
     }
     // ✅ 1) FILTER META (colors + counts, options + values)
 // GET: /api/products/filter-meta?categoryId=... (optional)
+    [HttpGet("slug/{slug}")]
+    public async Task<IActionResult> GetBySlug([FromRoute] string slug)
+    {
+        try
+        {
+            var dto = await _service.GetBySlugAsync(slug);
+            if (dto is null)
+                return NotFoundResponse("PRODUCT_NOT_FOUND");
+
+            return OkResponse(dto, "PRODUCT_RETURNED");
+        }
+        catch (GlobalAppException ex)
+        {
+            return BadRequestResponse(ex.Message);
+        }
+        catch (Exception)
+        {
+            return ServerErrorResponse();
+        }
+    }
+    // ✅ 1) FILTER META (colors + counts, options + values)
+// GET: /api/products/filter-meta?categoryId=... (optional)
     [HttpGet("filter-meta")]
     public async Task<IActionResult> GetFilterMeta([FromQuery] string? categoryId = null,[FromQuery] string lang = "az")
     {
