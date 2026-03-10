@@ -7,6 +7,6 @@ public interface IProductOptionService
     Task<ProductOptionDto> GetByIdAsync(string id);
     Task<List<ProductOptionDto>> GetByProductAsync(string productId);
     Task<List<string>> CreateAsync(CreateProductOptionDto dto);
-    Task UpdateAsync(UpdateProductOptionDto dto);
+    Task<List<string>> UpdateAsync(UpdateProductOptionDto dto);
     Task DeleteAsync(string id);
 }

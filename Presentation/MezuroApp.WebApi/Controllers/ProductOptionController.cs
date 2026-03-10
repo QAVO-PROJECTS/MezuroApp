@@ -83,11 +83,11 @@ public class ProductOptionController : BaseApiController
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] UpdateProductOptionDto dto)
     {
-        await _service.UpdateAsync(dto);
+        var ids=await _service.UpdateAsync(dto);
       
         try
         {
-            return OkResponse(dto, "OPTION_UPDATED");
+            return OkResponse(ids, "OPTION_UPDATED");
         }
         catch (GlobalAppException ex)
         {

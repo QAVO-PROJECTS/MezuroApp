@@ -134,10 +134,10 @@ public class ProductOptionService : IProductOptionService
                 ["CustomNameAz"] = entity.CustomNameAz ?? ""
             }
         );
-        return entity.Values.Select(x => x.Id.ToString()).ToList();
+        return entity.Values.Where(x=>!x.IsDeleted).Select(x => x.Id.ToString()).ToList();
     }
 
-    public async Task UpdateAsync(UpdateProductOptionDto dto)
+    public async Task<List<string>> UpdateAsync(UpdateProductOptionDto dto)
     {
         var gid = ParseGuid(dto.Id);
 
@@ -254,6 +254,7 @@ public class ProductOptionService : IProductOptionService
                 ["ProductId"] = option.ProductId.ToString()
             }
         );
+        return  option.Values.Where(x=>!x.IsDeleted).Select(x => x.Id.ToString()).ToList();
     }
 
 
