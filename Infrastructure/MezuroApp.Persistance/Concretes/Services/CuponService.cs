@@ -283,6 +283,13 @@ private static string NormalizeSearch(string? input)
             entity.LastUpdatedDate = entity.CreatedDate;
             entity.IsDeleted = false;
             entity.AdminId = Guid.Parse(adminId);
+            
+      
+
+            entity.DiscountType = dto.DiscountType == DiscountType.Percentage
+                ? "percentage"
+                : "fixed_amount";
+
 
             const string dateFormat = "dd.MM.yyyy HH:mm";
 
