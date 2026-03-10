@@ -14,7 +14,7 @@ public sealed class CreateEmailCampaignDto
     public string ContentEn { get; set; } = default!;
     public string ContentTr { get; set; } = default!;
 
-    public string CampaignType { get; set; } = default!; // new_products, promotion...
+
     // ✅ UI üçün sabit
     // all_active_subscribers | verified_users
     public string TargetSegment { get; set; } = "all_active_subscribers";
