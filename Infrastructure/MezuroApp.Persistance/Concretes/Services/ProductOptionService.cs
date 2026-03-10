@@ -64,7 +64,7 @@ public class ProductOptionService : IProductOptionService
         return _mapper.Map<List<ProductOptionDto>>(list);
     }
 
-    public async Task CreateAsync(CreateProductOptionDto dto)
+    public async Task<List<string>> CreateAsync(CreateProductOptionDto dto)
     {
         var productId = ParseGuid(dto.ProductId);
         var optionId = ParseGuid(dto.OptionId);
@@ -134,6 +134,7 @@ public class ProductOptionService : IProductOptionService
                 ["CustomNameAz"] = entity.CustomNameAz ?? ""
             }
         );
+        return entity.Values.Select(x => x.Id.ToString()).ToList();
     }
 
     public async Task UpdateAsync(UpdateProductOptionDto dto)

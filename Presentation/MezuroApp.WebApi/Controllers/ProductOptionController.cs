@@ -61,11 +61,11 @@ public class ProductOptionController : BaseApiController
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateProductOptionDto dto)
     {
-        await _service.CreateAsync(dto);
+        var ids=await _service.CreateAsync(dto);
 
         try
         {
-            return CreatedResponse<object>(null,dto, "OPTION_CREATED");
+            return CreatedResponse<object>(null,ids, "OPTION_CREATED");
         }
         catch (GlobalAppException ex)
         {
