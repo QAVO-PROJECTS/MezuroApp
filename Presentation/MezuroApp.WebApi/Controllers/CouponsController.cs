@@ -200,10 +200,10 @@ namespace MezuroApp.WebApi.Controllers
             {
                 return BadRequestResponse(ex.Message);
             }
-            catch
-            {
-                return ServerErrorResponse();
-            }
+            // catch
+            // {
+            //     return ServerErrorResponse();
+            // }
         }
 
         // ================================

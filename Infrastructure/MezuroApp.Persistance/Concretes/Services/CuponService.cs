@@ -349,7 +349,7 @@ private static string NormalizeSearch(string? input)
 
     // Null gələnlər toxunulmur
     if (dto.DiscountType != null)
-        entity.DiscountType = dto.DiscountType == DiscountType.Percentage.ToString()
+        entity.DiscountType = dto.DiscountType == DiscountType.Percentage
             ? "percentage"
             : "fixed_amount";
 
@@ -392,8 +392,7 @@ private static string NormalizeSearch(string? input)
 
     await _writeRepo.UpdateAsync(entity);
     await _writeRepo.CommitAsync();
-    await _writeRepo.UpdateAsync(entity);
-    await _writeRepo.CommitAsync();
+ 
 
     await WriteAuditAsync(
         action: "UPDATE",
@@ -494,8 +493,7 @@ private static string NormalizeSearch(string? input)
             var ua = ctx?.Request.Headers["User-Agent"].ToString() ?? "";
             return (ip, ua);
         }
-
-        private static Dictionary<string, object> CuponSnap(Cupon c) => new()
+        private static Dictionary<string, object?> CuponSnap(Cupon c) => new()
         {
             ["id"] = c.Id.ToString(),
             ["code"] = c.Code,
@@ -504,11 +502,11 @@ private static string NormalizeSearch(string? input)
             ["minimumPurchaseAmount"] = c.MinimumPurchaseAmount,
             ["maxUses"] = c.MaxUses,
             ["maxUsesPerUser"] = c.MaxUsesPerUser,
-            ["validFrom"] = c.ValidFrom,
-            ["validUntil"] = c.ValidUntil,
+            ["validFrom"] = c.ValidFrom?.ToString("O"),
+            ["validUntil"] = c.ValidUntil?.ToString("O"),
             ["isActive"] = c.IsActive,
             ["isDeleted"] = c.IsDeleted,
-            ["adminId"] = c.AdminId
+            ["adminId"] = c.AdminId.ToString()
         };
 
         private async Task WriteAuditAsync(

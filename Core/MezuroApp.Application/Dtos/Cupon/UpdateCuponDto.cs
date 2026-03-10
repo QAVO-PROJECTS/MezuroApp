@@ -8,7 +8,7 @@ public class UpdateCuponDto
     public string? Code { get; set; }
 
     // Discount config
-    public string? DiscountType { get; set; }
+    public DiscountType? DiscountType { get; set; }
     public decimal? DiscountValue { get; set; }
 
     // Minimum basket limit
