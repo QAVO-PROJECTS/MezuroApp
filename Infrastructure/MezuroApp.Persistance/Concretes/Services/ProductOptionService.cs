@@ -73,14 +73,6 @@ public class ProductOptionService : IProductOptionService
         _ = await _productReadRepo.GetAsync(x => x.Id == productId && !x.IsDeleted)
             ?? throw new GlobalAppException("PRODUCT_NOT_FOUND");
 
-        // Eyni Option məhsula təkrar əlavə olunmamalıdır
-        var exists = await _readRepo.GetAsync(x =>
-            x.ProductId == productId &&
-            x.OptionId == optionId &&
-            !x.IsDeleted);
-
-        if (exists != null)
-            throw new GlobalAppException("PRODUCT_OPTION_ALREADY_EXISTS");
 
         // Entity yarat
         var entity = new ProductOption
@@ -138,7 +130,7 @@ public class ProductOptionService : IProductOptionService
             new Dictionary<string, object>
             {
                 ["ProductId"] = entity.ProductId.ToString(),
-                ["OptionId"] = entity.OptionId,
+                ["OptionId"] = entity.OptionId.ToString(),
                 ["CustomNameAz"] = entity.CustomNameAz ?? ""
             }
         );
@@ -156,7 +148,7 @@ public class ProductOptionService : IProductOptionService
         var oldValues = new Dictionary<string, object>
         {
             ["CustomNameAz"] = option.CustomNameAz ?? "",
-            ["ProductId"] = option.ProductId
+            ["ProductId"] = option.ProductId.ToString()
             
         };
 
@@ -255,7 +247,7 @@ public class ProductOptionService : IProductOptionService
             new Dictionary<string, object>
             {
                 ["CustomNameAz"] = option.CustomNameAz ?? "",
-                ["ProductId"] = option.ProductId
+                ["ProductId"] = option.ProductId.ToString()
             }
         );
     }
@@ -297,8 +289,8 @@ public class ProductOptionService : IProductOptionService
             option.Id,
             new Dictionary<string, object>
             {
-                ["ProductId"] = option.ProductId,
-                ["OptionId"] = option.OptionId
+                ["ProductId"] = option.ProductId.ToString(),
+                ["OptionId"] = option.OptionId.ToString()
             },
             null
         );

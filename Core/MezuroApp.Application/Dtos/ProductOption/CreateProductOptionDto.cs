@@ -15,5 +15,5 @@ public class  CreateProductOptionDto
      
     public string? CustomNameTr { get; set; }
 
-    public List<UpdateProductOptionValueDto>? Values { get; set; }
+    public List<CreateProductOptionValueDto>? Values { get; set; }
 }

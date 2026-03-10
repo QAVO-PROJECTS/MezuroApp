@@ -33,6 +33,6 @@ public class ProductOptionConfiguration : IEntityTypeConfiguration<ProductOption
             .OnDelete(DeleteBehavior.Cascade);
 
         // Unique constraint: a product cannot have the same option twice
-        builder.HasIndex(x => new { x.ProductId, x.OptionId }).IsUnique();
+
     }
 }
