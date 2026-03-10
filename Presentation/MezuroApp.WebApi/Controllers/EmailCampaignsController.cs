@@ -47,7 +47,7 @@ public sealed class EmailCampaignsController : BaseApiController
             return OkResponse(data, "CAMPAIGN_CREATED");
         }
         catch (GlobalAppException ex) { return BadRequestResponse(ex.Message); }
-        catch { return ServerErrorResponse(); }
+        // catch { return ServerErrorResponse(); }
     }
 
 

@@ -15,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
+using CloudinaryDotNet.Actions;
 using Serilog;
 
 namespace MezuroApp.Persistance.Concretes.Services;
@@ -94,7 +95,7 @@ public sealed class EmailCampaignService : IEmailCampaignService
             ContentEn = dto.ContentEn,
             ContentTr = dto.ContentTr,
 
-            CampaignType = "newsletter", // və ya sənin istədiyin
+            CampaignType = "create_promotion", // və ya sənin istədiyin
             TargetSegment = seg,
 
             Status = dto.ScheduleForLater ? "scheduled" : "draft",
@@ -447,59 +448,75 @@ public async Task SendCampaignInternalAsync(Guid campaignId, CancellationToken c
     }
     private async Task EnsureLogsForSegmentAsync(EmailCampaign campaign, CancellationToken ct)
     {
-        // artıq log varsa toxunma
         var existing = await _logRead.GetCountAsync(l =>
             !l.IsDeleted && l.CampaignId == campaign.Id
         );
         if (existing > 0) return;
 
-        // order_status kampaniyası 1 nəfərə gedir, onu ayrıca yazırsan
         if (campaign.CampaignType == "order_status") return;
 
-        // subscriber-ları çək
-        var subscribers = await _subsRead.GetAllAsync(
-            s => !s.IsDeleted && s.IsActive,
-            enableTracking: false
-        );
+        var targetSegment = (campaign.TargetSegment ?? "").Trim().ToLowerInvariant();
 
-        var jsonOpts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-
-        bool Eligible(NewsletterSubscriber s)
+        if (targetSegment == "all_active_subscribers")
         {
-            if (string.IsNullOrWhiteSpace(s.Preferences)) return false;
+            var subscribers = await _subsRead.Query()
+                .AsNoTracking()
+                .Where(s => !s.IsDeleted && s.IsActive)
+                .ToListAsync(ct);
 
-            NewsletterPreferencesDto? pref;
-            try { pref = JsonSerializer.Deserialize<NewsletterPreferencesDto>(s.Preferences, jsonOpts); }
-            catch { return false; }
-
-            var seg = (campaign.TargetSegment ?? "").Trim().ToLowerInvariant();
-
-            return seg switch
+            foreach (var sub in subscribers)
             {
-                "create_promotion"        => pref?.Promotions == true,
-                "newsletter_newproduct"   => pref?.NewProducts == true,
-                "weekly_digest"           => pref?.WeeklyDigest == true,
-                "order_status_updates"    => pref?.OrderStatusUpdates == true,
-                _ => false
-            };
+                await _logWrite.AddAsync(new EmailCampaignLog
+                {
+                    Id = Guid.NewGuid(),
+                    CampaignId = campaign.Id,
+                    SubscriberId = sub.Id,
+                    Email = sub.Email,
+                    Status = "pending",
+                    CreatedDate = DateTime.UtcNow
+                });
+            }
+
+            await _logWrite.CommitAsync();
+            return;
         }
 
-        var eligible = subscribers.Where(Eligible).ToList();
-
-        foreach (var sub in eligible)
+        if (targetSegment == "verified_users")
         {
-            await _logWrite.AddAsync(new EmailCampaignLog
+            var users = await _userManager.Users
+                .Where(u =>
+                    u.IsActive == true &&
+                    u.EmailConfirmed == true && 
+                    !string.IsNullOrWhiteSpace(u.Email))
+                .ToListAsync(ct);
+
+            var customers = new List<User>();
+
+            foreach (var user in users)
             {
-                Id = Guid.NewGuid(),
-                CampaignId = campaign.Id,
-                SubscriberId = sub.Id,
-                Email = sub.Email,
-                Status = "pending",
-                CreatedDate = DateTime.UtcNow
-            });
+                if (await _userManager.IsInRoleAsync(user, "Customer"))
+                    customers.Add(user);
+            }
+
+            
+            foreach (var user in customers)
+            {
+                await _logWrite.AddAsync(new EmailCampaignLog
+                {
+                    Id = Guid.NewGuid(),
+                    CampaignId = campaign.Id,
+                    SubscriberId = null,
+                    Email = user.Email!,
+                    Status = "pending",
+                    CreatedDate = DateTime.UtcNow
+                });
+            }
+
+            await _logWrite.CommitAsync();
+            return;
         }
 
-        await _logWrite.CommitAsync();
+        throw new GlobalAppException("INVALID_TARGET_SEGMENT");
     }
     private async Task EnsureLogsCreatedAsync(EmailCampaign campaign)
     {
@@ -720,7 +737,7 @@ private static Dictionary<string, object> CampaignSnap(EmailCampaign c) => new()
     ["totalClicked"] = c.TotalClicked,
     ["totalBounced"] = c.TotalBounced,
     ["totalUnsubscribed"] = c.TotalUnsubscribed,
-    ["createdById"] = c.CreatedById
+    ["createdById"] = c.CreatedById.ToString()
 };
 
 private async Task WriteAuditAsync(
