@@ -960,46 +960,7 @@ public async Task<PagedResult<ProductDto>> AdminSearchAsync(
         await _writeRepo.AddAsync(entity);
 
         await _writeRepo.CommitAsync();
-        await _audit.LogAsync(
-            entityType: "Products",
-            action: "CREATE",
-            eventName: "PRODUCT_CREATED",
-            entityId: entity.Id,
-            oldValues: null,
-            newValues: new Dictionary<string, object>
-            {
-                ["NameAz"] = entity.NameAz ?? "",
-                ["NameEn"] = entity.NameEn ?? "",
-                ["NameRu"] = entity.NameRu ?? "",
-                ["NameTr"] = entity.NameTr ?? "",
-                ["DescriptionAz"] = entity.DescriptionAz ?? "",
-                ["DescriptionEn"] = entity.DescriptionEn ?? "",
-                ["DescriptionRu"] = entity.DescriptionRu ?? "",
-                ["DescriptionTr"] = entity.DescriptionTr ?? "",
-                ["ShortDescriptionAz"] = entity.ShortDescriptionAz ?? "",
-                ["ShortDescriptionEn"] = entity.ShortDescriptionEn ?? "",
-                ["ShortDescriptionRu"] = entity.ShortDescriptionRu ?? "",
-                ["ShortDescriptionTr"] = entity.ShortDescriptionTr ?? "",
-                ["IsActive"] = entity.IsActive ?? false,
-                ["IsNew"] = entity.IsNew ?? false,
-                ["IsBestseller"] = entity.IsBestseller ?? false,
-                ["IsOnSale"] = entity.IsOnSale ?? false,
-                ["ImageFiles"] = entity.Images.Select(i => i.ImageUrl).ToList(),
-                ["CompareAtPrice"] = entity.CompareAtPrice,
-                ["StockQuantity"] = entity.StockQuantity,
-                ["ProductCategoryIds"] = entity.ProductCategories.Select(pc => pc.CategoryId.ToString()).ToList(),
-                ["MetaTitleAz"] = entity.MetaTitleAz ?? "",
-                ["MetaTitleEn"] = entity.MetaTitleEn ?? "",
-                ["MetaTitleRu"] = entity.MetaTitleRu ?? "",
-                ["MetaTitleTr"] = entity.MetaTitleTr ?? "",
-                ["MetaDescriptionAz"] = entity.MetaDescriptionAz ?? "",
-                ["MetaDescriptionEn"] = entity.MetaDescriptionEn ?? "",
-                ["MetaDescriptionRu"] = entity.MetaDescriptionRu ?? "",
-                ["MetaDescriptionTr"] = entity.MetaDescriptionTr ?? "",
-                ["Price"] = entity.Price,
-                ["Sku"] = entity.Sku 
-            }
-        );
+
 
 
         // 5) Category Relations
@@ -1027,6 +988,46 @@ public async Task<PagedResult<ProductDto>> AdminSearchAsync(
         {
             await _campaignService.CreateAndScheduleNewProductCampaignAsync(entity);
         }
+                await _audit.LogAsync(
+            entityType: "Products",
+            action: "CREATE",
+            eventName: "PRODUCT_CREATED",
+            entityId: entity.Id,
+            oldValues: null,
+            newValues: new Dictionary<string, object>
+            {
+                ["NameAz"] = entity.NameAz ?? "",
+                ["NameEn"] = entity.NameEn ?? "",
+                ["NameRu"] = entity.NameRu ?? "",
+                ["NameTr"] = entity.NameTr ?? "",
+                ["DescriptionAz"] = entity.DescriptionAz ?? "",
+                ["DescriptionEn"] = entity.DescriptionEn ?? "",
+                ["DescriptionRu"] = entity.DescriptionRu ?? "",
+                ["DescriptionTr"] = entity.DescriptionTr ?? "",
+                ["ShortDescriptionAz"] = entity.ShortDescriptionAz ?? "",
+                ["ShortDescriptionEn"] = entity.ShortDescriptionEn ?? "",
+                ["ShortDescriptionRu"] = entity.ShortDescriptionRu ?? "",
+                ["ShortDescriptionTr"] = entity.ShortDescriptionTr ?? "",
+                ["IsActive"] = entity.IsActive ?? false,
+                ["IsNew"] = entity.IsNew ?? false,
+                ["IsBestseller"] = entity.IsBestseller ?? false,
+                ["IsOnSale"] = entity.IsOnSale ?? false,
+                ["ImageFiles"] = entity.Images?.Select(i => i.ImageUrl).ToList() ?? new List<string>(),
+                ["CompareAtPrice"] = entity.CompareAtPrice,
+                ["StockQuantity"] = entity.StockQuantity,
+                ["ProductCategoryIds"] = entity.ProductCategories?.Select(pc => pc.CategoryId.ToString()).ToList() ?? new List<string>(),
+                ["MetaTitleAz"] = entity.MetaTitleAz ?? "",
+                ["MetaTitleEn"] = entity.MetaTitleEn ?? "",
+                ["MetaTitleRu"] = entity.MetaTitleRu ?? "",
+                ["MetaTitleTr"] = entity.MetaTitleTr ?? "",
+                ["MetaDescriptionAz"] = entity.MetaDescriptionAz ?? "",
+                ["MetaDescriptionEn"] = entity.MetaDescriptionEn ?? "",
+                ["MetaDescriptionRu"] = entity.MetaDescriptionRu ?? "",
+                ["MetaDescriptionTr"] = entity.MetaDescriptionTr ?? "",
+                ["Price"] = entity.Price,
+                ["Sku"] = entity.Sku 
+            }
+        );
 
         return entity.Id.ToString();
     }
@@ -1049,38 +1050,40 @@ public async Task<PagedResult<ProductDto>> AdminSearchAsync(
             enableTracking: true
         ) ?? throw new GlobalAppException("PRODUCT_NOT_FOUND");
         var oldValues = new Dictionary<string, object>
-        {
-            ["NameAz"] = entity.NameAz ?? "",
-            ["NameEn"] = entity.NameEn ?? "",
-            ["NameRu"] = entity.NameRu ?? "",
-            ["NameTr"] = entity.NameTr ?? "",
-            ["DescriptionAz"] = entity.DescriptionAz ?? "",
-            ["DescriptionEn"] = entity.DescriptionEn ?? "",
-            ["DescriptionRu"] = entity.DescriptionRu ?? "",
-            ["DescriptionTr"] = entity.DescriptionTr ?? "",
-            ["ShortDescriptionAz"] = entity.ShortDescriptionAz ?? "",
-            ["ShortDescriptionEn"] = entity.ShortDescriptionEn ?? "",
-            ["ShortDescriptionRu"] = entity.ShortDescriptionRu ?? "",
-            ["ShortDescriptionTr"] = entity.ShortDescriptionTr ?? "",
-            ["IsActive"] = entity.IsActive ?? false,
-            ["IsNew"] = entity.IsNew ?? false,
-            ["IsBestseller"] = entity.IsBestseller ?? false,
-            ["IsOnSale"] = entity.IsOnSale ?? false,
-            ["ImageFiles"] = entity.Images.Select(i => i.ImageUrl).ToList(),
-            ["CompareAtPrice"] = entity.CompareAtPrice,
-            ["StockQuantity"] = entity.StockQuantity,
-            ["ProductCategoryIds"] = entity.ProductCategories.Select(pc => pc.CategoryId.ToString()).ToList(),
-            ["MetaTitleAz"] = entity.MetaTitleAz ?? "",
-            ["MetaTitleEn"] = entity.MetaTitleEn ?? "",
-            ["MetaTitleRu"] = entity.MetaTitleRu ?? "",
-            ["MetaTitleTr"] = entity.MetaTitleTr ?? "",
-            ["MetaDescriptionAz"] = entity.MetaDescriptionAz ?? "",
-            ["MetaDescriptionEn"] = entity.MetaDescriptionEn ?? "",
-            ["MetaDescriptionRu"] = entity.MetaDescriptionRu ?? "",
-            ["MetaDescriptionTr"] = entity.MetaDescriptionTr ?? "",
-            ["Price"] = entity.Price,
-            ["Sku"] = entity.Sku 
-        };
+            {
+                ["NameAz"] = entity.NameAz ?? "",
+                ["NameEn"] = entity.NameEn ?? "",
+                ["NameRu"] = entity.NameRu ?? "",
+                ["NameTr"] = entity.NameTr ?? "",
+                ["DescriptionAz"] = entity.DescriptionAz ?? "",
+                ["DescriptionEn"] = entity.DescriptionEn ?? "",
+                ["DescriptionRu"] = entity.DescriptionRu ?? "",
+                ["DescriptionTr"] = entity.DescriptionTr ?? "",
+                ["ShortDescriptionAz"] = entity.ShortDescriptionAz ?? "",
+                ["ShortDescriptionEn"] = entity.ShortDescriptionEn ?? "",
+                ["ShortDescriptionRu"] = entity.ShortDescriptionRu ?? "",
+                ["ShortDescriptionTr"] = entity.ShortDescriptionTr ?? "",
+                ["IsActive"] = entity.IsActive ?? false,
+                ["IsNew"] = entity.IsNew ?? false,
+                ["IsBestseller"] = entity.IsBestseller ?? false,
+                ["IsOnSale"] = entity.IsOnSale ?? false,
+                ["ImageFiles"] = entity.Images?.Select(i => i.ImageUrl).ToList() ?? new List<string>(),
+                ["CompareAtPrice"] = entity.CompareAtPrice,
+                ["StockQuantity"] = entity.StockQuantity,
+                ["ProductCategoryIds"] = entity.ProductCategories?.Select(pc => pc.CategoryId.ToString()).ToList() ??
+                                         new List<string>(),
+                ["MetaTitleAz"] = entity.MetaTitleAz ?? "",
+                ["MetaTitleEn"] = entity.MetaTitleEn ?? "",
+                ["MetaTitleRu"] = entity.MetaTitleRu ?? "",
+                ["MetaTitleTr"] = entity.MetaTitleTr ?? "",
+                ["MetaDescriptionAz"] = entity.MetaDescriptionAz ?? "",
+                ["MetaDescriptionEn"] = entity.MetaDescriptionEn ?? "",
+                ["MetaDescriptionRu"] = entity.MetaDescriptionRu ?? "",
+                ["MetaDescriptionTr"] = entity.MetaDescriptionTr ?? "",
+                ["Price"] = entity.Price,
+                ["Sku"] = entity.Sku
+            }
+            ;
 
 
         // ======================================
@@ -1293,39 +1296,39 @@ public async Task<PagedResult<ProductDto>> AdminSearchAsync(
                 entity.Id,
                 oldValues,
                 new Dictionary<string, object>
-                {
-                    ["NameAz"] = entity.NameAz ?? "",
-                    ["NameEn"] = entity.NameEn ?? "",
-                    ["NameRu"] = entity.NameRu ?? "",
-                    ["NameTr"] = entity.NameTr ?? "",
-                    ["DescriptionAz"] = entity.DescriptionAz ?? "",
-                    ["DescriptionEn"] = entity.DescriptionEn ?? "",
-                    ["DescriptionRu"] = entity.DescriptionRu ?? "",
-                    ["DescriptionTr"] = entity.DescriptionTr ?? "",
-                    ["ShortDescriptionAz"] = entity.ShortDescriptionAz ?? "",
-                    ["ShortDescriptionEn"] = entity.ShortDescriptionEn ?? "",
-                    ["ShortDescriptionRu"] = entity.ShortDescriptionRu ?? "",
-                    ["ShortDescriptionTr"] = entity.ShortDescriptionTr ?? "",
-                    ["IsActive"] = entity.IsActive ?? false,
-                    ["IsNew"] = entity.IsNew ?? false,
-                    ["IsBestseller"] = entity.IsBestseller ?? false,
-                    ["IsOnSale"] = entity.IsOnSale ?? false,
-                    ["ImageFiles"] = entity.Images.Select(i => i.ImageUrl).ToList(),
-                    ["CompareAtPrice"] = entity.CompareAtPrice,
-                    ["StockQuantity"] = entity.StockQuantity,
-                    ["ProductCategoryIds"] = entity.ProductCategories.Select(pc => pc.CategoryId.ToString()).ToList(),
-                    ["MetaTitleAz"] = entity.MetaTitleAz ?? "",
-                    ["MetaTitleEn"] = entity.MetaTitleEn ?? "",
-                    ["MetaTitleRu"] = entity.MetaTitleRu ?? "",
-                    ["MetaTitleTr"] = entity.MetaTitleTr ?? "",
-                    ["MetaDescriptionAz"] = entity.MetaDescriptionAz ?? "",
-                    ["MetaDescriptionEn"] = entity.MetaDescriptionEn ?? "",
-                    ["MetaDescriptionRu"] = entity.MetaDescriptionRu ?? "",
-                    ["MetaDescriptionTr"] = entity.MetaDescriptionTr ?? "",
-                    ["Price"] = entity.Price,
-                    ["Sku"] = entity.Sku 
-                }
-            );
+            {
+                ["NameAz"] = entity.NameAz ?? "",
+                ["NameEn"] = entity.NameEn ?? "",
+                ["NameRu"] = entity.NameRu ?? "",
+                ["NameTr"] = entity.NameTr ?? "",
+                ["DescriptionAz"] = entity.DescriptionAz ?? "",
+                ["DescriptionEn"] = entity.DescriptionEn ?? "",
+                ["DescriptionRu"] = entity.DescriptionRu ?? "",
+                ["DescriptionTr"] = entity.DescriptionTr ?? "",
+                ["ShortDescriptionAz"] = entity.ShortDescriptionAz ?? "",
+                ["ShortDescriptionEn"] = entity.ShortDescriptionEn ?? "",
+                ["ShortDescriptionRu"] = entity.ShortDescriptionRu ?? "",
+                ["ShortDescriptionTr"] = entity.ShortDescriptionTr ?? "",
+                ["IsActive"] = entity.IsActive ?? false,
+                ["IsNew"] = entity.IsNew ?? false,
+                ["IsBestseller"] = entity.IsBestseller ?? false,
+                ["IsOnSale"] = entity.IsOnSale ?? false,
+                ["ImageFiles"] = entity.Images?.Select(i => i.ImageUrl).ToList() ?? new List<string>(),
+                ["CompareAtPrice"] = entity.CompareAtPrice,
+                ["StockQuantity"] = entity.StockQuantity,
+                ["ProductCategoryIds"] = entity.ProductCategories?.Select(pc => pc.CategoryId.ToString()).ToList() ?? new List<string>(),
+                ["MetaTitleAz"] = entity.MetaTitleAz ?? "",
+                ["MetaTitleEn"] = entity.MetaTitleEn ?? "",
+                ["MetaTitleRu"] = entity.MetaTitleRu ?? "",
+                ["MetaTitleTr"] = entity.MetaTitleTr ?? "",
+                ["MetaDescriptionAz"] = entity.MetaDescriptionAz ?? "",
+                ["MetaDescriptionEn"] = entity.MetaDescriptionEn ?? "",
+                ["MetaDescriptionRu"] = entity.MetaDescriptionRu ?? "",
+                ["MetaDescriptionTr"] = entity.MetaDescriptionTr ?? "",
+                ["Price"] = entity.Price,
+                ["Sku"] = entity.Sku 
+            }
+        );
         
     
     }
@@ -1340,38 +1343,40 @@ public async Task<PagedResult<ProductDto>> AdminSearchAsync(
         var entity = await _readRepo.GetAsync(x => x.Id == gid)
                      ?? throw new GlobalAppException("Product not found!");
         var oldValues = new Dictionary<string, object>
-        {
-            ["NameAz"] = entity.NameAz ?? "",
-            ["NameEn"] = entity.NameEn ?? "",
-            ["NameRu"] = entity.NameRu ?? "",
-            ["NameTr"] = entity.NameTr ?? "",
-            ["DescriptionAz"] = entity.DescriptionAz ?? "",
-            ["DescriptionEn"] = entity.DescriptionEn ?? "",
-            ["DescriptionRu"] = entity.DescriptionRu ?? "",
-            ["DescriptionTr"] = entity.DescriptionTr ?? "",
-            ["ShortDescriptionAz"] = entity.ShortDescriptionAz ?? "",
-            ["ShortDescriptionEn"] = entity.ShortDescriptionEn ?? "",
-            ["ShortDescriptionRu"] = entity.ShortDescriptionRu ?? "",
-            ["ShortDescriptionTr"] = entity.ShortDescriptionTr ?? "",
-            ["IsActive"] = entity.IsActive ?? false,
-            ["IsNew"] = entity.IsNew ?? false,
-            ["IsBestseller"] = entity.IsBestseller ?? false,
-            ["IsOnSale"] = entity.IsOnSale ?? false,
-            ["ImageFiles"] = entity.Images.Select(i => i.ImageUrl).ToList(),
-            ["CompareAtPrice"] = entity.CompareAtPrice,
-            ["StockQuantity"] = entity.StockQuantity,
-            ["ProductCategoryIds"] = entity.ProductCategories.Select(pc => pc.CategoryId.ToString()).ToList(),
-            ["MetaTitleAz"] = entity.MetaTitleAz ?? "",
-            ["MetaTitleEn"] = entity.MetaTitleEn ?? "",
-            ["MetaTitleRu"] = entity.MetaTitleRu ?? "",
-            ["MetaTitleTr"] = entity.MetaTitleTr ?? "",
-            ["MetaDescriptionAz"] = entity.MetaDescriptionAz ?? "",
-            ["MetaDescriptionEn"] = entity.MetaDescriptionEn ?? "",
-            ["MetaDescriptionRu"] = entity.MetaDescriptionRu ?? "",
-            ["MetaDescriptionTr"] = entity.MetaDescriptionTr ?? "",
-            ["Price"] = entity.Price,
-            ["Sku"] = entity.Sku 
-        };
+            {
+                ["NameAz"] = entity.NameAz ?? "",
+                ["NameEn"] = entity.NameEn ?? "",
+                ["NameRu"] = entity.NameRu ?? "",
+                ["NameTr"] = entity.NameTr ?? "",
+                ["DescriptionAz"] = entity.DescriptionAz ?? "",
+                ["DescriptionEn"] = entity.DescriptionEn ?? "",
+                ["DescriptionRu"] = entity.DescriptionRu ?? "",
+                ["DescriptionTr"] = entity.DescriptionTr ?? "",
+                ["ShortDescriptionAz"] = entity.ShortDescriptionAz ?? "",
+                ["ShortDescriptionEn"] = entity.ShortDescriptionEn ?? "",
+                ["ShortDescriptionRu"] = entity.ShortDescriptionRu ?? "",
+                ["ShortDescriptionTr"] = entity.ShortDescriptionTr ?? "",
+                ["IsActive"] = entity.IsActive ?? false,
+                ["IsNew"] = entity.IsNew ?? false,
+                ["IsBestseller"] = entity.IsBestseller ?? false,
+                ["IsOnSale"] = entity.IsOnSale ?? false,
+                ["ImageFiles"] = entity.Images?.Select(i => i.ImageUrl).ToList() ?? new List<string>(),
+                ["CompareAtPrice"] = entity.CompareAtPrice,
+                ["StockQuantity"] = entity.StockQuantity,
+                ["ProductCategoryIds"] = entity.ProductCategories?.Select(pc => pc.CategoryId.ToString()).ToList() ??
+                                         new List<string>(),
+                ["MetaTitleAz"] = entity.MetaTitleAz ?? "",
+                ["MetaTitleEn"] = entity.MetaTitleEn ?? "",
+                ["MetaTitleRu"] = entity.MetaTitleRu ?? "",
+                ["MetaTitleTr"] = entity.MetaTitleTr ?? "",
+                ["MetaDescriptionAz"] = entity.MetaDescriptionAz ?? "",
+                ["MetaDescriptionEn"] = entity.MetaDescriptionEn ?? "",
+                ["MetaDescriptionRu"] = entity.MetaDescriptionRu ?? "",
+                ["MetaDescriptionTr"] = entity.MetaDescriptionTr ?? "",
+                ["Price"] = entity.Price,
+                ["Sku"] = entity.Sku
+            }
+            ;
 
         entity.IsDeleted = true;
         entity.DeletedDate = DateTime.UtcNow;
