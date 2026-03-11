@@ -11,7 +11,7 @@ using MezuroApp.Application.GlobalException;
 using MezuroApp.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-public class ProductVariantService : IProductVariantService
+public class ProductVariantService :IProductVariantService
 {
     private readonly IProductVariantReadRepository _vr;
     private readonly IProductVariantWriteRepository _vw;
@@ -63,6 +63,19 @@ public class ProductVariantService : IProductVariantService
             q => q.Include(x => x.OptionValues)
                   .ThenInclude(v => v.OptionValue).Include(x=>x.ProductColor).
                   ThenInclude(x=>x.Product).Include(x=>x.Product)
+        ) ?? throw new GlobalAppException("PRODUCT_VARIANT_NOT_FOUND");
+
+        return _mapper.Map<ProductVariantDto>(entity);
+    }
+    public async Task<ProductVariantDto> GetBySlugAsync(string slug)
+    {
+     
+
+        var entity = await _vr.GetAsync(
+            x => x.VariantSlug == slug && !x.IsDeleted,
+            q => q.Include(x => x.OptionValues)
+                .ThenInclude(v => v.OptionValue).Include(x=>x.ProductColor).
+                ThenInclude(x=>x.Product).Include(x=>x.Product)
         ) ?? throw new GlobalAppException("PRODUCT_VARIANT_NOT_FOUND");
 
         return _mapper.Map<ProductVariantDto>(entity);

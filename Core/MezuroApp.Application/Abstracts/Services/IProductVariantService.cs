@@ -11,6 +11,11 @@ namespace MezuroApp.Application.Abstracts.Services
         /// </summary>
         Task<ProductVariantDto> GetByIdAsync(string id);
 
+         /// <summary>
+        /// Variantı Slug ilə qaytarır.
+        /// </summary>
+        Task<ProductVariantDto> GetBySlugAsync(string slug);
+
         /// <summary>
         /// Bir məhsula aid bütün variantları qaytarır.
         /// </summary>

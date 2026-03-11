@@ -1285,12 +1285,7 @@ public abstract class BaseApiController : ControllerBase
         "Geçersiz kullanıcı id formatı.",
         "Неверный формат идентификатора пользователя."
     ),
-    ["USER_NOT_FOUND"] = (
-        "İstifadəçi tapılmadı.",
-        "User not found.",
-        "Kullanıcı bulunamadı.",
-        "Пользователь не найден."
-    ),
+
     ["PAYMENT_STARTED"] = (
         "Ödəniş başlatıldı.",
         "Payment started.",
@@ -1524,7 +1519,84 @@ public abstract class BaseApiController : ControllerBase
   "Hızlı ödeme başarısız, banka doğrulamasına yönlendiriliyorsunuz.",
   "Быстрый платеж не удался, перенаправляем на подтверждение банка."
 ),
+["INVALID_USER_ID"] = (
+    "İstifadəçi ID-si yanlışdır.",
+    "User ID is invalid.",
+    "Kullanıcı ID'si geçersizdir.",
+    "Идентификатор пользователя недействителен."
+),
+
+["INVALID_PRODUCT_ID"] = (
+    "Məhsul ID-si yanlışdır.",
+    "Product ID is invalid.",
+    "Ürün ID'si geçersizdir.",
+    "Идентификатор товара недействителен."
+),
+
+["INVALID_VARIANT_ID"] = (
+    "Məhsul variantı ID-si yanlışdır.",
+    "Product variant ID is invalid.",
+    "Ürün varyantı ID'si geçersizdir.",
+    "Идентификатор варианта товара недействителен."
+),
+
+["INVALID_FOOTPRINT"] = (
+    "Footprint ID yanlışdır.",
+    "Footprint ID is invalid.",
+    "Footprint ID geçersizdir.",
+    "Идентификатор footprint недействителен."
+),
+
+["BASKET_NOT_FOUND"] = (
+    "Səbət tapılmadı.",
+    "Basket not found.",
+    "Sepet bulunamadı.",
+    "Корзина не найдена."
+),
+
+["BASKET_ITEM_NOT_FOUND"] = (
+    "Səbət elementi tapılmadı.",
+    "Basket item not found.",
+    "Sepet öğesi bulunamadı.",
+    "Элемент корзины не найден."
+),
+
+["PRODUCT_NOT_FOUND"] = (
+    "Məhsul tapılmadı.",
+    "Product not found.",
+    "Ürün bulunamadı.",
+    "Товар не найден."
+),
+
+["PRODUCT_VARIANT_NOT_FOUND"] = (
+    "Məhsul variantı tapılmadı.",
+    "Product variant not found.",
+    "Ürün varyantı bulunamadı.",
+    "Вариант товара не найден."
+),
+
+["PRODUCT_VARIANT_DOES_NOT_BELONG_TO_PRODUCT"] = (
+    "Məhsul variantı bu məhsula aid deyil.",
+    "Product variant does not belong to this product.",
+    "Ürün varyantı bu ürüne ait değildir.",
+    "Вариант товара не принадлежит этому товару."
+),
+
+["USER_ID_NOT_FOUND"] = (
+    "İstifadəçi ID-si tapılmadı.",
+    "User ID not found.",
+    "Kullanıcı ID'si bulunamadı.",
+    "Идентификатор пользователя не найден."
+),
+
+["BASKET_UPDATED"] = (
+    "Səbət uğurla yeniləndi.",
+    "Basket updated successfully.",
+    "Sepet başarıyla güncellendi.",
+    "Корзина успешно обновлена."
+)
     };
+    
     
 
 

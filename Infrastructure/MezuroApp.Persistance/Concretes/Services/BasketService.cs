@@ -15,6 +15,8 @@ using MezuroApp.Domain.Entities;
 
 using MezuroApp.Application.Abstracts.Repositories.Baskets;
 using MezuroApp.Application.Abstracts.Repositories.BasketItems;
+using MezuroApp.Application.Abstracts.Repositories.Products;
+using MezuroApp.Application.Abstracts.Repositories.ProductVariants;
 
 public class BasketService : IBasketService
 {
@@ -23,19 +25,25 @@ public class BasketService : IBasketService
     private readonly IBasketItemReadRepository _basketItemRead;
     private readonly IBasketItemWriteRepository _basketItemWrite;
     private readonly IMapper _mapper;
+    private readonly IProductReadRepository _productRead;
+    private readonly IProductVariantReadRepository _productVariantRead;
 
     public BasketService(
         IBasketReadRepository basketRead,
         IBasketWriteRepository basketWrite,
         IBasketItemReadRepository basketItemRead,
         IBasketItemWriteRepository basketItemWrite,
-        IMapper mapper)
+        IMapper mapper,
+        IProductReadRepository productRead,
+        IProductVariantReadRepository productVariantRead)
     {
         _basketRead = basketRead;
         _basketWrite = basketWrite;
         _basketItemRead = basketItemRead;
         _basketItemWrite = basketItemWrite;
         _mapper = mapper;
+        _productRead = productRead;
+        _productVariantRead = productVariantRead;
     }
 
     // ======================================================
@@ -78,6 +86,8 @@ public class BasketService : IBasketService
             var (productId, variantId) = kvp.Key;
             var qty = kvp.Value;
 
+            await ValidateProductAndVariantAsync(productId, variantId); 
+
             var existingActive = basket.BasketItems?
                 .FirstOrDefault(bi => bi.ProductId == productId &&
                                       bi.ProductVariantId == variantId &&
@@ -87,7 +97,6 @@ public class BasketService : IBasketService
                 .FirstOrDefault(bi => bi.ProductId == productId &&
                                       bi.ProductVariantId == variantId);
 
-            // REMOVE
             if (qty <= 0)
             {
                 if (existingActive != null)
@@ -100,7 +109,6 @@ public class BasketService : IBasketService
                 continue;
             }
 
-            // INSERT
             if (existingAny == null)
             {
                 var newItem = new BasketItem
@@ -123,10 +131,10 @@ public class BasketService : IBasketService
                 if (existingAny.IsDeleted)
                 {
                     existingAny.IsDeleted = false;
-             
+         ;
                 }
 
-                existingAny.Quantity = qty; // idempotent set
+                existingAny.Quantity = qty;
                 existingAny.LastUpdatedDate = DateTime.UtcNow;
                 await _basketItemWrite.UpdateAsync(existingAny);
             }
@@ -649,5 +657,29 @@ public class BasketService : IBasketService
 
         result.TotalAmount = total;
         return result;
+    }
+    private async Task ValidateProductAndVariantAsync(Guid productId, Guid? variantId)
+    {
+        var productExists = await _productRead.GetAsync(
+            p => p.Id == productId && !p.IsDeleted,
+            enableTracking: false
+        );
+
+        if (productExists == null)
+            throw new GlobalAppException("PRODUCT_NOT_FOUND");
+
+        if (variantId.HasValue)
+        {
+            var variantExists = await _productVariantRead.GetAsync(
+                pv => pv.Id == variantId.Value && !pv.IsDeleted,
+                enableTracking: false
+            );
+
+            if (variantExists == null)
+                throw new GlobalAppException("PRODUCT_VARIANT_NOT_FOUND");
+
+            if (variantExists.ProductId != productId)
+                throw new GlobalAppException("PRODUCT_VARIANT_DOES_NOT_BELONG_TO_PRODUCT");
+        }
     }
 }

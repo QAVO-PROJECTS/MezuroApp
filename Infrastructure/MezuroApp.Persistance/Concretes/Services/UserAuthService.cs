@@ -96,7 +96,7 @@ namespace MezuroApp.Persistance.Concretes.Services
                 await _newsletterService.EnsureForCurrentUserAsync(user.Id.ToString(), null);
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
      
-                var confirmationLink = $"https://sshss.com/confirm-email?userId={user.Id}&token={token}";
+                var confirmationLink = $"https://mezuro.az/confirm-email?userId={user.Id}&token={token}";
 
                 // Email göndərmək üçün mail servisini istifadə edirik
                 var mailRequest = new MailRequest()
