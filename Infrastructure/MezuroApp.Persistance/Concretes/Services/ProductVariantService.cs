@@ -202,9 +202,6 @@ public async Task CreateAsync(CreateProductVariantDto dto)
         {
             ["ProductId"] = variant.ProductId.ToString(),
             ["VariantSlug"] = variant.VariantSlug,
-            ["ProductName"]=variant.Product.NameAz,
-            ["ProductColorName"]=variant.ProductColor.ColorNameAz?? " ",
-            ["ProductColorId"] = variant.ProductColorId?.ToString() ?? "",
             ["Sku"] = variant.Sku ?? "",
             ["StockQuantity"] = variant.StockQuantity
         }
@@ -239,9 +236,7 @@ public async Task UpdateAsync(UpdateProductVariantDto dto)
     {
         ["ProductId"] = variant.ProductId.ToString(),
         ["VariantSlug"] = variant.VariantSlug,
-        ["ProductName"] = variant.Product.NameAz,
-        ["ProductColorName"] = variant.ProductColor.ColorNameAz ?? " ",
-        ["ProductColorId"] = variant.ProductColorId?.ToString() ?? "",
+
         ["Sku"] = variant.Sku ?? "",
         ["StockQuantity"] = variant.StockQuantity
     };
@@ -370,9 +365,7 @@ public async Task UpdateAsync(UpdateProductVariantDto dto)
         {
             ["ProductId"] = variant.ProductId.ToString(),
             ["VariantSlug"] = variant.VariantSlug,
-            ["ProductName"] = variant.Product.NameAz,
-            ["ProductColorName"] = variant.ProductColor.ColorNameAz ?? " ",
-            ["ProductColorId"] = variant.ProductColorId?.ToString() ?? "",
+      
             ["Sku"] = variant.Sku ?? "",
             ["StockQuantity"] = variant.StockQuantity
         }
@@ -403,9 +396,7 @@ public async Task UpdateAsync(UpdateProductVariantDto dto)
             {
                 ["ProductId"] = variant.ProductId.ToString(),
                 ["VariantSlug"] = variant.VariantSlug,
-                ["ProductName"] = variant.Product.NameAz,
-                ["ProductColorName"] = variant.ProductColor.ColorNameAz ?? " ",
-                ["ProductColorId"] = variant.ProductColorId?.ToString() ?? "",
+      
                 ["Sku"] = variant.Sku ?? "",
                 ["StockQuantity"] = variant.StockQuantity
             },
