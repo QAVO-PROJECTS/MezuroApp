@@ -8,7 +8,7 @@ public class CuponDto
     public string Code { get; set; }
 
     // Discount config
-    public DiscountType DiscountType { get; set; }
+    public string DiscountType { get; set; }
     public decimal DiscountValue { get; set; }
 
     // Minimum basket limit

@@ -125,7 +125,8 @@ namespace MezuroApp.Persistance.Concretes.Services
 
             var oldValues = new Dictionary<string, object>
             {
-                ["IsActive"] = target.IsActive
+                ["IsActive"] = target.IsActive,
+                ["TargetEmail"] = target.Email ?? ""
             };
             target.IsActive = value;
             target.UpdatedAt = DateTime.UtcNow;

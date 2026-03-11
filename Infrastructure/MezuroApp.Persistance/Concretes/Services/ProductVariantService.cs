@@ -188,6 +188,9 @@ public async Task CreateAsync(CreateProductVariantDto dto)
         new Dictionary<string, object>
         {
             ["ProductId"] = variant.ProductId.ToString(),
+            ["VariantSlug"] = variant.VariantSlug,
+            ["ProductName"]=variant.Product.NameAz,
+            ["ProductColorName"]=variant.ProductColor.ColorNameAz?? " ",
             ["ProductColorId"] = variant.ProductColorId?.ToString() ?? "",
             ["Sku"] = variant.Sku ?? "",
             ["StockQuantity"] = variant.StockQuantity
@@ -221,10 +224,14 @@ public async Task UpdateAsync(UpdateProductVariantDto dto)
     ) ?? throw new GlobalAppException("PRODUCT_VARIANT_NOT_FOUND");
     var oldValues = new Dictionary<string, object>
     {
+        ["ProductId"] = variant.ProductId.ToString(),
+        ["VariantSlug"] = variant.VariantSlug,
+        ["ProductName"] = variant.Product.NameAz,
+        ["ProductColorName"] = variant.ProductColor.ColorNameAz ?? " ",
+        ["ProductColorId"] = variant.ProductColorId?.ToString() ?? "",
         ["Sku"] = variant.Sku ?? "",
         ["StockQuantity"] = variant.StockQuantity
     };
-
     // ==========================
     // 1) SKU uniqueness
     // ==========================
@@ -348,6 +355,11 @@ public async Task UpdateAsync(UpdateProductVariantDto dto)
         oldValues,
         new Dictionary<string, object>
         {
+            ["ProductId"] = variant.ProductId.ToString(),
+            ["VariantSlug"] = variant.VariantSlug,
+            ["ProductName"] = variant.Product.NameAz,
+            ["ProductColorName"] = variant.ProductColor.ColorNameAz ?? " ",
+            ["ProductColorId"] = variant.ProductColorId?.ToString() ?? "",
             ["Sku"] = variant.Sku ?? "",
             ["StockQuantity"] = variant.StockQuantity
         }
@@ -376,8 +388,13 @@ public async Task UpdateAsync(UpdateProductVariantDto dto)
             variant.Id,
             new Dictionary<string, object>
             {
+                ["ProductId"] = variant.ProductId.ToString(),
+                ["VariantSlug"] = variant.VariantSlug,
+                ["ProductName"] = variant.Product.NameAz,
+                ["ProductColorName"] = variant.ProductColor.ColorNameAz ?? " ",
+                ["ProductColorId"] = variant.ProductColorId?.ToString() ?? "",
                 ["Sku"] = variant.Sku ?? "",
-                ["ProductId"] = variant.ProductId
+                ["StockQuantity"] = variant.StockQuantity
             },
             null
         );

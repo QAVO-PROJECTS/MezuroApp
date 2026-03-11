@@ -10,7 +10,7 @@ public class CuponMappingProfile : Profile
     {
         CreateMap<Cupon, CuponDto>()
             .ForMember(dest => dest.DiscountType,
-                opt => opt.MapFrom(src => MapDiscountType(src.DiscountType)))
+                opt => opt.MapFrom(src =>(src.DiscountType)))
             .ForMember(dest => dest.ValidFrom,
                 opt => opt.MapFrom(src =>
                     src.ValidFrom.HasValue
@@ -36,13 +36,4 @@ public class CuponMappingProfile : Profile
             .ForMember(dest => dest.DiscountType, opt => opt.Ignore());
     }
 
-    private static DiscountType MapDiscountType(string value)
-    {
-        return value?.ToLower() switch
-        {
-            "percentage" => DiscountType.Percentage,
-            "fixed_amount" => DiscountType.FixedAmount,
-            _ => throw new GlobalAppException("INVALID_DISCOUNT_TYPE")
-        };
-    }
 }

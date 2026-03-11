@@ -969,9 +969,35 @@ public async Task<PagedResult<ProductDto>> AdminSearchAsync(
             newValues: new Dictionary<string, object>
             {
                 ["NameAz"] = entity.NameAz ?? "",
-                ["Sku"] = entity.Sku ?? "",
+                ["NameEn"] = entity.NameEn ?? "",
+                ["NameRu"] = entity.NameRu ?? "",
+                ["NameTr"] = entity.NameTr ?? "",
+                ["DescriptionAz"] = entity.DescriptionAz ?? "",
+                ["DescriptionEn"] = entity.DescriptionEn ?? "",
+                ["DescriptionRu"] = entity.DescriptionRu ?? "",
+                ["DescriptionTr"] = entity.DescriptionTr ?? "",
+                ["ShortDescriptionAz"] = entity.ShortDescriptionAz ?? "",
+                ["ShortDescriptionEn"] = entity.ShortDescriptionEn ?? "",
+                ["ShortDescriptionRu"] = entity.ShortDescriptionRu ?? "",
+                ["ShortDescriptionTr"] = entity.ShortDescriptionTr ?? "",
+                ["IsActive"] = entity.IsActive ?? false,
+                ["IsNew"] = entity.IsNew ?? false,
+                ["IsBestseller"] = entity.IsBestseller ?? false,
+                ["IsOnSale"] = entity.IsOnSale ?? false,
+                ["ImageFiles"] = entity.Images.Select(i => i.ImageUrl).ToList(),
+                ["CompareAtPrice"] = entity.CompareAtPrice,
+                ["StockQuantity"] = entity.StockQuantity,
+                ["ProductCategoryIds"] = entity.ProductCategories.Select(pc => pc.CategoryId.ToString()).ToList(),
+                ["MetaTitleAz"] = entity.MetaTitleAz ?? "",
+                ["MetaTitleEn"] = entity.MetaTitleEn ?? "",
+                ["MetaTitleRu"] = entity.MetaTitleRu ?? "",
+                ["MetaTitleTr"] = entity.MetaTitleTr ?? "",
+                ["MetaDescriptionAz"] = entity.MetaDescriptionAz ?? "",
+                ["MetaDescriptionEn"] = entity.MetaDescriptionEn ?? "",
+                ["MetaDescriptionRu"] = entity.MetaDescriptionRu ?? "",
+                ["MetaDescriptionTr"] = entity.MetaDescriptionTr ?? "",
                 ["Price"] = entity.Price,
-                ["IsActive"] = entity.IsActive ?? false
+                ["Sku"] = entity.Sku 
             }
         );
 
@@ -1025,9 +1051,35 @@ public async Task<PagedResult<ProductDto>> AdminSearchAsync(
         var oldValues = new Dictionary<string, object>
         {
             ["NameAz"] = entity.NameAz ?? "",
+            ["NameEn"] = entity.NameEn ?? "",
+            ["NameRu"] = entity.NameRu ?? "",
+            ["NameTr"] = entity.NameTr ?? "",
+            ["DescriptionAz"] = entity.DescriptionAz ?? "",
+            ["DescriptionEn"] = entity.DescriptionEn ?? "",
+            ["DescriptionRu"] = entity.DescriptionRu ?? "",
+            ["DescriptionTr"] = entity.DescriptionTr ?? "",
+            ["ShortDescriptionAz"] = entity.ShortDescriptionAz ?? "",
+            ["ShortDescriptionEn"] = entity.ShortDescriptionEn ?? "",
+            ["ShortDescriptionRu"] = entity.ShortDescriptionRu ?? "",
+            ["ShortDescriptionTr"] = entity.ShortDescriptionTr ?? "",
+            ["IsActive"] = entity.IsActive ?? false,
+            ["IsNew"] = entity.IsNew ?? false,
+            ["IsBestseller"] = entity.IsBestseller ?? false,
+            ["IsOnSale"] = entity.IsOnSale ?? false,
+            ["ImageFiles"] = entity.Images.Select(i => i.ImageUrl).ToList(),
+            ["CompareAtPrice"] = entity.CompareAtPrice,
+            ["StockQuantity"] = entity.StockQuantity,
+            ["ProductCategoryIds"] = entity.ProductCategories.Select(pc => pc.CategoryId.ToString()).ToList(),
+            ["MetaTitleAz"] = entity.MetaTitleAz ?? "",
+            ["MetaTitleEn"] = entity.MetaTitleEn ?? "",
+            ["MetaTitleRu"] = entity.MetaTitleRu ?? "",
+            ["MetaTitleTr"] = entity.MetaTitleTr ?? "",
+            ["MetaDescriptionAz"] = entity.MetaDescriptionAz ?? "",
+            ["MetaDescriptionEn"] = entity.MetaDescriptionEn ?? "",
+            ["MetaDescriptionRu"] = entity.MetaDescriptionRu ?? "",
+            ["MetaDescriptionTr"] = entity.MetaDescriptionTr ?? "",
             ["Price"] = entity.Price,
-            ["Sku"] = entity.Sku ?? "",
-            ["IsActive"] = entity.IsActive ?? false
+            ["Sku"] = entity.Sku 
         };
 
 
@@ -1243,9 +1295,35 @@ public async Task<PagedResult<ProductDto>> AdminSearchAsync(
                 new Dictionary<string, object>
                 {
                     ["NameAz"] = entity.NameAz ?? "",
+                    ["NameEn"] = entity.NameEn ?? "",
+                    ["NameRu"] = entity.NameRu ?? "",
+                    ["NameTr"] = entity.NameTr ?? "",
+                    ["DescriptionAz"] = entity.DescriptionAz ?? "",
+                    ["DescriptionEn"] = entity.DescriptionEn ?? "",
+                    ["DescriptionRu"] = entity.DescriptionRu ?? "",
+                    ["DescriptionTr"] = entity.DescriptionTr ?? "",
+                    ["ShortDescriptionAz"] = entity.ShortDescriptionAz ?? "",
+                    ["ShortDescriptionEn"] = entity.ShortDescriptionEn ?? "",
+                    ["ShortDescriptionRu"] = entity.ShortDescriptionRu ?? "",
+                    ["ShortDescriptionTr"] = entity.ShortDescriptionTr ?? "",
+                    ["IsActive"] = entity.IsActive ?? false,
+                    ["IsNew"] = entity.IsNew ?? false,
+                    ["IsBestseller"] = entity.IsBestseller ?? false,
+                    ["IsOnSale"] = entity.IsOnSale ?? false,
+                    ["ImageFiles"] = entity.Images.Select(i => i.ImageUrl).ToList(),
+                    ["CompareAtPrice"] = entity.CompareAtPrice,
+                    ["StockQuantity"] = entity.StockQuantity,
+                    ["ProductCategoryIds"] = entity.ProductCategories.Select(pc => pc.CategoryId.ToString()).ToList(),
+                    ["MetaTitleAz"] = entity.MetaTitleAz ?? "",
+                    ["MetaTitleEn"] = entity.MetaTitleEn ?? "",
+                    ["MetaTitleRu"] = entity.MetaTitleRu ?? "",
+                    ["MetaTitleTr"] = entity.MetaTitleTr ?? "",
+                    ["MetaDescriptionAz"] = entity.MetaDescriptionAz ?? "",
+                    ["MetaDescriptionEn"] = entity.MetaDescriptionEn ?? "",
+                    ["MetaDescriptionRu"] = entity.MetaDescriptionRu ?? "",
+                    ["MetaDescriptionTr"] = entity.MetaDescriptionTr ?? "",
                     ["Price"] = entity.Price,
-                    ["Sku"] = entity.Sku ?? "",
-                    ["IsActive"] = entity.IsActive ?? false
+                    ["Sku"] = entity.Sku 
                 }
             );
         
@@ -1264,8 +1342,35 @@ public async Task<PagedResult<ProductDto>> AdminSearchAsync(
         var oldValues = new Dictionary<string, object>
         {
             ["NameAz"] = entity.NameAz ?? "",
-            ["Sku"] = entity.Sku ?? "",
-            ["Price"] = entity.Price
+            ["NameEn"] = entity.NameEn ?? "",
+            ["NameRu"] = entity.NameRu ?? "",
+            ["NameTr"] = entity.NameTr ?? "",
+            ["DescriptionAz"] = entity.DescriptionAz ?? "",
+            ["DescriptionEn"] = entity.DescriptionEn ?? "",
+            ["DescriptionRu"] = entity.DescriptionRu ?? "",
+            ["DescriptionTr"] = entity.DescriptionTr ?? "",
+            ["ShortDescriptionAz"] = entity.ShortDescriptionAz ?? "",
+            ["ShortDescriptionEn"] = entity.ShortDescriptionEn ?? "",
+            ["ShortDescriptionRu"] = entity.ShortDescriptionRu ?? "",
+            ["ShortDescriptionTr"] = entity.ShortDescriptionTr ?? "",
+            ["IsActive"] = entity.IsActive ?? false,
+            ["IsNew"] = entity.IsNew ?? false,
+            ["IsBestseller"] = entity.IsBestseller ?? false,
+            ["IsOnSale"] = entity.IsOnSale ?? false,
+            ["ImageFiles"] = entity.Images.Select(i => i.ImageUrl).ToList(),
+            ["CompareAtPrice"] = entity.CompareAtPrice,
+            ["StockQuantity"] = entity.StockQuantity,
+            ["ProductCategoryIds"] = entity.ProductCategories.Select(pc => pc.CategoryId.ToString()).ToList(),
+            ["MetaTitleAz"] = entity.MetaTitleAz ?? "",
+            ["MetaTitleEn"] = entity.MetaTitleEn ?? "",
+            ["MetaTitleRu"] = entity.MetaTitleRu ?? "",
+            ["MetaTitleTr"] = entity.MetaTitleTr ?? "",
+            ["MetaDescriptionAz"] = entity.MetaDescriptionAz ?? "",
+            ["MetaDescriptionEn"] = entity.MetaDescriptionEn ?? "",
+            ["MetaDescriptionRu"] = entity.MetaDescriptionRu ?? "",
+            ["MetaDescriptionTr"] = entity.MetaDescriptionTr ?? "",
+            ["Price"] = entity.Price,
+            ["Sku"] = entity.Sku 
         };
 
         entity.IsDeleted = true;
@@ -1290,24 +1395,51 @@ public async Task<PagedResult<ProductDto>> AdminSearchAsync(
     {
         var gid = ParseGuidOrThrow(id);
 
-        var product = await _readRepo.GetAsync(x => x.Id == gid && !x.IsDeleted, enableTracking: true)
+        var entity = await _readRepo.GetAsync(x => x.Id == gid && !x.IsDeleted, enableTracking: true)
                       ?? throw new GlobalAppException("Product not found!");
+        
+        var oldValues = new Dictionary<string, object>
+        {
+            ["NameAz"] = entity.NameAz ?? "",
+            ["NameEn"] = entity.NameEn ?? "",
+            ["NameRu"] = entity.NameRu ?? "",
+            ["NameTr"] = entity.NameTr ?? "",
+     
+            ["IsActive"] = entity.IsActive ?? false
+        };
 
-        var wasInactive = product.IsActive == false;
-        var wasNeverPublished = product.PublishedAt == null;
+        var wasInactive = entity.IsActive == false;
+        var wasNeverPublished = entity.PublishedAt == null;
 
         if (value && wasNeverPublished)
-            product.PublishedAt = DateTime.UtcNow;
+            entity.PublishedAt = DateTime.UtcNow;
 
-        product.IsActive = value;
-        product.LastUpdatedDate = DateTime.UtcNow;
+        entity.IsActive = value;
+        entity.LastUpdatedDate = DateTime.UtcNow;
 
-        await _writeRepo.UpdateAsync(product);
+        await _writeRepo.UpdateAsync(entity);
         await _writeRepo.CommitAsync();
 
         // ✅ Aktivləşəndə 1 dəfə trigger et
         if (value && wasInactive)
-            await _campaignService.CreateAndScheduleNewProductCampaignAsync(product);
+            await _campaignService.CreateAndScheduleNewProductCampaignAsync(entity);
+        await _audit.LogAsync(
+                "Products",
+                "UPDATE",
+                "PRODUCT_UPDATED",
+                entity.Id,
+                oldValues,
+                new Dictionary<string, object>
+                {
+                    ["NameAz"] = entity.NameAz ?? "",
+                    ["NameEn"] = entity.NameEn ?? "",
+                    ["NameRu"] = entity.NameRu ?? "",
+                    ["NameTr"] = entity.NameTr ?? "",
+                    ["IsActive"] = entity.IsActive ?? false
+                 
+                 
+                }
+            );
     }
 
     public async Task SetIsFeaturedAsync(string id, bool value)
@@ -1328,6 +1460,7 @@ public async Task<PagedResult<ProductDto>> AdminSearchAsync(
 
         var entity = await _readRepo.GetAsync(x => x.Id == gid && !x.IsDeleted)
                      ?? throw new GlobalAppException("Product not found!");
+        
 
         update(entity);
         entity.LastUpdatedDate = DateTime.UtcNow;
