@@ -202,12 +202,10 @@ namespace MezuroApp.Persistance.Concretes.Services
              
         }
 
-        public async Task<LoginResponseDto> Login(LoginRequestDto loginDto)
+        public async Task<LoginResponseDto> Login(LoginRequestDto loginDto, string? ipAddress = null)
         {
-            // 1. İstifadəçini e-poçt ilə tapırıq
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
 
-            // 2. İstifadəçi yoxdursa və ya şifrə yanlışsa səhv atırıq
             if (user == null || !await _userManager.CheckPasswordAsync(user, loginDto.Password))
             {
                 throw new GlobalAppException("İstifadəçi və ya şifrə yanlışdır!");
@@ -219,34 +217,38 @@ namespace MezuroApp.Persistance.Concretes.Services
             }
 
             await _newsletterService.EnsureForCurrentUserAsync(user.Id.ToString(), null);
-            // 3. İstifadəçi tapılıb və şifrə düzgün daxil edilib
-            // Access Token və Refresh Token yaradırıq
-            user.LastLoginAt = DateTime.UtcNow;
-           await _userManager.UpdateAsync(user);
-            var accessToken = await _tokenService.GenerateAccessTokenAsync(user);
-            var refreshToken = await _tokenService.GenerateRefreshTokenAsync(user);
 
-            // 4. İstifadəçinin rolu və digər məlumatlarını alırıq
+            user.LastLoginAt = DateTime.UtcNow;
+            await _userManager.UpdateAsync(user);
+
+            var accessToken = await _tokenService.GenerateAccessTokenAsync(user);
+            var refreshToken = await _tokenService.GenerateRefreshTokenAsync(user, ipAddress);
+
             var roles = await _userManager.GetRolesAsync(user);
 
-
-
-            // 5. LoginResponseDto yaradıb geri qaytarırıq
             return new LoginResponseDto
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
-                ExpiresIn = 3600,  // Access tokenin müddəti 1 saatdır
+                ExpiresIn = 3600,
                 User = new UserDto
                 {
-                    Id = user.Id.ToString(),  // 'Guid' tipini 'string' formatına çeviririk
+                    Id = user.Id.ToString(),
                     Email = user.Email,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
                     Roles = roles.ToList(),
-             
                 }
             };
+        }
+        public async Task<LoginResponseDto> RefreshTokenAsync(string refreshToken, string? ipAddress = null)
+        {
+            return await _tokenService.RefreshTokenAsync(refreshToken, ipAddress);
+        }
+
+        public async Task RevokeRefreshTokenAsync(string refreshToken, string? ipAddress = null)
+        {
+            await _tokenService.RevokeRefreshTokenAsync(refreshToken, ipAddress);
         }
             public async Task<GoogleLoginResponseDto> GoogleLoginAsync(GoogleLoginRequestDto dto)
         {
@@ -384,7 +386,7 @@ namespace MezuroApp.Persistance.Concretes.Services
                 throw new GlobalAppException("İstifadəçi tapılmadı.");
 
             var roles = await _userManager.GetRolesAsync(user);
-            if (!roles.Contains("Custoemr"))
+            if (!roles.Contains("Customer"))
                 throw new GlobalAppException("Bu istifadəçi 'Istifadəçi' roluna sahib deyil.");
 
             var decodedToken = WebUtility.UrlDecode(token);

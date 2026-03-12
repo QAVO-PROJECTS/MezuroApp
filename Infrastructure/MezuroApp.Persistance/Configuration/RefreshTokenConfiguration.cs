@@ -24,9 +24,8 @@ namespace MezuroApp.Persistance.Configuration
             builder.Property(rt => rt.CreatedByIp).HasMaxLength(50);
             builder.Property(rt => rt.ReplacedByToken).HasMaxLength(500);
 // Computed Fields (with stored=true for PostgreSQL)
-            builder.Property(rt => rt.IsExpired).HasDefaultValue(false);
-               
-            builder.Property(rt => rt.IsActive).HasDefaultValue(false);
+            builder.Ignore(rt => rt.IsExpired);
+            builder.Ignore(rt => rt.IsActive);
                 
 
 

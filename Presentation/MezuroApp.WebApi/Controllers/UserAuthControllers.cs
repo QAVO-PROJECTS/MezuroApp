@@ -93,7 +93,7 @@ namespace MezuroApp.WebApi.Controllers
 
         }
 
-        [AllowAnonymous]
+        [Authorize(Roles = "Customer")]
         [HttpGet("profile")]
         public async Task<IActionResult> GetUserProfile()
         {
@@ -107,7 +107,7 @@ namespace MezuroApp.WebApi.Controllers
                 return OkResponse(user, "GET_PROFILE_SUCCESS");
             });
         }
-        [AllowAnonymous]
+        [Authorize(Roles = "Customer")]
         [HttpPut("edit-profile")]
         public async Task<IActionResult> EditUserProfile(UpdateProfileDto dto)
         {
@@ -122,7 +122,7 @@ namespace MezuroApp.WebApi.Controllers
             });
         }
 
-        [AllowAnonymous]
+        [Authorize(Roles = "Customer")]
         [HttpDelete("delete-profile-image")]
         public async Task<IActionResult> DeeleteProfileImage()
         {
@@ -146,8 +146,34 @@ namespace MezuroApp.WebApi.Controllers
 
             return await HandleAsync(async () =>
             {
-                var data = await _userAuthService.Login(dto);
+                var data = await _userAuthService.Login(dto, GetIpAddress());
                 return OkResponse(data, "LOGIN_SUCCESS");
+            });
+        }
+        [AllowAnonymous]
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto dto)
+        {
+            if (dto == null || string.IsNullOrWhiteSpace(dto.RefreshToken))
+                return BadRequestResponse("REFRESH_TOKEN_REQUIRED");
+
+            return await HandleAsync(async () =>
+            {
+                var data = await _userAuthService.RefreshTokenAsync(dto.RefreshToken, GetIpAddress());
+                return OkResponse(data, "TOKEN_REFRESH_SUCCESS");
+            });
+        }
+        [Authorize(Roles = "Customer")]
+        [HttpPost("revoke-token")]
+        public async Task<IActionResult> RevokeToken([FromBody] RevokeTokenRequestDto dto)
+        {
+            if (dto == null || string.IsNullOrWhiteSpace(dto.RefreshToken))
+                return BadRequestResponse("REFRESH_TOKEN_REQUIRED");
+
+            return await HandleAsync(async () =>
+            {
+                await _userAuthService.RevokeRefreshTokenAsync(dto.RefreshToken, GetIpAddress());
+                return OkResponse<object>(null, "TOKEN_REVOKED_SUCCESS");
             });
         }
 
@@ -243,6 +269,10 @@ namespace MezuroApp.WebApi.Controllers
                 await _userAuthService.ChangePasswordAsync(userId, dto);
                 return OkResponse<object>(null, "PASSWORD_CHANGE_SUCCESS");
             });
+        }
+        private string? GetIpAddress()
+        {
+            return HttpContext.Connection.RemoteIpAddress?.ToString();
         }
     }
 }

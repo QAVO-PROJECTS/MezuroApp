@@ -10,8 +10,10 @@ public interface IUserAuthService
     Task EditProfileImage(string userId,IFormFile file);
     Task DeleteProfileImage(string userId);
     Task EditProfile(string userId,UpdateProfileDto updateProfileDto);
-    
-    Task<LoginResponseDto> Login(LoginRequestDto loginDto);
+
+    Task<LoginResponseDto> Login(LoginRequestDto loginDto, string? ipAddress = null);
+    Task<LoginResponseDto> RefreshTokenAsync(string refreshToken, string? ipAddress = null);
+    Task RevokeRefreshTokenAsync(string refreshToken, string? ipAddress = null);
     Task<GoogleLoginResponseDto> GoogleLoginAsync(GoogleLoginRequestDto dto);
     Task SendResetPasswordLinkAsync(string email, string? resetPageBaseUrl = null);
     Task ResetPasswordAsync(string email, string token, string newPassword);

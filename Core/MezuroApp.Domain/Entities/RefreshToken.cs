@@ -12,7 +12,7 @@ public class RefreshToken:BaseEntity
     public DateTime? RevokedAt { get; set; }    
     public string? RevokedByIp { get; set; }
     public string? ReplacedByToken { get; set; }
-    public bool IsExpired { get; set; }
-    public bool IsActive { get; set; }
+    public bool IsExpired => DateTime.UtcNow >= ExpiresAt;
+    public bool IsActive => RevokedAt == null && !IsExpired;
    
 }

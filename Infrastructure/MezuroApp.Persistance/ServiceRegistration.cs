@@ -22,6 +22,7 @@ using MezuroApp.Application.Abstracts.Repositories.ProductOptions;
 using MezuroApp.Application.Abstracts.Repositories.Products;
 using MezuroApp.Application.Abstracts.Repositories.ProductVariantOptionValues;
 using MezuroApp.Application.Abstracts.Repositories.ProductVariants;
+using MezuroApp.Application.Abstracts.Repositories.RefreshTokens;
 using MezuroApp.Application.Abstracts.Repositories.Reviews;
 using MezuroApp.Application.Abstracts.Repositories.UserCards;
 using MezuroApp.Application.Abstracts.Repositories.WishlistItems;
@@ -52,6 +53,7 @@ using MezuroApp.Persistance.Concretes.Repositories.ProductOptions;
 using MezuroApp.Persistance.Concretes.Repositories.Products;
 using MezuroApp.Persistance.Concretes.Repositories.ProductVariantOptionValues;
 using MezuroApp.Persistance.Concretes.Repositories.ProductVariants;
+using MezuroApp.Persistance.Concretes.Repositories.RefreshTokens;
 using MezuroApp.Persistance.Concretes.Repositories.Reviews;
 using MezuroApp.Persistance.Concretes.Repositories.UserCards;
 using MezuroApp.Persistance.Concretes.Repositories.WishlistItems;
@@ -71,7 +73,9 @@ namespace MezuroApp.Persistance;
         {
             services.AddSingleton<MongoDbContext>();
             //Repositories
-            
+            //RefreshToken
+            services.AddScoped<IRefreshTokenReadRepository, RefreshTokenReadRepository>();
+            services.AddScoped<IRefreshTokenWriteRepository, RefreshTokenWriteRepository>();
             //Category
             services.AddScoped<ICategoryReadRepository, CategoryReadRepository>();
             services.AddScoped<ICategoryWriteRepository, CategoryWriteRepository>();
