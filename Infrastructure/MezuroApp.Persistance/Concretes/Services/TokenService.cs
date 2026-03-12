@@ -56,7 +56,7 @@ public class TokenService : ITokenService
             new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
-
+//
         var roles = await _userManager.GetRolesAsync(user);
         foreach (var role in roles)
             claims.Add(new Claim(ClaimTypes.Role, role));

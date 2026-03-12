@@ -5,7 +5,7 @@ using MezuroApp.Domain.Entities;
 namespace MezuroApp.Application.Abstracts.Services;
 
 public interface ITokenService
-{
+{   
     Task<string> GenerateAccessTokenAsync(User user);
     Task<string> GenerateRefreshTokenAsync(User user, string? ipAddress = null);
     ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
