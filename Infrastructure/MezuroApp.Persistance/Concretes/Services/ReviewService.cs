@@ -108,7 +108,7 @@ public class ReviewService : IReviewService
         if (pageSize <= 0) pageSize = 10;
 
         var query = _readRepo.Query()
-            .AsNoTracking().Where(x => x.Status == true);
+            .AsNoTracking().Where(x => x.Status == true || (x.Status == false && x.IsDeleted == true));
            
 
         var totalCount = await query.CountAsync();
