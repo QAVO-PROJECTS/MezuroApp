@@ -182,7 +182,7 @@ public class ReviewsController : BaseApiController
         }
     }
 
-    [Authorize(Policy = Permissions.Reviews.Update)]
+  
    
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateReviewDto dto)
