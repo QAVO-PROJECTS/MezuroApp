@@ -62,7 +62,7 @@ public class ProductVariantService :IProductVariantService
             x => x.Id == gid && !x.IsDeleted,
             q => q.Include(x => x.OptionValues)
                   .ThenInclude(v => v.OptionValue).Include(x=>x.ProductColor).
-                  ThenInclude(x=>x.Product).Include(x=>x.Product)
+                  ThenInclude(x=>x.Product).Include(x=>x.Product).Include(x=>x.ProductColor)
         ) ?? throw new GlobalAppException("PRODUCT_VARIANT_NOT_FOUND");
 
         return _mapper.Map<ProductVariantDto>(entity);
@@ -75,7 +75,7 @@ public class ProductVariantService :IProductVariantService
             x => x.VariantSlug == slug && !x.IsDeleted,
             q => q.Include(x => x.OptionValues)
                 .ThenInclude(v => v.OptionValue).Include(x=>x.ProductColor).
-                ThenInclude(x=>x.Product).Include(x=>x.Product)
+                ThenInclude(x=>x.Product).Include(x=>x.Product).Include(x=>x.ProductColor)
         ) ?? throw new GlobalAppException("PRODUCT_VARIANT_NOT_FOUND");
 
         return _mapper.Map<ProductVariantDto>(entity);
@@ -92,7 +92,7 @@ public class ProductVariantService :IProductVariantService
             x => x.ProductId == pid && !x.IsDeleted,
             q => q.Include(x => x.OptionValues)
                   .ThenInclude(v => v.OptionValue).Include(x=>x.ProductColor).
-                  ThenInclude(x=>x.Product).Include(x=>x.Product)
+                  ThenInclude(x=>x.Product).Include(x=>x.Product).Include(x=>x.ProductColor)
         );
 
         return _mapper.Map<List<ProductVariantDto>>(list);
@@ -103,44 +103,40 @@ public class ProductVariantService :IProductVariantService
     // ======================================================
 public async Task CreateAsync(CreateProductVariantDto dto)
 {
-    // 1. VALIDATION
-    if (dto.ProductId == null && dto.ProductColorId == null)
+    if (string.IsNullOrWhiteSpace(dto.ProductId) && string.IsNullOrWhiteSpace(dto.ProductColorId))
         throw new GlobalAppException("PRODUCT_OR_COLOR_NOT_FOUND");
 
     if (dto.OptionValueIds == null || dto.OptionValueIds.Count == 0)
         throw new GlobalAppException("INVALID_OPTION_VALUE_ID");
 
-
     Guid productId;
     Guid? colorId = null;
 
-    // 2. PRODUCT-LEVEL VARIANT
-    if (dto.ProductId != null)
+    // 1) Əvvəl color varsa onu götür
+    if (!string.IsNullOrWhiteSpace(dto.ProductColorId))
+    {
+        colorId = EnsureGuid(dto.ProductColorId);
+
+        var color = await _colorReadRepository.GetAsync(x => x.Id == colorId && !x.IsDeleted)
+            ?? throw new GlobalAppException("PRODUCT_COLOR_NOT_FOUND");
+
+        productId = color.ProductId;
+
+        // istəsən burada validation da et:
+        if (!string.IsNullOrWhiteSpace(dto.ProductId) && EnsureGuid(dto.ProductId) != productId)
+            throw new GlobalAppException("PRODUCT_COLOR_DOES_NOT_BELONG_TO_PRODUCT");
+    }
+    else
     {
         productId = EnsureGuid(dto.ProductId);
 
         var product = await _pr.GetAsync(x => x.Id == productId && !x.IsDeleted)
             ?? throw new GlobalAppException("PRODUCT_NOT_FOUND");
     }
-    // 3. COLOR-LEVEL VARIANT (WITHOUT PRODUCT ID SENT)
-    else
-    {
-        // ProductColorId var → o rəngin product-ını tapırıq
-        colorId = EnsureGuid(dto.ProductColorId);
 
-        var color = await _colorReadRepository.GetAsync(x => x.Id == colorId && !x.IsDeleted)
-            ?? throw new GlobalAppException("PRODUCT_COLOR_NOT_FOUND");
-
-        productId = color.ProductId; // 🔥 productId buradan çıxır
-    }
-
-
-
-    // CREATE ENTITY
     var variant = _mapper.Map<ProductVariant>(dto);
-    // SKU provided?
-    string sku;
 
+    string sku;
     if (!string.IsNullOrWhiteSpace(dto.Sku))
     {
         await EnsureSkuUnique(dto.Sku, null);
@@ -148,7 +144,6 @@ public async Task CreateAsync(CreateProductVariantDto dto)
     }
     else
     {
-        // AUTO GENERATE SKU
         sku = await GenerateVariantSkuAsync(productId, colorId, dto.OptionValueIds);
     }
 
@@ -156,11 +151,11 @@ public async Task CreateAsync(CreateProductVariantDto dto)
     variant.Id = Guid.NewGuid();
     variant.ProductId = productId;
     variant.ProductColorId = colorId;
-    variant.CreatedDate = variant.LastUpdatedDate = DateTime.UtcNow;
+    variant.CreatedDate = DateTime.UtcNow;
+    variant.LastUpdatedDate = DateTime.UtcNow;
     variant.IsAvailable = true;
     variant.IsDeleted = false;
 
-    // SLUG GENERATION (colorId-ni də əlavə edirik!)
     variant.VariantSlug = await GenerateVariantSlugAsync(
         dto.VariantSlug,
         productId,
@@ -170,7 +165,6 @@ public async Task CreateAsync(CreateProductVariantDto dto)
 
     await _vw.AddAsync(variant);
 
-    // ADD OPTION VALUES
     foreach (var idStr in dto.OptionValueIds)
     {
         var ovId = EnsureGuid(idStr);
@@ -190,34 +184,6 @@ public async Task CreateAsync(CreateProductVariantDto dto)
     }
 
     await _vw.CommitAsync();
-
-    await RefreshProductStock(productId);
-    await _audit.LogAsync(
-        "ProductVariants",
-        "CREATE",
-        "PRODUCT_VARIANT_CREATED",
-        variant.Id,
-        null,
-        new Dictionary<string, object>
-        {
-            ["ProductId"] = variant.ProductId.ToString(),
-            ["VariantSlug"] = variant.VariantSlug,
-            ["Sku"] = variant.Sku ?? "",
-            ["StockQuantity"] = variant.StockQuantity
-        }
-    );
-    await _audit.LogAsync(
-        "Products",
-        "UPDATE",
-        "PRODUCT_BUILD_COMPLETED",
-        productId,
-        null,
-        new Dictionary<string, object>
-        {
-            ["ProductId"] = productId.ToString(),
-            ["TriggeredBy"] = "VariantCreated"
-        }
-    );
 }
 
     // ======================================================
