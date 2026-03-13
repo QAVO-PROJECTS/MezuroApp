@@ -133,7 +133,7 @@ public class BasketsController : BaseApiController
     [HttpDelete("guest")]
     public async Task<IActionResult> RemoveGuestBasketItem(
         [FromQuery]
-     string variantId,
+     string? variantId,
      string productId,
      string footprintId)
     {

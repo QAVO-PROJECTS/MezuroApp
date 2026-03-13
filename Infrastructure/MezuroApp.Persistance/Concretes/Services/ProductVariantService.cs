@@ -90,10 +90,15 @@ public class ProductVariantService :IProductVariantService
 
         var list = await _vr.GetAllAsync(
             x => x.ProductId == pid && !x.IsDeleted,
-            q => q.Include(x => x.OptionValues.Where(x=>!x.IsDeleted))
-                  .ThenInclude(v => v.OptionValue.IsDeleted).Include(x=>x.ProductColor).
-                  ThenInclude(x=>x.Product).Include(x=>x.Product).Include(x=>x.ProductColor)
+            q => q.Include(x => x.OptionValues.Where(ov => !ov.IsDeleted))
+                .ThenInclude(ov => ov.OptionValue)
+                .Include(x => x.ProductColor)
+                .ThenInclude(pc => pc.Product)
+                .Include(x => x.Product)
         );
+
+        if (list == null || !list.Any())
+            return new List<ProductVariantDto>();
 
         return _mapper.Map<List<ProductVariantDto>>(list);
     }
