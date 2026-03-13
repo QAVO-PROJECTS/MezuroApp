@@ -60,7 +60,7 @@ public class ProductVariantService :IProductVariantService
 
         var entity = await _vr.GetAsync(
             x => x.Id == gid && !x.IsDeleted,
-            q => q.Include(x => x.OptionValues)
+            q => q.Include(x => x.OptionValues.Where(x=>!x.IsDeleted))
                   .ThenInclude(v => v.OptionValue).Include(x=>x.ProductColor).
                   ThenInclude(x=>x.Product).Include(x=>x.Product).Include(x=>x.ProductColor)
         ) ?? throw new GlobalAppException("PRODUCT_VARIANT_NOT_FOUND");
@@ -73,7 +73,7 @@ public class ProductVariantService :IProductVariantService
 
         var entity = await _vr.GetAsync(
             x => x.VariantSlug == slug && !x.IsDeleted,
-            q => q.Include(x => x.OptionValues)
+            q => q.Include(x => x.OptionValues.Where(x=>!x.IsDeleted))
                 .ThenInclude(v => v.OptionValue).Include(x=>x.ProductColor).
                 ThenInclude(x=>x.Product).Include(x=>x.Product).Include(x=>x.ProductColor)
         ) ?? throw new GlobalAppException("PRODUCT_VARIANT_NOT_FOUND");
@@ -90,8 +90,8 @@ public class ProductVariantService :IProductVariantService
 
         var list = await _vr.GetAllAsync(
             x => x.ProductId == pid && !x.IsDeleted,
-            q => q.Include(x => x.OptionValues)
-                  .ThenInclude(v => v.OptionValue).Include(x=>x.ProductColor).
+            q => q.Include(x => x.OptionValues.Where(x=>!x.IsDeleted))
+                  .ThenInclude(v => v.OptionValue.IsDeleted).Include(x=>x.ProductColor).
                   ThenInclude(x=>x.Product).Include(x=>x.Product).Include(x=>x.ProductColor)
         );
 
